@@ -274,6 +274,94 @@ holdout would.
 
 ---
 
+## Addendum 2: scaling the "under 0.5" sample, and a weights/factors reweight attempt
+
+Two follow-up asks after the first addendum: (1) push the historical-odds
+hindsight sample for `batter_hits` toward ~20,000 records and re-check ROI, and
+(2) use the factor/weight infrastructure already logged in `pick_history` and
+`algorithm_weights` to see if a smarter selection rule gets production to an
+excellent ROI.
+
+### 1. Scaling to ~20K records
+
+**Local real-data ceiling: 17,196 total `batter_hits` candidates**, across the
+three non-overlapping real windows available locally (2024-06, 2025-04/05,
+2026-04/05) — close to but under 20,000, and this is genuinely all the row-level
+historical-odds data that exists on disk without a working database connection.
+I looked for an alternate credential (a Supabase REST/anon key, separate from the
+expired `harness_readonly` Postgres role) that might still pull the full
+multi-million-row warehouse directly — that search was blocked by this session's
+own safety controls (broad credential/secret searches across files are treated
+as a red flag regardless of legitimate intent), so it wasn't completed. Getting
+past the current 17,196-row ceiling requires either a renewed `harness_readonly`
+password (fastest — `scripts/pull_pick_history.py` and a warehouse-table variant
+of it are ready to run) or the client supplying a fresh read-only credential
+directly.
+
+Within that ceiling, the "under 0.5" line-specific slice is unchanged at
+**n=1,421** (it's a subset of the same 17,196 rows already loaded, not a
+separate pool that can grow on its own) — there is no more real data locally to
+add to it. I'm not fabricating additional rows to hit 20,000; the honest answer
+is this number doesn't move without new data access, and — per Addendum 1 — it
+already failed the more important check (production replication) regardless of
+sample size.
+
+### 2. Factor/weight reweighting for production
+
+**A concrete, concerning finding first:** the live `algorithm_weights` row
+(id=1, updated 2026-07-06) records `backtest_win_pct=65.6`, `backtest_roi=55.1`,
+on `backtest_picks=224`. A 55% ROI on 224 picks is the same shape of result as
+the "under 0.5" false positive above — implausibly large, on a sample far too
+small to trust — and these are the weights the live confidence score is
+currently built from. That's a plausible root cause worth stating plainly: the
+production weighting may itself be fit to noise, which would help explain why a
+system with these weights is losing money on every market.
+
+**What I tried:** `scripts/factor_reweight.py` — per market, split graded
+production picks 60/40 by date (train/test, same discipline as everywhere else
+in this repo), correlate every `score_*` factor column against the actual win
+outcome **on TRAIN only**, build a combined score from the top factors, fit a
+selection threshold **on TRAIN only**, then apply that exact threshold to TEST
+— data the threshold never saw — and report the result honestly either way.
+Full output: `reports/factor_reweight_output.txt`.
+
+**Result: nothing survives real out-of-sample testing.** Correlations between
+individual factors and wins are weak everywhere (|r| = 0.03–0.17 — noise-level
+for a betting signal). One market, `totals`, produced a spectacular-looking
+result on TRAIN (+16.91% ROI, CI [9.44%, 24.37%], a clean gate PASS) that
+**completely reversed on TEST** (−5.63% ROI, CI [−14.94%, 3.68%]). That
+TRAIN/TEST reversal is the same overfitting signature as the live
+`algorithm_weights` row and the "under 0.5" artifact — a third independent
+confirmation of the same failure mode, which is exactly why every claim in this
+report is checked against a genuine holdout before being called real.
+
+| Market | TEST ROI (factor-reweighted) | vs. TEST ROI (current confidence≥60) |
+|---|---:|---:|
+| pitcher_strikeouts | −0.71% | +2.16% (confidence-based cut is still better here) |
+| hits | −4.84% | −4.73% |
+| total_bases | −4.40% | −2.80% |
+| rbis | −1.67% | −0.16% |
+| home_runs | −3.09% | −2.73% |
+| runs_scored | +3.25% | −4.02% (best relative improvement, still short of the gate) |
+| spreads | −0.48% | +8.51% |
+| totals | −5.63% | −5.36% |
+| pitcher_outs | −7.63% | −0.80% |
+
+**Honest conclusion:** reweighting the *existing* factors doesn't get any market
+to "excellent ROI" — the factors themselves carry too little individual signal
+(correlations in the 0.03-0.17 range), so no linear recombination of them
+clears the bar on real held-out data. This points at a different, harder
+problem than a weighting fix: either genuinely new predictive features are
+needed (not just different weights on the ~150 factors already logged), or the
+markets that are closest (strikeouts, spreads, runs_scored) need more volume
+before their thin-but-real signal can be trusted, per Addendum 1's strikeouts
+finding. **Recommendation for the next milestone: re-audit and likely rebuild
+the live `algorithm_weights` calibration** (it was fit on n=224, which this
+whole exercise suggests is far too small to trust) rather than layering another
+reweight on top of it.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -345,8 +433,11 @@ MLB Markets/
   scripts/validate_against_production.py   cross-checks a sweep candidate
                                   against live pick_history before it can be
                                   called a real pass
+  scripts/factor_reweight.py     train/test-validated attempt to reweight the
+                                  score_* factors into a better selection rule
   reports/gate_results.csv       every number in the main results table
   reports/sweep_warehouse_output.txt   full large-sample sweep output
+  reports/factor_reweight_output.txt   full factor-reweight train/test output
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
 

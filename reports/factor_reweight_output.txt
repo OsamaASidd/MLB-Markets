@@ -1,0 +1,147 @@
+
+===============================================================================================
+pitcher_strikeouts  (n=1,949)
+===============================================================================================
+  TRAIN baseline (confidence>=60, minus) n=307    ROI=4.0 CI=[-5.3,13.31]
+  TEST baseline (confidence>=60, minus)  n=170    ROI=2.16 CI=[-10.48,14.79]
+  top factors (TRAIN-only correlation with win):
+    score_pitcher_form                            r=+0.065  (n_nonnull=1169)
+    score_pitcher_k_rate                          r=+0.059  (n_nonnull=1169)
+    score_umpire_k_zone                           r=-0.037  (n_nonnull=1169)
+    score_handedness_matchup                      r=-0.032  (n_nonnull=1169)
+  TRAIN (top quartile combo, minus-money)              n=177    ROI=5.0 CI=[-7.09,17.09]  fail
+  TEST  (top quartile combo, minus-money) -- true holdout n=188    ROI=-0.71 CI=[-13.15,11.72]  fail
+
+===============================================================================================
+hits  (n=15,005)
+===============================================================================================
+  TRAIN baseline (confidence>=60, minus) n=1434   ROI=-2.5 CI=[-6.25,1.24]
+  TEST baseline (confidence>=60, minus)  n=1074   ROI=-4.73 CI=[-9.04,-0.43]
+  top factors (TRAIN-only correlation with win):
+    score_batter_hit_rate                         r=+0.049  (n_nonnull=3327)
+    score_batter_hard_hit                         r=+0.039  (n_nonnull=8120)
+  TRAIN (top quartile combo, minus-money)              n=1329   ROI=-1.66 CI=[-5.69,2.36]  fail
+  TEST  (top quartile combo, minus-money) -- true holdout n=776    ROI=-4.84 CI=[-10.12,0.43]  fail
+
+===============================================================================================
+total_bases  (n=14,351)
+===============================================================================================
+  TRAIN baseline (confidence>=60, minus) n=2582   ROI=-4.66 CI=[-7.38,-1.93]
+  TEST baseline (confidence>=60, minus)  n=2992   ROI=-2.8 CI=[-5.31,-0.28]
+  top factors (TRAIN-only correlation with win):
+    score_batter_launch_angle                     r=-0.157  (n_nonnull=7591)
+    score_batter_exit_velo_trend                  r=+0.086  (n_nonnull=6038)
+    score_lineup_spot                             r=+0.057  (n_nonnull=6038)
+    score_batter_barrel_rate                      r=+0.051  (n_nonnull=6038)
+    score_lineup_consistency                      r=-0.049  (n_nonnull=8610)
+    score_pitcher_hr_rate                         r=+0.038  (n_nonnull=8610)
+    score_batter_power_rate                       r=+0.037  (n_nonnull=8610)
+  TRAIN (top quartile combo, minus-money)              n=1776   ROI=-4.96 CI=[-8.19,-1.73]  fail
+  TEST  (top quartile combo, minus-money) -- true holdout n=1411   ROI=-4.4 CI=[-7.91,-0.89]  fail
+
+===============================================================================================
+rbis  (n=11,576)
+===============================================================================================
+  TRAIN baseline (confidence>=60, minus) n=1834   ROI=-4.12 CI=[-6.78,-1.46]
+  TEST baseline (confidence>=60, minus)  n=2091   ROI=-0.16 CI=[-2.71,2.39]
+  top factors (TRAIN-only correlation with win):
+    score_lineup_consistency                      r=-0.102  (n_nonnull=6945)
+    score_opposing_pitcher_quality                r=-0.064  (n_nonnull=1897)
+    score_pitcher_hr_rate                         r=+0.051  (n_nonnull=1897)
+    score_ballpark_factor                         r=-0.048  (n_nonnull=6945)
+    score_batter_power_rate                       r=+0.041  (n_nonnull=1897)
+    score_weather_wind                            r=+0.030  (n_nonnull=6945)
+  TRAIN (top quartile combo, minus-money)              n=1418   ROI=-4.53 CI=[-7.76,-1.3]  fail
+  TEST  (top quartile combo, minus-money) -- true holdout n=1568   ROI=-1.67 CI=[-4.71,1.38]  fail
+
+===============================================================================================
+home_runs  (n=14,604)
+===============================================================================================
+  TRAIN baseline (confidence>=60, minus) n=3910   ROI=-4.82 CI=[-5.8,-3.84]
+  TEST baseline (confidence>=60, minus)  n=5409   ROI=-2.73 CI=[-3.68,-1.78]
+  top factors (TRAIN-only correlation with win):
+    score_lineup_consistency                      r=-0.171  (n_nonnull=8762)
+    score_batter_power_rate                       r=+0.123  (n_nonnull=3829)
+    score_handedness_matchup                      r=-0.123  (n_nonnull=8762)
+    score_pitcher_hr_rate                         r=+0.116  (n_nonnull=3829)
+    score_ballpark_factor                         r=+0.111  (n_nonnull=8762)
+    score_opposing_pitcher_quality                r=-0.109  (n_nonnull=3829)
+    score_recent_at_bats                          r=-0.087  (n_nonnull=3829)
+    score_weather_wind                            r=-0.035  (n_nonnull=8762)
+  TRAIN (top quartile combo, minus-money)              n=1967   ROI=-6.09 CI=[-7.62,-4.56]  fail
+  TEST  (top quartile combo, minus-money) -- true holdout n=1184   ROI=-3.09 CI=[-4.92,-1.27]  fail
+
+===============================================================================================
+runs_scored  (n=6,859)
+===============================================================================================
+  TRAIN baseline (confidence>=60, minus) n=1322   ROI=-3.66 CI=[-7.67,0.35]
+  TEST baseline (confidence>=60, minus)  n=581    ROI=-4.02 CI=[-9.98,1.94]
+  top factors (TRAIN-only correlation with win):
+    score_batter_launch_angle                     r=-0.114  (n_nonnull=1342)
+    score_hitter_streak_fatigue                   r=+0.096  (n_nonnull=1253)
+    score_day_after_night_fatigue                 r=+0.095  (n_nonnull=1253)
+    score_opposing_pitcher_quality                r=+0.086  (n_nonnull=4115)
+    score_recent_run_form                         r=-0.063  (n_nonnull=4115)
+    score_pitcher_gb_fb_rate                      r=-0.060  (n_nonnull=963)
+    score_lineup_consistency                      r=-0.055  (n_nonnull=4115)
+    score_batter_obp                              r=-0.049  (n_nonnull=4115)
+  TRAIN (top quartile combo, minus-money)              n=955    ROI=1.24 CI=[-3.42,5.9]  fail
+  TEST  (top quartile combo, minus-money) -- true holdout n=1007   ROI=3.25 CI=[-1.29,7.8]  fail
+
+===============================================================================================
+spreads  (n=3,367)
+===============================================================================================
+  TRAIN baseline (confidence>=60, minus) n=381    ROI=4.5 CI=[-3.65,12.65]
+  TEST baseline (confidence>=60, minus)  n=132    ROI=8.51 CI=[-4.08,21.1]
+  top factors (TRAIN-only correlation with win):
+    score_offense_differential                    r=+0.055  (n_nonnull=1521)
+    score_pitching_matchup                        r=+0.054  (n_nonnull=1521)
+    score_team_form                               r=+0.037  (n_nonnull=1521)
+    score_recent_run_diff                         r=+0.034  (n_nonnull=1521)
+  TRAIN (top quartile combo, minus-money)              n=307    ROI=3.33 CI=[-5.66,12.32]  fail
+  TEST  (top quartile combo, minus-money) -- true holdout n=205    ROI=-0.48 CI=[-10.91,9.94]  fail
+
+===============================================================================================
+h2h  (n=1,670)
+===============================================================================================
+  TRAIN baseline (confidence>=60, minus) n=282    ROI=-1.77 CI=[-11.1,7.57]
+  TEST baseline (confidence>=60, minus)  n=208    ROI=6.97 CI=[-4.67,18.61]
+  top factors (TRAIN-only correlation with win):
+    score_offense_differential                    r=+0.128  (n_nonnull=370)
+    score_pitching_matchup                        r=+0.095  (n_nonnull=370)
+    score_recent_run_diff                         r=+0.046  (n_nonnull=370)
+    score_team_form                               r=+0.044  (n_nonnull=370)
+  TRAIN (top quartile combo, minus-money)              n=469    ROI=-2.34 CI=[-9.82,5.14]  fail
+  TEST  (top quartile combo, minus-money) -- true holdout n=205    ROI=1.77 CI=[-10.21,13.75]  fail
+
+===============================================================================================
+totals  (n=4,204)
+===============================================================================================
+  TRAIN baseline (confidence>=60, minus) n=616    ROI=1.47 CI=[-5.55,8.49]
+  TEST baseline (confidence>=60, minus)  n=532    ROI=-5.36 CI=[-13.27,2.56]
+  top factors (TRAIN-only correlation with win):
+    score_recent_run_diff                         r=-0.079  (n_nonnull=2234)
+    score_pitching_matchup                        r=+0.078  (n_nonnull=2234)
+    score_weather_temp                            r=+0.073  (n_nonnull=2522)
+    score_team_form                               r=+0.058  (n_nonnull=2234)
+    score_ballpark_factor                         r=+0.041  (n_nonnull=2522)
+  TRAIN (top quartile combo, minus-money)              n=516    ROI=16.91 CI=[9.44,24.37]  PASS
+  TEST  (top quartile combo, minus-money) -- true holdout n=387    ROI=-5.63 CI=[-14.94,3.68]  fail
+
+===============================================================================================
+pitcher_outs  (n=798)
+===============================================================================================
+  TRAIN baseline (confidence>=60, minus) n=124    ROI=6.59 CI=[-8.48,21.65]
+  TEST baseline (confidence>=60, minus)  n=52     ROI=-0.8 CI=[-24.25,22.66]
+  top factors (TRAIN-only correlation with win):
+    score_ballpark_factor                         r=-0.034  (n_nonnull=478)
+    score_opposing_lineup_k                       r=-0.033  (n_nonnull=478)
+    score_rest_pitcher                            r=+0.032  (n_nonnull=478)
+    score_weather_temp                            r=+0.032  (n_nonnull=478)
+  TRAIN (top quartile combo, minus-money)              n=83     ROI=4.8 CI=[-14.17,23.76]  fail
+  TEST  (top quartile combo, minus-money) -- true holdout n=90     ROI=-7.63 CI=[-26.07,10.81]  fail
+
+===============================================================================================
+SUMMARY -- any market where the TEST (holdout) split actually passed
+===============================================================================================
+  none. No factor-reweighted rule beat the gate on genuine held-out data.
