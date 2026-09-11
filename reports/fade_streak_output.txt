@@ -1,0 +1,48 @@
+===============================================================================================
+STRATEGY A: fade the hot underdog -- bet the favorite instead
+===============================================================================================
+
+--- Home hot underdog (L10_home>=7, home priced +) -> bet AWAY (favorite) ---
+  FULL 2014-2019  n=479    WR=57.8   ROI=0.25     CI=[-7.48,7.98]  fail
+  TRAIN 2014-2017 n=302    WR=56.3   ROI=-1.76    CI=[-11.6,8.08]  fail
+  TEST  2018-2019 n=177    WR=60.5   ROI=3.67     CI=[-8.83,16.17]  fail <- true holdout
+  verdict: NOT stable -- fails on holdout or reverses sign
+
+--- Away hot underdog (L10_away>=7, away priced +) -> bet HOME (favorite) ---
+  FULL 2014-2019  n=1364   WR=56.7   ROI=-4.45    CI=[-8.91,0.02]  fail
+  TRAIN 2014-2017 n=921    WR=58.0   ROI=-1.66    CI=[-7.11,3.79]  fail
+  TEST  2018-2019 n=443    WR=54.2   ROI=-10.24   CI=[-18.0,-2.48]  fail <- true holdout
+  verdict: NOT stable -- fails on holdout or reverses sign
+
+--- COMBINED: back the favorite whenever the underdog is hot (either side) ---
+
+--- COMBINED fade-hot-underdog ---
+  FULL 2014-2019  n=1843   WR=57.1   ROI=-3.13    CI=[-7.0,0.74]  fail
+  TRAIN 2014-2017 n=1223   WR=57.6   ROI=-1.68    CI=[-6.45,3.08]  fail
+  TEST  2018-2019 n=620    WR=56.1   ROI=-5.98    CI=[-12.59,0.63]  fail <- true holdout
+  verdict: NOT stable -- fails on holdout or reverses sign
+
+===============================================================================================
+STRATEGY B: back the favorite even when they're cold -- vs. baseline 'always bet favorite'
+===============================================================================================
+  (baseline, no condition, Addendum 4: FULL sample ROI = -4.24%, all seasons)
+
+--- Home cold favorite (L10_home<=3, home priced -) -> bet HOME anyway ---
+  FULL 2014-2019  n=1543   WR=55.7   ROI=-3.12    CI=[-7.47,1.23]  fail
+  TRAIN 2014-2017 n=1063   WR=55.6   ROI=-2.72    CI=[-7.99,2.55]  fail
+  TEST  2018-2019 n=480    WR=55.8   ROI=-4.0     CI=[-11.73,3.73]  fail <- true holdout
+  verdict: NOT stable -- fails on holdout or reverses sign
+
+--- Away cold favorite (L10_away<=3, away priced -) -> bet AWAY anyway ---
+  FULL 2014-2019  n=610    WR=55.1   ROI=-0.84    CI=[-8.0,6.31]  fail
+  TRAIN 2014-2017 n=412    WR=55.1   ROI=-1.11    CI=[-9.79,7.57]  fail
+  TEST  2018-2019 n=198    WR=55.1   ROI=-0.29    CI=[-12.94,12.37]  fail <- true holdout
+  verdict: NOT stable -- fails on holdout or reverses sign
+
+--- COMBINED: back the favorite whenever THEY are cold (either side) ---
+
+--- COMBINED cold-favorite-hold ---
+  FULL 2014-2019  n=2120   WR=56.4   ROI=-0.96    CI=[-4.7,2.78]  fail
+  TRAIN 2014-2017 n=1459   WR=56.1   ROI=-1.2     CI=[-5.73,3.32]  fail
+  TEST  2018-2019 n=661    WR=57.0   ROI=-0.42    CI=[-7.08,6.24]  fail <- true holdout
+  verdict: NOT stable -- fails on holdout or reverses sign

@@ -577,6 +577,30 @@ above — rather than rushed in the same pass as this finding.
 Full script outputs: `scripts/build_power_rankings.py`,
 `scripts/explore_power_ranking_patterns.py`, `scripts/validate_power_ranking_test.py`.
 
+### Follow-up: pricing the fade-the-streak pattern as an actual bet
+
+The win-rate gap above (43-56% depending on side) is suggestive but isn't the
+same as a profitable bet — it has to be checked against the real odds on
+those specific games, not just counted as wins/losses. `scripts/test_fade_streak_strategy.py`
+does exactly that: same fit-on-TRAIN, confirm-on-TEST discipline, gate rule
+unchanged.
+
+| Strategy | n | Full ROI | TRAIN (2014-2017) | TEST 2018-2019 (holdout) |
+|---|---:|---:|---:|---:|
+| Fade hot underdog → bet the favorite instead | 1,843 | −3.13% | −1.68% | **−5.98%** (worse out of sample) |
+| Back the favorite anyway even when they're cold | 2,120 | −0.96% | −1.20% | −0.42% |
+
+**FAIL on both, real odds included.** The favorites being backed in these
+situations are mostly priced at −140 to −200+, which needs roughly 58-67% win
+rate just to break even after the vig — the actual win rates (55-58%) don't
+clear that bar even though they looked good as raw win-rate numbers. The one
+partial, honestly-reportable result: conditioning on "cold but still favored"
+roughly halves the loss versus blindly betting every favorite (−0.96% vs. the
+−4.24% generic-favorite baseline from Addendum 4) — a real, measurable effect,
+just not a profitable one on its own. This is the concrete reason raw win-rate
+skews from Addendum 5 don't automatically become a strategy: the vig has to
+be cleared by the *priced* edge, not the win-rate gap in isolation.
+
 ---
 
 ## Why the harness said PASS and production says FAIL
