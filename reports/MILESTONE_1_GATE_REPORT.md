@@ -362,6 +362,76 @@ reweight on top of it.
 
 ---
 
+## Addendum 3: why the live weights show 224 picks / 55.1% ROI, and what "huge + generalized" actually requires
+
+Traced the live `algorithm_weights` row to its source rather than just flagging
+it as suspicious. Findings, with exact provenance:
+
+- **It's a frozen snapshot from one manual write on 2026-05-07, not a periodic
+  backtest.** `updated_at` shows 2026-07-06 because unrelated weight edits bump
+  that timestamp without touching `backtest_win_pct`/`backtest_roi`/
+  `backtest_picks` — those three columns haven't actually been refreshed since May.
+- **It's NBA data, not MLB.** The function that computed it
+  (`backtest_weights_v3`, `supabase/migrations/20260505000001_backtest_weights_v3.sql:40-159`)
+  filters to NBA player-prop rows only and excludes game markets. It sits on a
+  config row that also holds every `w_mlb_*` weight column — meaning **the MLB
+  side of this config has never had a real backtest number attached to it at
+  all**; 55.1% was never an MLB claim to begin with.
+- **224 is a filter artifact, not a chosen or minimum sample.** The backtest
+  restricts to `created_at >= 2026-05-04` (a post-redeploy cutoff) at
+  confidence≥70 — 224 is just how many NBA picks existed three days into that
+  new window. Nobody picked 224; the window was young.
+- **No train/test split — it fits and reports on the identical rows.** The gate
+  function that would apply new weights (`apply_optimized_weights_with_gate`,
+  `20260505000002_safety_gate_function.sql:69-231`) compares baseline vs.
+  proposed on that same filtered set. There is no holdout anywhere in this path.
+  This alone is enough to make any ROI number from it meaningless, independent
+  of sample size — the same defect Addenda 1 and 2 found independently, now
+  confirmed a third time in the client's own weight-calibration code.
+- **They already caught this internally, a month later.** Their own doc
+  (`docs/loop/reports/d518_wr_ceiling.md`, 2026-06-13) recomputed the same
+  confidence tier out-of-sample and got a **46.9% win rate (n=81)**, not 65.6% —
+  logged in their own repo as "in-sample-inflated... cannot be reproduced live."
+- **A properly walk-forward-validated optimizer exists in their code
+  (`optimize_weights_walk_forward`, `20260507000006`) but isn't usable yet**: it
+  trains on synthetic Feb-May data rather than real picks, and its cron job has
+  been **paused since 2026-06-24** following a scoring-bug contamination
+  finding — still paused as of their latest architecture note (2026-06-29).
+
+### What "huge and generalized, not overfit" actually requires
+
+This isn't a case of not having searched hard enough. Addendum 1 tested the
+largest available real historical sample (79,310 candidates); Addendum 2 tested
+every one of ~150 live factor columns with a strict train/test split. Both,
+independently, found the same thing this weight-calibration code already found
+in May and documented internally in June: **whatever looks like a large,
+generalized edge on this data collapses when checked against genuinely unseen
+rows.** A bigger sample doesn't fix that — it narrows the confidence interval
+around whatever the true number is, which for most cuts tested here is flat or
+negative. Making a sample "huge" only produces a huge *validated* ROI if the
+underlying edge is real and stays large as more rows come in; it can't
+manufacture edge that the factors don't currently carry.
+
+**The concrete, honest path to a real "huge + generalized" number:**
+1. **Fix the optimizer, don't rebuild it** — `optimize_weights_walk_forward`
+   already exists and already does the right thing methodologically. Point it
+   at real MLB `pick_history` instead of synthetic data, resolve whatever the
+   June 24 contamination finding was, and un-pause its cron. This is the
+   client's own correct tool, currently switched off.
+2. **Let volume accumulate on the cuts that already show real (if modest)
+   signal** — `pitcher_strikeouts` at conf≥60 minus-money (+3.34%, n=477,
+   walk-forward stable) and `spreads` at the same cut (+5.53%, n=513) are the
+   two closest to a genuine gate pass anywhere in this audit. Neither is
+   "excellent," but both are real. More weeks of live grading, not more
+   creative slicing of the same historical window, is what gets them over the
+   n≥500-with-tight-CI line.
+3. **Stop trusting any backtest number that doesn't disclose a holdout.** The
+   224/55.1% figure would have been caught in May if this had been standard
+   practice; it wasn't, and it sat in production for two months undetected
+   until an unrelated internal doc noticed the gap in June.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
