@@ -495,6 +495,90 @@ something a bigger generic dataset was ever going to replace.
 
 ---
 
+## Addendum 5: custom strategy — team power ranking (Elo) + last-10-game form
+
+Built exactly what was asked: a real team power-ranking system and a rolling
+recent-form record, computed **point-in-time correct** (every feature attached
+to a game uses only games strictly before it — no lookahead), then looked for
+a pattern before locking in a strategy, on the real 2014-2019 sample from
+Addendum 4 (the only dataset large enough — 14,783 games — to do this kind of
+exploration safely).
+
+**What was built** (`scripts/build_power_rankings.py`):
+- **Elo power ranking** per team — standard logistic Elo, K=20, +24 points
+  home-field advantage baked into the win-expectancy calculation (a
+  commonly-used MLB constant, e.g. FiveThirtyEight's model), with ratings
+  regressed 1/3 toward the 1500 mean at each season boundary (rosters turn
+  over — a rating from October shouldn't carry unchanged into March).
+- **L10 form** — each team's win/loss record in exactly its 10 games prior to
+  the game in question, home and away tracked separately.
+
+**What the data actually shows** (`scripts/explore_power_ranking_patterns.py`,
+confirmed on a true holdout in `scripts/validate_power_ranking_test.py`):
+
+| Signal | corr. with home win — TRAIN (2014-2017, n=9,699) | TEST (2018-2019, n=4,913) |
+|---|---:|---:|
+| Elo power-ranking diff | +0.083 | +0.187 |
+| L10 form diff | +0.040 | +0.115 |
+| **Market's own closing price** | **+0.174** | **+0.223** |
+
+**The market beats both signals, in both periods, every time.** Elo and L10
+do carry real information (correlations are positive and hold up out of
+sample) — they're just weaker than what's already baked into the closing
+line. Digging further, on TRAIN: when Elo disagrees most strongly with the
+market (Elo says home team is much better than the market's price implies),
+the *market* turns out closer to right, not Elo — actual home win rate in
+that bucket was 47.2%, versus the market's own implied 46.5% and Elo's wildly
+overconfident 64.8%. The disagreement doesn't identify value; it identifies
+where Elo is wrong.
+
+**The L10 form finding is the more interesting, actionable one.** Testing
+"hot" teams (won ≥7 of last 10) priced as underdogs, and "cold" teams (won
+≤3 of last 10) priced as favorites:
+
+| Situation | n | Actual win rate |
+|---|---:|---:|
+| Home team hot (L10≥7), market has them as underdog | 302 | 43.7% |
+| Away team hot (L10≥7), market has them as underdog | 921 | 42.0% |
+| Home team cold (L10≤3), market still favors them | 1,063 | 55.6% |
+| Away team cold (L10≤3), market still favors them | 412 | 55.1% |
+
+**This is mean reversion, not momentum — the opposite of what a "hot streak"
+strategy assumes.** Teams on a hot L10 stretch, even when the market hasn't
+fully caught up and still prices them as underdogs, underperform; teams on a
+cold L10 stretch that the market still trusts as favorites outperform. Betting
+*with* a hot streak or *against* a cold favorite — the intuitive "ride the
+form" strategy — would lose money here. A "fade the streak" version is
+directionally more promising but wasn't taken further because the win-rate
+gap alone doesn't establish it clears the vig at the actual prices on these
+specific games; that's the natural next check if this line of work continues.
+
+**Honest bottom line:** a standalone team power-ranking + recent-form
+strategy does not beat MLB's game-market pricing. This isn't a failure of
+execution — it's a well-established property of this specific market: MLB
+carries enormous daily volume and sharp two-way action, and simple power
+ratings are famous for not beating the close here (unlike, say, lower-volume
+college sports markets). It's a genuine, useful answer: it rules out an
+entire category of strategy so effort isn't wasted building on it further.
+
+**What's actually more promising for MLB specifically — a concrete next
+step, not done here:** team-level power ranking undersells baseball because
+a single player, the **starting pitcher**, drives far more single-game
+variance in MLB than the "team" as a whole — much more so than in most other
+sports. Real data to build this already exists in this repo's db: `opposing_pitcher`
+(real starter IDs/names per game, 7,523 rows) and `boxscore` (real per-start
+innings pitched, earned runs, strikeouts, batters faced — enough to build a
+rolling ERA/quality metric per starter, point-in-time correct, the same way
+Elo was built here for teams). This is a materially different and more
+baseball-specific hypothesis than team power ranking, and is the right next
+thing to test — properly, with the same train/test discipline as everything
+above — rather than rushed in the same pass as this finding.
+
+Full script outputs: `scripts/build_power_rankings.py`,
+`scripts/explore_power_ranking_patterns.py`, `scripts/validate_power_ranking_test.py`.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -578,6 +662,9 @@ MLB Markets/
   reports/sweep_warehouse_output.txt   full large-sample sweep output
   reports/factor_reweight_output.txt   full factor-reweight train/test output
   reports/gate_historical_game_markets_output.txt   full 6-year generic-strategy output
+  scripts/build_power_rankings.py   point-in-time Elo + L10 form, ->game_features table
+  scripts/explore_power_ranking_patterns.py   pattern exploration on TRAIN only
+  scripts/validate_power_ranking_test.py   confirms the pattern on TEST holdout
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
 
