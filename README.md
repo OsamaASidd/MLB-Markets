@@ -22,6 +22,16 @@ for the full PASS/FAIL results, per-market root causes, and improvement levers.
 - `scripts/compact_db.py` — rebuilds the shipped db from a raw warehouse mirror,
   dropping large free-text columns not needed for grading (keeps the file small).
 - `reports/gate_results.csv` — raw numbers behind every row in the report.
+- `scripts/load_warehouse_picks.py` — mines the harness's own historical-odds
+  backtest exports (`harness/out/*.csv`) into a `warehouse_picks` table: 79,310
+  real candidate picks with real bookmaker odds, 2023-2026, much larger than
+  the production log alone.
+- `scripts/sweep_warehouse.py` — sweeps confidence/odds/side cuts on
+  `warehouse_picks` looking for a gate-clearing, walk-forward-stable slice.
+  Writes `reports/sweep_warehouse_output.txt`.
+- `scripts/validate_against_production.py` — cross-checks any sweep candidate
+  against live `pick_history` before it can be trusted. See the report's
+  "Addendum" section for why this step matters — it caught a false positive.
 
 ## Setup
 

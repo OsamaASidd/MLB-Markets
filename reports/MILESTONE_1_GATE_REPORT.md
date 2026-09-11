@@ -202,6 +202,78 @@ all 10 markets: `reports/gate_results.csv`.
 
 ---
 
+## Addendum: large-sample sweep — searching for a 6-9%+ ROI pass
+
+The client asked, after seeing the headline result, for a harder push: run a much
+bigger sample and see if any market can be made to clear the gate at a real,
+tradeable 6-9%+ ROI. This is a fair ask — 74,385 production picks over 2.5 months
+is not the largest sample available. Here's what a genuine attempt at that found.
+
+**Bigger sample, real data, no fabrication:** the harness's own historical-odds
+backtest exports (`projects/Betting/betgenius/harness/out/*.csv`) contain
+row-level "picks" — real bookmaker odds (DraftKings, FanDuel, BetMGM, BetRivers,
+Bovada, and others), real graded outcomes, spanning 2023-2026 for
+pitcher_strikeouts and a 2024/2025/2026 multi-year composite for batter_hits.
+Loaded into this repo's db as `warehouse_picks`: **79,310 additional real candidate
+picks**, script: `scripts/load_warehouse_picks.py`. Swept confidence thresholds ×
+odds bands × side per market (`scripts/sweep_warehouse.py`) looking for any cut
+that clears `n≥500, ROI CI lower bound > 0` — 13 cuts did.
+
+**All 13 passing cuts trace to one signal, and it does not survive contact with
+real production data.** Every one of the 13 gate-clearing cuts is `batter_hits`,
+`side='under'` — and drilling into the line values shows the entire effect is
+concentrated in the **`under 0.5` line** (predicting a batter goes hitless), which
+alone shows n=1,421, 55.4% win rate, **+15.17% ROI, CI [9.72%, 20.62%]**, and
+survives a naive walk-forward split (train +16.4%, test +13.4%). Read on its own,
+this looks like exactly the kind of clean, deployable edge worth shipping.
+
+**It isn't — and this is the important part.** Before reporting it as a pass, the
+same "under 0.5" slice was checked against real live production picks (the same
+`pick_history` table used everywhere else in this report) — `scripts/validate_against_production.py`:
+
+| Source | n | Win% | ROI% | 95% CI |
+|---|---:|---:|---:|---|
+| Warehouse hindsight (every line ever offered) | 1,421 | 55.4 | **+15.17** | [9.72, 20.62] |
+| Live production (what was actually picked and graded) | 4,176 | 44.5 | **−4.97** | [−8.29, −1.66] |
+
+The sign flips and the magnitude is large in both directions. That is the
+signature of a **hindsight/selection artifact, not a real edge**: the warehouse
+export can see the full field of every batter/line combination a bookmaker ever
+priced and implicitly benefits from which of those the model's later, possibly
+different scoring logic would flag as attractive in hindsight; the live system,
+constrained to real-time information, picks a different and much larger set of
+"under 0.5" bets that lose money. **Verdict: not confirmed — do not ship this.**
+
+This is disclosed in full rather than quietly dropped because it's a genuinely
+useful negative result: it shows the sweep methodology works (it found a strong
+signal) and that the cross-validation step against production data is doing real
+work (it caught a false positive before it could reach a paying subscriber). The
+other three sweepable markets (`batter_total_bases`, `batter_rbis`,
+`batter_home_runs`) found no gate-clearing cut at all on the larger sample.
+`pitcher_strikeouts` on the full warehouse (n=21,929) came back at −5.6% to
+−7.2% ROI on every cut — this is consistent with, not contrary to, the
+already-documented finding above that the warehouse test is "unfairly harsh"
+for strikeouts specifically because it scores lines the live system would never
+bet; it doesn't change the near-miss production-picks verdict for strikeouts.
+
+**Honest bottom line on the 6-9%+ ROI ask:** no MLB market currently has a
+validated edge in that range confirmed on real production data. The strongest
+legitimate, walk-forward-stable, *production-visible* signal in the entire
+dataset remains **pitcher_strikeouts at conf≥60 minus-money (+3.34% ROI,
+n=477)** — real but below both the sample-size gate and the 6-9% target.
+
+**What would actually get to a validated 6-9% pass, honestly:** a *forward* test,
+not another backward one. The "under 0.5" hypothesis is worth keeping — "does
+this batter go hitless" is a narrower, more specific question than the market's
+other props, and it's plausible some books misprice it — but the only credible
+way to validate it now is to have the live system flag these picks explicitly for
+several weeks and grade them going forward, rather than mining more historical
+exports for a slice that survives one more backtest. Two backtests already
+disagree with each other; a third backtest would not resolve that, only a live
+holdout would.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -258,7 +330,7 @@ MLB Markets/
   db/mlb_markets.duckdb          real data: pick_history, boxscore, lineups,
                                   weather, opposing_pitcher, player_metadata,
                                   ballpark_factors, algorithm_weights,
-                                  statcast xstats/exit-velo (38 MB)
+                                  statcast xstats/exit-velo, warehouse_picks
   scripts/pull_pick_history.py   refresh pick_history from the warehouse
                                   (needs a valid DB_PASSWORD in .env)
   scripts/compact_db.py          rebuild the compact db from a raw mirror
@@ -266,7 +338,15 @@ MLB Markets/
                                   reports/gate_results.csv
   scripts/diagnose.py            per-market side/odds/confidence diagnostics
                                   behind the causes above
-  reports/gate_results.csv       every number in the results table above
+  scripts/load_warehouse_picks.py   mines harness/out CSVs into warehouse_picks
+                                  (the large-sample sweep's data source)
+  scripts/sweep_warehouse.py     confidence x odds x side sweep on warehouse_picks,
+                                  writes reports/sweep_warehouse_output.txt
+  scripts/validate_against_production.py   cross-checks a sweep candidate
+                                  against live pick_history before it can be
+                                  called a real pass
+  reports/gate_results.csv       every number in the main results table
+  reports/sweep_warehouse_output.txt   full large-sample sweep output
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
 

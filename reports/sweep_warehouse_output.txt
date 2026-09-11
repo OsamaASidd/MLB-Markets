@@ -1,0 +1,55 @@
+
+====================================================================================================
+pitcher_strikeouts  (total candidates n=21,929)
+====================================================================================================
+  no cut cleared the gate for pitcher_strikeouts
+
+====================================================================================================
+batter_hits  (total candidates n=15,042)
+====================================================================================================
+  GATE PASS  conf>=0 all under                    n=3032    WR=63.2   ROI=6.18    CI=[3.1,9.25]  CLV=0.01  WF(train=5.33,test=7.45)  STABLE
+  GATE PASS  conf>=0 plus both                    n=1241    WR=49.3   ROI=12.71   CI=[6.18,19.24]  CLV=-0.0  WF(train=11.79,test=14.09)  STABLE
+  GATE PASS  conf>=0 plus under                   n=926     WR=53.3   ROI=18.08   CI=[10.92,25.25]  CLV=0.03  WF(train=16.42,test=20.56)  STABLE
+  GATE PASS  conf>=50 all under                   n=2550    WR=64.2   ROI=6.09    CI=[2.81,9.36]  CLV=0.02  WF(train=4.8,test=8.02)  STABLE
+  GATE PASS  conf>=50 minus_tight(-101..-200) under n=579     WR=62.2   ROI=8.63    CI=[1.64,15.62]  CLV=0.04  WF(train=8.83,test=8.33)  STABLE
+  GATE PASS  conf>=50 plus both                   n=795     WR=51.7   ROI=14.69   CI=[6.9,22.48]  CLV=0.03  WF(train=15.38,test=13.67)  STABLE
+  GATE PASS  conf>=50 plus under                  n=715     WR=52.7   ROI=16.66   CI=[8.51,24.81]  CLV=0.06  WF(train=18.46,test=14.03)  STABLE
+  GATE PASS  conf>=55 all under                   n=1764    WR=63.9   ROI=6.61    CI=[2.63,10.58]  CLV=0.03  WF(train=7.49,test=5.29)  STABLE
+  GATE PASS  conf>=55 plus both                   n=569     WR=52.4   ROI=16.6    CI=[7.35,25.84]  CLV=0.07  WF(train=18.86,test=13.29)  STABLE
+  GATE PASS  conf>=55 plus under                  n=508     WR=53.5   ROI=18.66   CI=[8.97,28.34]  CLV=0.08  WF(train=19.87,test=16.85)  STABLE
+  GATE PASS  conf>=58 all under                   n=1452    WR=61.8   ROI=6.23    CI=[1.68,10.78]  CLV=0.03  WF(train=8.27,test=3.19)  STABLE
+  GATE PASS  conf>=60 all under                   n=1275    WR=61.0   ROI=7.9     CI=[2.91,12.89]  CLV=0.04  WF(train=9.96,test=4.88)  STABLE
+  GATE PASS  conf>=62 all under                   n=1016    WR=62.2   ROI=7.6     CI=[2.15,13.05]  CLV=0.04  WF(train=9.48,test=4.82)  STABLE
+
+====================================================================================================
+batter_total_bases  (total candidates n=10,175)
+====================================================================================================
+  no cut cleared the gate for batter_total_bases
+
+====================================================================================================
+batter_rbis  (total candidates n=6,193)
+====================================================================================================
+  no cut cleared the gate for batter_rbis
+
+====================================================================================================
+batter_home_runs  (total candidates n=23)
+====================================================================================================
+  no cut cleared the gate for batter_home_runs
+
+====================================================================================================
+CANDIDATES THAT CLEARED THE GATE: 13
+====================================================================================================
+Of those, walk-forward-STABLE (train AND test both positive): 13
+  batter_hits            conf>=0 all under                    n=3032    ROI=6.18%  CI_lo=3.1%  train=5.33%  test=7.45%
+  batter_hits            conf>=0 plus both                    n=1241    ROI=12.71%  CI_lo=6.18%  train=11.79%  test=14.09%
+  batter_hits            conf>=0 plus under                   n=926     ROI=18.08%  CI_lo=10.92%  train=16.42%  test=20.56%
+  batter_hits            conf>=50 all under                   n=2550    ROI=6.09%  CI_lo=2.81%  train=4.8%  test=8.02%
+  batter_hits            conf>=50 minus_tight(-101..-200) under n=579     ROI=8.63%  CI_lo=1.64%  train=8.83%  test=8.33%
+  batter_hits            conf>=50 plus both                   n=795     ROI=14.69%  CI_lo=6.9%  train=15.38%  test=13.67%
+  batter_hits            conf>=50 plus under                  n=715     ROI=16.66%  CI_lo=8.51%  train=18.46%  test=14.03%
+  batter_hits            conf>=55 all under                   n=1764    ROI=6.61%  CI_lo=2.63%  train=7.49%  test=5.29%
+  batter_hits            conf>=55 plus both                   n=569     ROI=16.6%  CI_lo=7.35%  train=18.86%  test=13.29%
+  batter_hits            conf>=55 plus under                  n=508     ROI=18.66%  CI_lo=8.97%  train=19.87%  test=16.85%
+  batter_hits            conf>=58 all under                   n=1452    ROI=6.23%  CI_lo=1.68%  train=8.27%  test=3.19%
+  batter_hits            conf>=60 all under                   n=1275    ROI=7.9%  CI_lo=2.91%  train=9.96%  test=4.88%
+  batter_hits            conf>=62 all under                   n=1016    ROI=7.6%  CI_lo=2.15%  train=9.48%  test=4.82%
