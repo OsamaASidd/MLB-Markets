@@ -603,6 +603,67 @@ be cleared by the *priced* edge, not the win-rate gap in isolation.
 
 ---
 
+## Addendum 6: the starting-pitcher-quality hypothesis, tested — also negative
+
+Addendum 5 flagged starting-pitcher quality as the more baseball-specific
+hypothesis worth testing next, since a single starter drives more single-game
+variance than team strength as a whole. Built it and tested it. Result: also
+doesn't clear the bar — and it's informative *why* it doesn't.
+
+**What was built** (`scripts/build_pitcher_quality.py`): real per-game team
+scores reconstructed from `boxscore` position-player rows and cross-checked
+against the opposing team's pitcher-runs-allowed (the same runs, counted two
+independent ways in the data — they matched exactly, confirming the
+reconstruction is correct, not estimated). Joined to `opposing_pitcher` for
+real starter identity per game. For each starter, a rolling runs-allowed-per-9
+(RA/9) computed strictly from their **prior** starts (windows of 3, 5, and 8
+starts tested), point-in-time, over real 2024-2025 games — **2,480 games**
+with identified starters, narrowing to 618–1,665 depending on window size
+(a pitcher's first few starts in the dataset can't have a "prior 8 starts" yet).
+
+**Result: weaker signal than team Elo, not stronger, at every window size**
+(`scripts/explore_pitcher_quality_patterns.py`):
+
+| Rolling window | corr(home_win, RA/9 diff) — TRAIN | TEST (holdout) |
+|---|---:|---:|
+| Last 3 starts | +0.036 | +0.056 |
+| Last 5 starts | +0.062 | +0.056 |
+| Last 8 starts | +0.060 | +0.021 |
+
+For comparison, team Elo scored +0.083/+0.187 (train/test) and even L10 team
+form scored +0.040/+0.115 — both stronger than any pitcher-RA/9 window here.
+The win-rate-by-quintile breakdown isn't even monotonic (e.g. window=3:
+47.7% → 51.4% → 56.9% → 42.1% → 55.4% moving from worst to best matchup
+advantage) — a real signal should trend one direction; this bounces around,
+which is the signature of noise dominating whatever real effect exists.
+
+**Why, honestly:** a 3-8 start rolling ERA/RA9 is itself extremely noisy —
+that's roughly 15-50 innings, a small enough sample that BABIP luck and
+bullpen bailouts swing it heavily independent of the pitcher's true quality.
+Team-level Elo implicitly already captures pitching staff quality (good teams
+generally have good rotations, aggregated over far more innings), which is
+plausibly why the cruder team signal beat the more targeted but noisier
+individual-start signal here. **This doesn't mean starting pitcher doesn't
+matter** — it means a rolling-ERA proxy over a handful of starts is the wrong
+way to measure it. A better version would need season-length or
+multi-season priors blended with recent starts (shrinkage toward a
+established true-talent estimate, not a raw small-sample average) and
+ideally a defense-independent metric like FIP rather than ERA/RA9 — a
+meaningfully larger build than this pass, and one to consider once/if more
+production volume or a working DB credential is available.
+
+**Where this leaves the "custom strategy" line of work:** three genuinely
+different angles were tried in this milestone — team power ranking (Elo),
+recent-form/streak fading, and starting-pitcher quality — all point-in-time
+correct, all validated on true holdouts. None beat the market. That's a
+consistent, not a scattered, result: it's the same conclusion the client's own
+abandoned weight optimizer and every prior addendum in this report reached
+independently. The two real, if modest, signals that keep surviving every
+check in this audit remain `pitcher_strikeouts` (+3.34%, n=477) and `spreads`
+(+5.53%, n=513) — both short on sample size, not on evidence.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -689,6 +750,9 @@ MLB Markets/
   scripts/build_power_rankings.py   point-in-time Elo + L10 form, ->game_features table
   scripts/explore_power_ranking_patterns.py   pattern exploration on TRAIN only
   scripts/validate_power_ranking_test.py   confirms the pattern on TEST holdout
+  scripts/test_fade_streak_strategy.py   prices the L10 mean-reversion pattern as a real bet
+  scripts/build_pitcher_quality.py   point-in-time starter RA/9, ->pitcher_game_features
+  scripts/explore_pitcher_quality_patterns.py   tests the pitcher-quality signal
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
 
