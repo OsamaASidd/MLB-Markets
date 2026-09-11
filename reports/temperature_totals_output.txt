@@ -1,0 +1,9 @@
+raw joined rows (BEFORE fixing the multi-line-per-game trap): n=1,580
+real distinct games behind those rows: n=110
+-> that ~10x gap IS the bug. Deduping to one row per game below.
+
+deduplicated to n=110 real distinct games -- this is the honest sample size
+  temp 0-65F  n=37   WR=51.4%  ROI=-6.73%  CI=[-36.83,23.36]
+  temp 65-120F  n=51   WR=49.0%  ROI=-9.03%  CI=[-34.90,16.83]
+
+HONEST CONCLUSION: even using every available real game (not just the extreme hot/cold buckets that produced the fake '+20% ROI'), there are only ~110 real games where weather data, a totals pick, and a graded outcome all overlap -- well short of the n>=500 gate floor. This is a data-coverage gap (pick_history's totals picks only carry the team/date fields needed to match weather for a narrow slice of games), not evidence the temperature effect is or isn't bettable. It would need a broader real totals-odds history matched to weather -- likely requiring the renewed DB credential noted elsewhere in this report -- to actually answer this properly.

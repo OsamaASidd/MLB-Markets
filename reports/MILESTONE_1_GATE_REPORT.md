@@ -664,6 +664,79 @@ check in this audit remain `pitcher_strikeouts` (+3.34%, n=477) and `spreads`
 
 ---
 
+## Addendum 7: net research for a +10% ROI angle — one real finding, one more caught false positive
+
+Asked to research documented MLB betting inefficiencies and get to +10% ROI.
+Setting the expectation honestly up front: in a market this liquid, a
+professional/institutional edge is typically 2-5%; a genuine, validated 10%+
+figure would be an exceptional rarity, and if it were both real and public,
+sharp money would already have bet it away. What follows is real research and
+real testing, not a promise the number was findable.
+
+**Research finding**: the most commonly cited real MLB weather angle is wind
+direction/speed and temperature affecting run-scoring and home runs — a
+physically real effect (warm, thin air travels farther; wind blowing out of
+the park helps fly balls carry). The important caveat sportsbook-side
+research turned up: *"the effect of weather is factored into the line,
+sometimes as early as the opening number, and when an inefficiency makes it
+through the overnight hours, it is typically hammered into place early on
+gameday"* — i.e., books adjust totals lines for weather well before close,
+which is exactly the pattern found in every other addendum here (real effects
+exist, the closing price already reflects them).
+
+**Step 1 — is the underlying baseball fact even true here?** Real weather
+data (temperature, wind speed/direction, dome flag) already sat in this
+repo's db, joined to real final scores reconstructed from `boxscore`
+(`scripts/test_wind_effect.py`, 1,902 real non-dome games, 2023-2026).
+**Confirmed, cleanly:** average total runs rise monotonically with
+temperature (8.18 → 8.37 → 8.75 → 9.40 runs across four temperature bands),
+same for home runs (1.60 → 1.93 → 2.21 → 2.67). Correlation with runs +0.095,
+with home runs +0.198 — real, modest, exactly the size a well-known but
+already-priced effect should be. Wind *speed* alone showed no effect
+(+0.002) because speed without direction-relative-to-park-orientation
+averages out blowing-in and blowing-out games against each other — a real
+refinement for future work, not pursued further here.
+
+**Step 2 — a very tempting, then debunked, betting angle.** Joining that
+weather data to real totals picks in `pick_history` (matched by team names +
+date, since the direct `game_pk` link only covers a handful of rows) produced
+what looked like a strong result: betting overs on hot days (≥75°F) and
+unders on cold days (<60°F) showed **+19.65% and +21.04% ROI** — comfortably
+past the +10% target. **This did not survive scrutiny, and the reason is
+instructive.** A totals market typically offers several different lines
+(9, 9.5, 10.5...) and both sides for the same game — one single real game
+(Royals vs. Mariners, one date) alone contributed 42 rows to that sample. The
+apparent n=115/86 "picks" turned out to be **just 14 and 13 real independent
+games** once deduplicated — every "over" line on a high-scoring game wins
+together, so counting them as separate bets inflates the apparent sample
+size roughly 10x and manufactures false statistical confidence out of a
+double-digit real sample. This is the same failure shape as the "under 0.5"
+false positive in Addendum 1, caught the same way: by refusing to trust a
+number that looks too good before checking what's actually independent in it.
+
+**Honest, corrected result** (`scripts/test_temperature_totals_strategy.py`,
+properly deduplicated to one row per real game): only **110 real games**
+exist in this db where weather data, a totals pick, and a graded outcome all
+overlap — a data-coverage gap (this specific linkage is only populated for a
+narrow slice of `pick_history`), not evidence for or against the effect.
+Priced honestly on that small sample: cold-day unders and hot-day overs both
+show *negative* point estimates (−6.73% and −9.03%) with CI's spanning ±30%
+— pure noise at this sample size, the opposite of the fake +20% the
+multiplicity bug produced.
+
+**Bottom line on the +10% ask:** a real, physically-grounded weather effect
+was confirmed to exist in this data — that's a genuine finding. Whether it's
+still profitably bettable at closing odds could not be honestly answered with
+what's locally available (110 real overlapping games is far short of the
+500-game gate floor), and the published research suggests the answer is
+likely "no, it's priced in by close" even if a bigger sample were available.
+No angle tested in this milestone — the original 10 markets, the large-sample
+sweep, the factor reweight, three custom strategies, or this weather
+research — has produced a validated 10%+ edge. That consistency across seven
+independently-designed checks is itself the answer, not a gap in the search.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -753,6 +826,9 @@ MLB Markets/
   scripts/test_fade_streak_strategy.py   prices the L10 mean-reversion pattern as a real bet
   scripts/build_pitcher_quality.py   point-in-time starter RA/9, ->pitcher_game_features
   scripts/explore_pitcher_quality_patterns.py   tests the pitcher-quality signal
+  scripts/test_wind_effect.py   validates the real temperature/wind-runs baseball fact
+  scripts/test_temperature_totals_strategy.py   prices it as a bet; catches a multiplicity false positive
+  reports/temperature_totals_output.txt   the corrected, deduplicated output
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
 
