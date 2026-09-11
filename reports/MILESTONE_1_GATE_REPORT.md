@@ -432,6 +432,69 @@ manufacture edge that the factors don't currently carry.
 
 ---
 
+## Addendum 4: a genuine 6-year real sample for game markets
+
+Found a free, legitimate source for a real multi-year sample after confirming
+(Addendum 3 research) that the client's own paid odds vendor doesn't have
+historical player-prop data before May 2023 at any price — that ceiling isn't
+fixable with more budget for props, but it doesn't apply to game-level markets,
+where longer real archives exist independently of that vendor.
+
+**Source**: `pwu97/bettingtools` on GitHub — a public R package bundling 2014-2019
+MLB Vegas lines (moneyline, run line, totals — open and close), originally
+compiled from sportsbookreviewsonline.com's public score/odds archives. Free,
+no signup, no payment, no scraping needed: `scripts/load_historical_2014_2019.py`
+pulls the six `.rda` files directly and loads them as `historical_game_odds`
+in this repo's db — **14,784 real games, 2014-03-22 to 2019-10-30**, matching
+real MLB season lengths (~2,462-2,467 games/season) almost exactly, which is a
+good sanity check that this is genuine, complete season data and not a partial
+scrape.
+
+**Important scope limit, stated plainly:** this dataset predates the client's
+model by years — his `pick_history` only starts in 2026. It cannot backtest
+"does his algorithm show an edge" on 2014-2019 games, because his algorithm
+didn't exist yet. What it *can* honestly test is whether simple, generic,
+mechanical market rules — the kind with almost no room to hide an overfit,
+unlike the 150-factor reweight in Addendum 2 — show a real edge on a genuinely
+large real sample. That's a legitimate and useful check in its own right: if
+MLB game markets have an exploitable structural bias (home/away, favorite/dog,
+line-movement direction), it should show up here.
+
+**Result: none do.** `scripts/gate_historical_game_markets.py` tested 12 such
+rules (always-home, always-away, always-favorite, always-underdog, run-line
+both sides, totals both sides, and four line-movement-direction rules) against
+the full 14,783-game sample:
+
+| Strategy | n | ROI | 95% CI |
+|---|---:|---:|---|
+| Moneyline: always home | 14,783 | −3.04% | [−4.56%, −1.53%] |
+| Moneyline: always favorite | 14,783 | −4.24% | [−5.60%, −2.89%] |
+| Run line: always home | 14,783 | −3.83% | [−5.57%, −2.10%] |
+| Totals: always over | 14,783 | −10.25% | [−11.79%, −8.71%] |
+| Totals: always under | 14,783 | −8.29% | [−9.83%, −6.75%] |
+| Line moved toward home, bet home | 6,819 | −1.31% | [−3.41%, 0.78%] |
+
+(Full 12-strategy table: `reports/gate_historical_game_markets_output.txt`.)
+**Every single one loses money**, in the −2% to −10% range — which is exactly
+what an efficient, well-hold sportsbook market should produce (moneyline/run
+line lose roughly the standard vig; totals lose more, consistent with MLB
+totals historically carrying a higher house edge than side markets). Nothing
+came close enough to the gate to even bother with the planned 2014-2017/
+2018-2019 walk-forward split.
+
+**Why this result is actually good news for the audit, not a dead end:** it's
+an independent confirmation, on a completely different dataset with none of
+the overfitting risk of the earlier addenda, that MLB game-level markets don't
+hand out free edges to simple rules. That's consistent with everything else in
+this report — the vig is real and the market is sharp — and it means any real
+edge for `h2h`/`spreads`/`totals` has to come from the client's actual model
+being better than the market, which is a much higher bar than exploiting a
+structural quirk, and is exactly why Addendum 1's near-miss findings (spreads
+at conf≥60 minus-money, +5.53%) are worth continuing to track rather than
+something a bigger generic dataset was ever going to replace.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -505,9 +568,16 @@ MLB Markets/
                                   called a real pass
   scripts/factor_reweight.py     train/test-validated attempt to reweight the
                                   score_* factors into a better selection rule
+  scripts/load_historical_2014_2019.py   loads a free 6-season real game-odds
+                                  dataset (2014-2019) into historical_game_odds
+  scripts/gate_historical_game_markets.py   tests 12 generic mechanical
+                                  strategies against that 6-year sample
+  data_raw/mlb_odds_2014.rda ... mlb_odds_2019.rda   the source files (small,
+                                  ~35KB each, kept for reproducibility)
   reports/gate_results.csv       every number in the main results table
   reports/sweep_warehouse_output.txt   full large-sample sweep output
   reports/factor_reweight_output.txt   full factor-reweight train/test output
+  reports/gate_historical_game_markets_output.txt   full 6-year generic-strategy output
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
 

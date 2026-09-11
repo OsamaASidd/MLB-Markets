@@ -1,0 +1,22 @@
+====================================================================================================
+GENERIC GAME-MARKET STRATEGIES ON 6 REAL MLB SEASONS  (n=14,783, 2014-03-22 -> 2019-10-30)
+gate: n>=500, ROI 95% CI lower bound > 0
+====================================================================================================
+  ML: always home                            n=14783  WR=53.3   ROI=-3.04    CI=[-4.56,-1.53]  fail
+  ML: always away                            n=14783  WR=46.7   ROI=-2.27    CI=[-4.01,-0.52]  fail
+  ML: always favorite                        n=14783  WR=57.1   ROI=-4.24    CI=[-5.6,-2.89]  fail
+  ML: always underdog                        n=14783  WR=40.9   ROI=-5.15    CI=[-7.02,-3.27]  fail
+  RL: always home                            n=14783  WR=46.1   ROI=-3.83    CI=[-5.57,-2.1]  fail
+  RL: always away                            n=14783  WR=53.9   ROI=-3.36    CI=[-4.85,-1.87]  fail
+  Total: always over                         n=14783  WR=46.9   ROI=-10.25   CI=[-11.79,-8.71]  fail
+  Total: always under                        n=14783  WR=48.0   ROI=-8.29    CI=[-9.83,-6.75]  fail
+  ML: line moved toward home, bet home       n=6819   WR=57.1   ROI=-1.31    CI=[-3.41,0.78]  fail
+  ML: line moved toward away, bet away       n=6631   WR=50.4   ROI=-0.42    CI=[-2.88,2.03]  fail
+  Total: line moved up, bet over             n=3771   WR=47.5   ROI=-9.83    CI=[-12.86,-6.8]  fail
+  Total: line moved down, bet under          n=4426   WR=47.3   ROI=-8.96    CI=[-11.8,-6.12]  fail
+
+====================================================================================================
+WALK-FORWARD on anything that passed: TRAIN=2014-2017, TEST=2018-2019
+====================================================================================================
+
+  none of the 12 generic strategies cleared the gate on the full 6-year sample.
