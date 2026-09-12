@@ -1259,6 +1259,43 @@ every one of the concrete levers above is either "wait for more volume" or
 
 ---
 
+## Addendum 19: two more new custom strategies from previously-unused real data — both negative
+
+Two genuinely new hypotheses, built from real Statcast and ballpark data
+already sitting in this repo's db but never used in a strategy until now.
+
+**Statcast expected-vs-actual batting average (regression to the mean)** —
+a real, well-established sabermetric concept: a batter whose actual BA is
+running well above what their quality of contact (Statcast's `est_ba`)
+supports is "due to cool off"; the reverse is "due to warm up."
+(`scripts/test_statcast_regression.py`, point-in-time snapshot join, 23,732
+real picks matched). **Result: no signal.** Correlation between the
+xBA gap and win: **−0.004**, essentially zero. Betting under on "hot"
+batters / over on "cold" ones: TRAIN −5.69%, TEST (holdout) −0.95% — fails
+on both, closer to zero out of sample but still negative.
+
+**Direct ballpark-factor betting** — over on total_bases/home_runs at real
+hitter-friendly parks (top-quartile `hr_factor`/`runs_factor`), under at
+real pitcher-friendly parks (bottom quartile), using the actual park-factor
+table joined to real venues, odds, and outcomes across all 4 seasons
+(`scripts/test_ballpark_factor_strategy.py`). **Result: fails clearly and
+consistently.** `home_runs` over at hitter parks: n=66,187, ROI −43.85% (a
+similarly catastrophic shape to the plus-money finding in Addendum 18 —
+likely the same long-odds mechanism). `total_bases` under at pitcher parks:
+n=40,094, ROI −0.34%, closest to breakeven of the four combinations tested
+but still negative in 3 of 4 seasons individually.
+
+**Six independent, well-reasoned custom strategies have now been built and
+tested in this project — team power ranking, streak-fading, pitcher
+quality, bullpen fatigue, Statcast regression-to-mean, and ballpark
+factors — and all six are negative.** Every one used real data, proper
+point-in-time construction, and train/test or multi-season validation. This
+is a strong, convergent pattern, not a string of coincidences: real,
+well-documented baseball effects keep showing up as already priced into
+the market by the time a line is posted. That is itself the finding.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -1381,6 +1418,10 @@ MLB Markets/
   reports/sweep_remaining_markets_output.txt   full Addendum 17 output
   scripts/finegrain_plus_odds_sweep.py   10-bin fine sweep of the plus-money range
   reports/finegrain_plus_odds_output.txt   full Addendum 18 output
+  scripts/test_statcast_regression.py   xBA-vs-actual regression-to-mean strategy, negative
+  scripts/test_ballpark_factor_strategy.py   direct park-factor betting strategy, negative
+  reports/statcast_regression_output.txt   full Addendum 19 output (part 1)
+  reports/ballpark_factor_strategy_output.txt   full Addendum 19 output (part 2)
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```

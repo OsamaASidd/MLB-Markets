@@ -1,0 +1,39 @@
+real games with a matched park factor: 7,237 of 7,527 weather rows
+
+===============================================================================================
+batter_home_runs -- park-factor strategy (factor col: hr_factor)
+===============================================================================================
+  matched to real park factor + real outcome: 263,896
+
+  -- bet OVER at hitter parks (top quartile factor) --
+    2023   n=11354   WR=11.1  ROI=-23.22  CI=[-27.55,-18.88]  fail
+    2024   n=19624   WR=5.0  ROI=-47.25  CI=[-53.66,-40.84]  fail
+    2025   n=30416   WR=4.5  ROI=-46.92  CI=[-52.55,-41.29]  fail
+    2026   n=4793    WR=3.9  ROI=-59.29  CI=[-70.22,-48.35]  fail
+    ALL    n=66187   WR=5.7  ROI=-43.85  CI=[-47.24,-40.46]  fail
+
+  -- bet UNDER at pitcher parks (bottom quartile factor) --
+    2023   n=10951   WR=89.1  ROI=-3.02  CI=[-3.66,-2.38]  fail
+    2024   n=9681    WR=89.8  ROI=-1.83  CI=[-2.5,-1.16]  fail
+    2025   n=10672   WR=89.9  ROI=-1.94  CI=[-2.57,-1.31]  fail
+    2026   n=0       WR=None  ROI=None  CI=[None,None]  fail
+    ALL    n=31304   WR=89.6  ROI=-2.28  CI=[-2.66,-1.91]  fail
+
+===============================================================================================
+batter_total_bases -- park-factor strategy (factor col: runs_factor)
+===============================================================================================
+  matched to real park factor + real outcome: 641,067
+
+  -- bet OVER at hitter parks (top quartile factor) --
+    2023   n=55970   WR=23.8  ROI=-24.94  CI=[-26.46,-23.42]  fail
+    2024   n=52706   WR=23.5  ROI=-31.05  CI=[-32.49,-29.62]  fail
+    2025   n=66118   WR=24.5  ROI=-26.68  CI=[-28.02,-25.34]  fail
+    2026   n=9195    WR=25.3  ROI=-32.54  CI=[-35.55,-29.52]  fail
+    ALL    n=183989  WR=24.1  ROI=-27.7  CI=[-28.5,-26.9]  fail
+
+  -- bet UNDER at pitcher parks (bottom quartile factor) --
+    2023   n=15356   WR=56.5  ROI=0.25  CI=[-1.22,1.73]  fail
+    2024   n=11970   WR=58.0  ROI=0.18  CI=[-1.43,1.78]  fail
+    2025   n=10876   WR=52.2  ROI=-1.17  CI=[-3.0,0.67]  fail
+    2026   n=1892    WR=51.0  ROI=-3.72  CI=[-8.08,0.65]  fail
+    ALL    n=40094   WR=55.5  ROI=-0.34  CI=[-1.26,0.57]  fail

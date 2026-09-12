@@ -1,0 +1,7 @@
+picks matched to a prior real statcast xBA snapshot: 23,732
+
+corr(gap, win) on TRAIN: -0.004
+
+-- strategy: bet UNDER when batter is 'hot' (gap in top quartile), bet OVER when 'cold' (bottom quartile) --
+  TRAIN            n=3422   WR=53.7  ROI=-5.69  CI=[-9.26,-2.11]  fail
+  TEST (holdout)   n=2044   WR=62.0  ROI=-0.95  CI=[-4.47,2.57]  fail
