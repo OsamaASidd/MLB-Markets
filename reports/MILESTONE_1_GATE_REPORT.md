@@ -1350,6 +1350,40 @@ anything tried earlier in this report, and it reached the same wall.
 
 ---
 
+## Addendum 21: proper probability calibration on the total_bases model — still negative
+
+Addendum 20's `total_bases` model showed real out-of-sample ranking skill
+(AUC 0.626) that didn't beat the market. One legitimate, unexplored
+explanation: the raw model score ranks outcomes correctly without being a
+correctly-scaled probability, so comparing it directly to market-implied
+probability produces a wrong "edge" even when the ranking is right. Tested
+this properly (`scripts/xgboost_calibrated.py`) with a genuine three-way
+temporal split — FIT (train the model, 50%) → CAL (fit an isotonic
+calibration mapping, 20%) → TEST (true final holdout, 30%, touched once) —
+so the calibration step can't leak into its own evaluation the way a naive
+recalibrate-and-reuse-the-same-data approach would.
+
+**The model wasn't meaningfully miscalibrated to begin with.** The
+reliability table (predicted-probability bucket vs. actual win rate on
+TEST) shows the raw model already tracking reality closely — e.g. predicted
+0.552 → actual 0.579, predicted 0.645 → actual 0.675. There was no hidden
+calibration bug to fix.
+
+**Calibration made the resulting bets worse, not better.** Raw-model edge
+betting on this holdout was already negative (best: edge>0.05, n=119, ROI
+−2.15%, CI crossing zero). After proper isotonic calibration: edge>0.03
+moved from −6.67% to **−9.55%**, with a CI **[−18.55%, −0.55%]** — entirely
+negative, not even crossing zero anymore. AUC stayed essentially unchanged
+(0.617 raw vs. 0.615 calibrated, as expected — calibration rescales,
+doesn't re-rank), confirming the genuine ranking skill from Addendum 20 is
+real and reproducible on yet another holdout split, while also confirming
+it still doesn't translate into a profitable bet once priced correctly
+against the market. The market's price already reflects what the model
+captures — proper calibration didn't uncover something that was hiding
+underneath a scaling bug, because there wasn't one.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -1478,6 +1512,8 @@ MLB Markets/
   reports/ballpark_factor_strategy_output.txt   full Addendum 19 output (part 2)
   scripts/xgboost_model.py   real gradient-boosted model, per-market, true temporal holdout
   reports/xgboost_model_output.txt   full Addendum 20 output (AUCs, feature weights, betting cuts)
+  scripts/xgboost_calibrated.py   3-way split, isotonic calibration on total_bases, still negative
+  reports/xgboost_calibrated_output.txt   full Addendum 21 output (reliability table + betting cuts)
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```

@@ -1,0 +1,30 @@
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\calibration.py:330: FutureWarning: The `cv='prefit'` option is deprecated in 1.6 and will be removed in 1.8. You can use CalibratedClassifierCV(FrozenEstimator(estimator)) instead.
+  warnings.warn(
+total_bases: n=14,351  FIT=7,175  CAL=2,870  TEST=4,306
+
+raw model AUC on TEST: 0.617
+raw model Brier score on TEST (lower=better calibrated): 0.2389
+calibrated model AUC on TEST: 0.615  (ranking is unchanged by calibration, this should match)
+calibrated model Brier score on TEST: 0.2370
+
+-- reliability check on TEST: predicted-probability bucket vs actual win rate --
+  raw_pred [0,0.3)  n=170    mean_raw_pred=0.268  mean_cal_pred=0.407  actual_WR=0.435
+  raw_pred [0.3,0.4)  n=578    mean_raw_pred=0.360  mean_cal_pred=0.433  actual_WR=0.436
+  raw_pred [0.4,0.5)  n=1066   mean_raw_pred=0.451  mean_cal_pred=0.465  actual_WR=0.468
+  raw_pred [0.5,0.6)  n=1215   mean_raw_pred=0.552  mean_cal_pred=0.590  actual_WR=0.579
+  raw_pred [0.6,0.7)  n=1037   mean_raw_pred=0.645  mean_cal_pred=0.662  actual_WR=0.675
+  raw_pred [0.7,1.0)  n=240    mean_raw_pred=0.727  mean_cal_pred=0.736  actual_WR=0.733
+
+-- betting on RAW model edge, minus-money only, TRUE final TEST holdout --
+    edge>0.0   n=380    WR=58.4  ROI=-5.17  CI=[-13.31,2.97]  fail
+    edge>0.03  n=203    WR=56.2  ROI=-6.67  CI=[-18.13,4.8]  fail
+    edge>0.05  n=119    WR=58.0  ROI=-2.15  CI=[-17.28,12.99]  fail
+    edge>0.08  n=60     WR=55.0  ROI=-4.08  CI=[-26.34,18.18]  fail
+    edge>0.1   n=36     WR=50.0  ROI=-11.89  CI=[-41.24,17.46]  fail
+
+-- betting on CALIBRATED model edge, minus-money only, TRUE final TEST holdout --
+    edge>0.0   n=634    WR=58.7  ROI=-5.41  CI=[-11.66,0.84]  fail
+    edge>0.03  n=337    WR=54.0  ROI=-9.55  CI=[-18.55,-0.55]  fail
+    edge>0.05  n=210    WR=51.4  ROI=-11.9  CI=[-23.59,-0.21]  fail
+    edge>0.08  n=104    WR=48.1  ROI=-16.62  CI=[-33.46,0.22]  fail
+    edge>0.1   n=56     WR=46.4  ROI=-18.31  CI=[-41.63,5.01]  fail
