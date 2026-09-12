@@ -2,3 +2,26 @@
 __pycache__/
 *.pyc
 *.log
+
+# Client's proprietary source code (NDA) -- must never be committed or
+# pushed, especially since this repo is intended for a public GitHub remote.
+betgenius/
+
+# Raw client data exports (112MB xlsx x2 copies, real production odds data) --
+# never commit these directly; see note in the report about the duckdb copy.
+harness_out/
+Desktop/
+MANIFEST.txt
+
+# The db now contains the full 2.42M-row client odds warehouse (loaded
+# 2026-09-12) as well as the original smaller pick_history snapshot -- kept
+# local-only per an explicit decision not to publish that volume of real
+# client production data. Regenerate locally with scripts/load_client_odds_warehouse.py
+# (needs the client's xlsx export) for the full version, or scripts/pull_pick_history.py
+# + compact_db.py for the original smaller public-repo-era version.
+db/mlb_markets.duckdb
+
+# Client's internal handoff docs -- written for a hired contractor under NDA,
+# not for public distribution.
+Phase1-MLB-Developer-Handoff.md
+START_HERE.md

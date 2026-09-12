@@ -1,0 +1,51 @@
+====================================================================================================
+LIVE WEIGHT vs REAL-WORLD CORRELATION cross-reference
+(weight = current production multiplier; corr = this repo's TRAIN-only correlation with actual wins)
+====================================================================================================
+
+--- pitcher_strikeouts ---
+  w_mlb_opposing_lineup_k                  weight=1.5     corr=+0.006  <-- FLAG: heavily weighted, ~zero real correlation
+  w_mlb_batter_weather_temp                weight=1.25    corr=-0.009  <-- FLAG: heavily weighted, ~zero real correlation
+  w_mlb_batter_handedness_matchup          weight=-0.75   corr=-0.032
+  w_mlb_game_umpire_k_zone                 weight=0.75    corr=-0.037
+  w_mlb_handedness_matchup                 weight=0.5     corr=-0.032
+  w_mlb_pitcher_umpire_k_zone              weight=0.5     corr=-0.037
+  w_mlb_batter_weather_wind                weight=-0.5    corr=+0.006
+  w_mlb_game_weather_wind                  weight=0.5     corr=+0.006
+  w_mlb_game_weather_temp                  weight=0.5     corr=-0.009
+  w_mlb_pitcher_weather_wind               weight=-0.19   corr=+0.006
+  w_mlb_pitcher_weather_temp               weight=0.09    corr=-0.009
+  w_mlb_rest_pitcher                       weight=-0.04   corr=+0.001
+
+--- hits ---
+  w_mlb_hits_handedness_matchup            weight=-0.75   corr=-0.021
+
+--- total_bases ---
+  w_mlb_tb_lineup_spot                     weight=1.0     corr=+0.057
+  w_mlb_tb_opp_pitcher_pitchtype_quality   weight=1.0     corr=-0.003  <-- FLAG: heavily weighted, ~zero real correlation
+  w_mlb_tb_bullpen_quality                 weight=1.0     corr=-0.006  <-- FLAG: heavily weighted, ~zero real correlation
+  w_mlb_tb_handedness_matchup              weight=-0.75   corr=-0.008
+
+--- rbis ---
+  w_mlb_rbi_handedness_matchup             weight=-0.75   corr=-0.009
+
+--- home_runs ---
+  w_mlb_hr_handedness_matchup              weight=-0.75   corr=-0.123
+
+--- runs_scored ---
+  w_mlb_runs_recent_run_form               weight=1.5     corr=-0.063
+  w_mlb_runs_opposing_pitcher_quality      weight=1.5     corr=+0.086
+  w_mlb_runs_opp_pitcher_pitchtype_quality weight=1.0     corr=-0.024  <-- FLAG: heavily weighted, ~zero real correlation
+  w_mlb_runs_ballpark_factor               weight=1.0     corr=-0.033
+  w_mlb_runs_lineup_spot                   weight=1.0     corr=-0.001  <-- FLAG: heavily weighted, ~zero real correlation
+  w_mlb_runs_bullpen_quality               weight=0.75    corr=-0.042
+
+====================================================================================================
+NAMED MISCALIBRATIONS FOUND: 6
+====================================================================================================
+  [pitcher_strikeouts] w_mlb_opposing_lineup_k: weight=1.5, real corr=+0.006
+  [pitcher_strikeouts] w_mlb_batter_weather_temp: weight=1.25, real corr=-0.009
+  [total_bases] w_mlb_tb_opp_pitcher_pitchtype_quality: weight=1.0, real corr=-0.003
+  [total_bases] w_mlb_tb_bullpen_quality: weight=1.0, real corr=-0.006
+  [runs_scored] w_mlb_runs_opp_pitcher_pitchtype_quality: weight=1.0, real corr=-0.024
+  [runs_scored] w_mlb_runs_lineup_spot: weight=1.0, real corr=-0.001

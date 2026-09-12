@@ -737,6 +737,116 @@ independently-designed checks is itself the answer, not a gap in the search.
 
 ---
 
+## Addendum 8: named weight miscalibrations, found by cross-referencing production internals
+
+A deep-dive into the `betgenius` application codebase (not just its data) surfaced
+the exact schema of `algorithm_weights` — which `w_mlb_*` column controls which
+factor's contribution to the live confidence score, and how (`scoring_mlb_v2.ts`
+multiplies each factor's bucketed magnitude by its weight, sums, clamps to
+0-100). That makes something possible that pure data analysis alone couldn't:
+cross-referencing the *actual live weight values* against this repo's own
+independently-computed factor correlations (Addendum 2), to name specific,
+fixable miscalibrations rather than a generic "reweighting doesn't help."
+
+`scripts/cross_reference_weights_vs_correlation.py` matches each `w_mlb_*`
+weight to its corresponding `score_*` factor (careful to scope each market to
+only its own dedicated weight columns — an earlier pass leaked other markets'
+prefixes into the comparison and was corrected before this result). Flags any
+factor weighted ≥1.0 in magnitude with a real correlation under 0.03:
+
+| Market | Factor | Live weight | Real correlation |
+|---|---|---:|---:|
+| **pitcher_strikeouts** | `opposing_lineup_k` | **1.5** (tied-highest) | +0.006 |
+| **pitcher_strikeouts** | `batter_weather_temp` | 1.25 | −0.009 |
+| total_bases | `opp_pitcher_pitchtype_quality` | 1.0 | −0.003 |
+| total_bases | `bullpen_quality` | 1.0 | −0.006 |
+| runs_scored | `opp_pitcher_pitchtype_quality` | 1.0 | −0.024 |
+| runs_scored | `lineup_spot` | 1.0 | −0.001 |
+
+**The pitcher_strikeouts result is the most actionable one in this whole
+report.** This is the market with the strongest real, walk-forward-confirmed
+signal (+3.34% ROI, Addendum 1) — and its live scorer's two most heavily
+weighted strikeout-specific factors carry essentially no real predictive
+value, while the factors Addendum 2 found *do* correlate
+(`score_pitcher_form` r=+0.065, `score_pitcher_k_rate` r=+0.059) are weighted
+more lightly. This is a concrete, testable lever distinct from "wait for more
+volume": rebalancing the live weights toward the factors that actually
+correlate with wins could tighten the confidence score's calibration enough
+to help clear the sample-size/CI gate faster than volume accumulation alone
+— worth a controlled test (adjust weights, re-run the harness backtest,
+check whether the ROI point estimate and CI both improve) before the next
+milestone's "improve projections" work starts from scratch.
+
+---
+
+## Addendum 9: the client's own full 2023-2026 odds warehouse — the definitive test
+
+The client provided the actual `cache_mlb_historical_odds` warehouse export
+(`harness_out/MLB_Odds_API_2023_2026.xlsx`, read-only, zero API credits spent):
+**2,420,526 real closing-odds rows**, every MLB market, 2023-05 through
+2026-05-24, best American price across 56 real bookmakers. This is the
+biggest, most authoritative real dataset used in this entire milestone —
+loaded into `client_closing_odds` (`scripts/load_client_odds_warehouse.py`)
+and graded against real box scores already in this repo's db
+(`scripts/grade_client_odds_warehouse.py`). 2023 can't be graded yet (no real
+outcome data for that season here); 2024-2026 (1.78M odds rows) can be, and
+was — match quality checked first (74% real player-game match rate, and 94%
+of the shortfall is whole games missing from box-score coverage, not
+selective name-matching bias, so the result below isn't a matching artifact).
+
+**This tests something more fundamental than any prior addendum: not "does
+production's confidence-filtered selection work," but "does the strategy work
+at all, unconditionally, against literally every line the market ever
+offered, at the best price across every book."** That is the client's own
+already-adopted default policy (Phase1-MLB-Developer-Handoff.md §7: hits→under,
+total_bases→under, h2h→away, totals→under):
+
+| Market (client's adopted default side) | n (2024-2026) | ROI | 95% CI | Verdict |
+|---|---:|---:|---|---|
+| hits → under | 107,855 | **+0.1%** | [−0.54%, 0.75%] | FAIL — statistically indistinguishable from zero |
+| total_bases → under | 101,203 | **−0.2%** | [−0.78%, 0.38%] | FAIL — same |
+| totals → under | 4,565 | −3.48% | [−6.30%, −0.67%] | FAIL — clearly negative |
+| h2h → away | 2,477 | −3.69% | [−7.94%, 0.57%] | FAIL |
+| spreads → away | 3,450 | −3.80% | [−7.10%, −0.49%] | FAIL — clearly negative |
+| pitcher_strikeouts, minus-money, no confidence filter (re-checking the veto) | 24,147 | −4.89% | [−5.79%, −4.00%] | FAIL, stable across all 3 seasons |
+
+**This is the single most important finding in this entire milestone: `hits`
+and `total_bases` are already live in production (per the handoff doc) on
+the strength of the harness's warehouse backtest — and at true full-market
+scale, their "under" default side nets to essentially zero ROI, not a real
+edge.** This isn't a small-sample fluke slipping through — n=107,855 and
+n=101,203 are about as close to definitive as sports-betting sample sizes
+get. It reconciles cleanly with Addendum 1's finding that these markets show
+−4% to −7% ROI on actual logged production picks: the raw market has no edge
+either way (≈0%), and whatever selection/pricing production actually uses on
+top of "always bet under" is making things *worse* than doing nothing, not
+better. That gap (0% unconditional vs. −4% to −7% production-selected) is
+itself worth investigating as its own question — something in the
+confidence filter or the prices production actually gets filled at is
+actively hurting these two markets relative to the naive baseline.
+
+**On the strikeouts veto**: this confirms the veto is *correctly scoped*.
+Unconditional minus-money strikeouts, at full market scale, loses money
+clearly and consistently (−4.89%, stable across 2024/2025/2026 individually).
+The +3.34% signal found in Addendum 1 is real precisely because it depends
+on the production confidence≥60 filter selecting a specific, narrow subset —
+it is not, and was never claimed to be, a broad market inefficiency. The
+practical implication: any future work on strikeouts has to preserve and
+sharpen that selection filter, not relax it — loosening the filter to get
+more volume faster (Addendum 1's suggested path to n≥500) would dilute
+straight back toward this −4.89% baseline if done carelessly. Volume needs
+to come from more *selective* picks over time, not more picks.
+
+**Bottom line: none of the "correct working patterns" generalize into an
+edge as blanket rules against the real, full market.** Every one of the six
+policy/re-check tests above fails at true full scale. The two markets
+already shipped to production are running at breakeven-or-worse on the
+underlying market and worse than that in actual production selection — that
+combination is worth flagging to the project owner directly, independent of
+anything else in this report.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -788,6 +898,15 @@ projection work on those two markets.
 
 ## What's in this repo
 
+**Note on the db (as of Addendum 9):** `db/mlb_markets.duckdb` now also
+contains the client's full 2.42M-row real odds warehouse export (loaded via
+`scripts/load_client_odds_warehouse.py`) alongside everything below — but per
+an explicit decision, that expanded db is kept **local-only** and is not
+pushed to the public repo (`.gitignore`'d). The public repo keeps the
+original, smaller curated snapshot described here. Regenerate the full local
+version with `load_client_odds_warehouse.py` (needs the client's xlsx
+export, not included) if picking this back up.
+
 ```
 MLB Markets/
   db/mlb_markets.duckdb          real data: pick_history, boxscore, lineups,
@@ -829,6 +948,11 @@ MLB Markets/
   scripts/test_wind_effect.py   validates the real temperature/wind-runs baseball fact
   scripts/test_temperature_totals_strategy.py   prices it as a bet; catches a multiplicity false positive
   reports/temperature_totals_output.txt   the corrected, deduplicated output
+  scripts/cross_reference_weights_vs_correlation.py   names specific miscalibrated weights
+  reports/weight_vs_correlation_output.txt   full cross-reference output
+  scripts/load_client_odds_warehouse.py   loads the client's real 2.42M-row odds export (local-only db)
+  scripts/grade_client_odds_warehouse.py   grades it against real box scores, tests the adopted policy
+  reports/client_warehouse_grading_output.txt   full Addendum 9 output
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
 
