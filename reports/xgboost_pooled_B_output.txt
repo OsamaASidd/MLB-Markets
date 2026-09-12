@@ -1,0 +1,43 @@
+building real team game log, Elo, L10, bullpen fatigue from 2023-2026 client data...
+real games with full feature set: 3,884, 2023-05-03 -> 2025-05-28
+loading real picks for all 8 markets with warehouse coverage...
+
+pooled multi-year dataset: n=754,450, 2023-05-03 -> 2025-05-28
+market
+batter_total_bases    178459
+batter_hits           178162
+batter_rbis           175354
+batter_home_runs      174410
+pitcher_strikeouts     15693
+totals                 13986
+h2h                    11393
+spreads                 6993
+dtype: int64
+game_date
+2023    358045
+2024    294439
+2025    101966
+dtype: int64
+
+TRAIN n=565,836  TEST n=188,614  (75/25 within each of 2023/2024/2025/2026, pooled)
+
+AUC  TRAIN=0.766  TEST=0.764
+ACCURACY (0.5)  TRAIN=0.689  TEST=0.684
+
+learned feature weights (multi-year, cross-market):
+  market_prob          0.4742
+  side_code            0.2755
+  market_code          0.1797
+  l10_diff             0.0123
+  hr_factor            0.0121
+  runs_factor          0.0111
+  fatigue_diff         0.0097
+  k_factor             0.0094
+  elo_diff             0.0080
+  hits_factor          0.0080
+
+-- betting on edge, minus-money only, TEST holdout (all years pooled) --
+  edge>0.0   n=19465   WR=65.5  ROI=-1.09  CI=[-2.13,-0.05]  fail
+  edge>0.03  n=1432    WR=68.1  ROI=4.98  CI=[1.13,8.82]  PASS
+  edge>0.05  n=171     WR=70.8  ROI=17.22  CI=[5.44,29.01]  fail
+  edge>0.08  n=48      WR=72.9  ROI=38.01  CI=[13.67,62.34]  fail

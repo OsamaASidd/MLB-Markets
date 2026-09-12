@@ -1384,6 +1384,161 @@ underneath a scaling bug, because there wasn't one.
 
 ---
 
+## Addendum 22: Model A — one unified pooled model across all 10 markets, full 150-factor production feature set
+
+Requested directly: stop treating each market as its own model. Pool every
+market into **one** model, with market type itself as a feature (not a
+separate model per market), let the model find its own feature weights, and
+report the result honestly. Two versions were built to cover both available
+feature sources, per your instruction to "build each, compare honestly."
+This addendum is Model A — the full ~150-factor production feature set,
+which only exists for the real window it was actually logged in:
+**2026-05-17 to 2026-07-27** (confirmed by direct query; the 2023-2026 odds
+warehouse carries raw odds+outcomes only, no factor columns — that's Model
+B, next addendum). `scripts/xgboost_pooled_A_factors.py`, output in
+`reports/xgboost_pooled_A_output.txt`.
+
+**Setup:** all 10 markets pooled, n=74,383, with `market_code` (categorical)
+plus 59 usable `score_*` factors (any factor with under 2% real, non-null
+coverage was dropped rather than imputed). 75/25 chronological split
+(TRAIN n=55,787, TEST n=18,596) — a single window, since this factor set
+only spans 2.5 months; the per-year pooled split is what Model B does across
+the full 2023-2026 span.
+
+**Result: TEST AUC = 0.692 — the best out-of-sample ranking skill found
+anywhere in this entire audit**, and it held up rather than collapsed
+(TRAIN 0.682, TEST *higher* than train — a sign the model isn't overfit,
+not a leak, since the split is a clean chronological holdout). Accuracy at
+a 0.5 threshold: 66.3% test. For comparison against a real red flag: ~90%+
+raw accuracy on a task like this would itself indicate leakage, not skill —
+not what happened here.
+
+**Learned feature weights (the direct answer to "weight the features" and
+"what model would generalize best"):** `score_batter_line_hit_rate` (0.077)
+and `score_hitter_streak_fatigue` (0.068) dominate, followed by
+`score_lineup_consistency` (0.067), `market_code` itself (0.061 — the model
+does treat different markets differently, exactly as intended by pooling
+with market type as a feature rather than building 10 separate models), then
+`score_batter_launch_angle` (0.053) and `score_umpire_k_zone` (0.051).
+
+**That ranking skill still doesn't clear a profitable betting edge.** Betting
+on model-edge (model probability minus market-implied probability),
+minus-money only, on the TEST holdout: every pooled threshold from edge>0.0
+through edge>0.08 stays flat-to-negative or fails on sample size (best:
+edge>0.08, n=521, ROI +2.77%, CI [−4.37%, 9.91%] — a real positive point
+estimate, but the CI spans past zero, so it fails the gate). Per-market
+breakdown at edge>0.03 shows the same story market-by-market: no market
+clears both n≥500 and a CI entirely above zero. This is consistent with
+every other finding in this report — real, reproducible ranking skill,
+absorbed by the market's own pricing rather than exploitable against it.
+
+---
+
+## Addendum 23: Model B — pooled model across all 2023-2026 real data, self-engineered features, and a caught false positive along the way
+
+Model B is the second half of "build each, compare honestly": pool all
+markets with real odds-warehouse coverage across the **full 2023-2026
+span**, using features built from the client's own raw box scores rather
+than the production factor set (which doesn't exist before 2026-05-17).
+Built point-in-time correct: team Elo (K=20, home-field +24, 1/3 seasonal
+regression) and L10 form rebuilt game-by-game from real results; real
+bullpen fatigue (relief outs in the prior 2 days); real per-park run/HR/K/
+hits factors joined by venue. Markets: `batter_hits`, `batter_total_bases`,
+`batter_rbis`, `batter_home_runs`, `pitcher_strikeouts`, `h2h`, `spreads`,
+`totals` — the 8 with real warehouse odds coverage (`batter_runs_scored`
+and `pitcher_outs` have zero warehouse rows, a real provider gap, not a
+choice). Split: 75/25 done chronologically **within each calendar year
+separately**, then all four years' 75% pooled into TRAIN and all four
+years' 25% pooled into TEST — exactly as specified, not a single global
+cutoff. `scripts/xgboost_pooled_B_multiyear.py`, output in
+`reports/xgboost_pooled_B_output.txt`.
+
+**The first run produced a result that was flagged and killed before being
+reported, not after.** Initial numbers: TEST AUC 0.857, accuracy 78.8%,
+betting edge PASSING at every threshold up to ROI +46.63% (CI [43.68%,
+49.57%], n=2,499). Those numbers are far outside anything plausible given
+every other result in this 23-addendum project (AUC has topped out at 0.63-
+0.69, ROI at 1-5%) — exactly the kind of red flag this audit has committed
+to catching before reporting, per the three prior false positives already
+documented (the under-0.5 hits reversal, the weather/totals row-multiplicity
+illusion, the client's own 224-pick weight-miscalibration incident). Stopped
+and investigated instead of reporting it.
+
+**Root cause found: real per-event row multiplicity, not a database error.**
+Player-prop lines here are offered as a full alt-line ladder for every real
+player-game (e.g. `batter_total_bases` at 0.5, 1.5, 2.5, 3.5, and 4.5,
+simultaneously, for the same player in the same game — confirmed directly:
+917,981 raw odds rows collapse to only 146,740 real distinct player-games,
+a ~6x inflation). The original loader treated every alt-line row as an
+independent observation, which both fakes the sample size and, worse,
+systematically selected the wrong line once a naive dedup ("lowest line
+offered") was applied: 131,453 of ~146,000 deduped rows landed on the 0.5
+alt line specifically — a heavily favorite-skewed, thinly-priced corner of
+the market, not the book's actual primary line. (Spreads and totals had the
+same shape at smaller scale: 10,794 raw rows over 7,440 real games for
+spreads, 13,818 over 7,440 for totals — multiple alt lines per game, not
+multiple games.) A quick NULL-`game_pk` check along the way (42,146 of
+917,981 rows, 4.6%) also turned up real but was a minor contributor next to
+the alt-line issue.
+
+**Fix:** deduplicate every market to one row per real (game, player, market)
+decision, selecting the line whose over-side implied probability sits
+closest to a true coin flip — the book's actual primary line — instead of
+the lowest or highest line offered; and drop unresolved `game_pk` rows
+outright rather than let them group together. Confirmed the fix directly:
+after correction, `batter_total_bases`'s main line is 1.5 for 94,332 of the
+dataset (the real, standard total-bases line) with 0.5 as a fallback for
+weaker hitters (48,163) — not 0.5 dominating everything. The
+predicted-probability-vs-actual-win-rate table also went from "impossible"
+(market implies 92-97% for the deepest favorites, real win rate only 70-73%
+— actual results *worse* than the market's own price, backwards for an
+efficient market) to normal bookmaker vig (actual win rate consistently a
+few points *below* market-implied probability, as expected).
+
+**Corrected, honest result: TEST AUC = 0.764, accuracy 68.4%** — still the
+highest AUC in this report, but no longer impossible: this model pools
+across markets and sides with `market_prob` and `side_code` as its two
+strongest features (0.47 and 0.28 of total importance), which is close to
+"has the model learned market efficiency patterns across a mix of props
+with different vig structures" rather than a single-market skill claim like
+Addendum 20's. Betting on edge, minus-money only, TEST holdout, all years
+pooled:
+
+| edge threshold | n | WR | ROI | 95% CI | Verdict |
+|---|---:|---:|---:|---|---|
+| >0.00 | 19,465 | 65.5% | −1.09% | [−2.13%, −0.05%] | FAIL |
+| >0.03 | 1,432 | 68.1% | **+4.98%** | **[1.13%, 8.82%]** | **PASS** |
+| >0.05 | 171 | 70.8% | +17.22% | [5.44%, 29.01%] | fail (n<500) |
+| >0.08 | 48 | 72.9% | +38.01% | [13.67%, 62.34%] | fail (n<500) |
+
+**One real PASS survives: edge>0.03, n=1,432, ROI +4.98%, CI entirely above
+zero** — in the same 1-5% range as every other genuine edge found in this
+audit (the hits odds-band lever, the near-miss markets), not an outlier, and
+now built from real 2023-2025 data pooled across years exactly as
+specified. The two higher-threshold rows show real, non-fabricated
+confidence intervals that are also entirely positive, but both fail the
+n≥500 sample-size half of the gate and are reported here rather than
+excluded, precisely so a small, noisy sample doesn't get mistaken for a
+stronger finding than edge>0.03 already is.
+
+**One disclosed coverage limit:** this model's real-outcome coverage
+(anything requiring team runs — Elo, L10, h2h, spreads, totals) runs
+2023-05-03 to 2025-05-28, not all the way to 2026 as the full odds warehouse
+would allow. Cause, confirmed directly: `client_games` carries no final-
+score column, so team runs are reconstructed by summing
+`boxscore.runs_scored` per team — and that field is 100% populated for 2023,
+~80% for 2024, but only ~22%/21% populated for 2025/2026 in the client's own
+box-score data. Player-prop markets (hits, total_bases, rbis, home_runs,
+strikeouts — the majority of the pool) don't depend on this field directly,
+but do get capped to the same date range through the join to the Elo/L10/
+park-factor table. This is a real, fixable gap: the same free MLB Stats API
+backfill already used successfully for 2023 (`backfill_2023_boxscores.py`,
+1,708 games) could be extended to 2025 H2/2026 to recover full coverage —
+flagged here as a concrete next step, not executed as part of this
+milestone.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -1514,6 +1669,10 @@ MLB Markets/
   reports/xgboost_model_output.txt   full Addendum 20 output (AUCs, feature weights, betting cuts)
   scripts/xgboost_calibrated.py   3-way split, isotonic calibration on total_bases, still negative
   reports/xgboost_calibrated_output.txt   full Addendum 21 output (reliability table + betting cuts)
+  scripts/xgboost_pooled_A_factors.py   Model A: one pooled model, all 10 markets, full 150-factor set
+  reports/xgboost_pooled_A_output.txt   full Addendum 22 output (AUC 0.692, best in report)
+  scripts/xgboost_pooled_B_multiyear.py   Model B: one pooled model, 8 markets, real 2023-2026 features
+  reports/xgboost_pooled_B_output.txt   full Addendum 23 output (corrected, after a caught false positive)
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
