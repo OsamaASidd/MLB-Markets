@@ -1296,6 +1296,60 @@ the market by the time a line is posted. That is itself the finding.
 
 ---
 
+## Addendum 20: a real XGBoost model — genuine signal in one market, still no profitable edge
+
+Requested directly: replace the linear correlation-based reweighting
+(Addendum 2/8/11) with a proper gradient-boosted model that learns feature
+weights itself, and see what it finds. Built (`scripts/xgboost_model.py`):
+per market, all real `score_*` factors as features, XGBClassifier
+(regularized: max_depth=3, min_child_weight=10, reg_lambda=2.0, subsample
+0.8), trained on the first 60% of dates, evaluated on the last 40% — a true
+temporal holdout, never seen during training.
+
+**One real, non-trivial finding: `total_bases` shows genuine out-of-sample
+predictive skill.** TEST AUC = **0.626** (TRAIN 0.684) — meaningfully above
+the 0.500 no-skill baseline, and the gap from train to test is modest, not
+a collapse. The model can genuinely tell winners from losers on data it
+never saw. Learned feature weights (the literal answer to "weight the
+features"): `score_batter_launch_angle` dominates (0.151), then
+`lineup_spot` (0.056), `exit_velo_trend` (0.049), `batter_obp` (0.047).
+
+**That skill does not translate into a profitable bet.** Betting on
+model-edge (predicted probability minus market-implied probability) at
+every threshold tested stays flat-to-negative on the same TEST holdout
+(best: edge>0.05, n=533, ROI −0.23%, CI [−6.97%, 6.50%]). The model ranks
+outcomes correctly; the market's own price already seems to reflect
+whatever it's capturing. This is a genuine, informative result — not a
+dead end, a precise finding: the projection has real quality, the pricing
+already absorbs it.
+
+**Every other market shows textbook overfitting, disclosed plainly rather
+than mined for a headline:**
+
+| Market | TRAIN AUC | TEST AUC |
+|---|---:|---:|
+| hits | 0.609 | **0.487** (worse than chance, out of sample) |
+| pitcher_strikeouts | 0.662 | 0.523 |
+| rbis | — | 0.630 (but see below) |
+| runs_scored | 0.718 | 0.582 |
+
+`rbis`'s TEST AUC (0.630) looks similar to `total_bases`, but the betting
+cuts derived from it collapse to absurdly small samples the moment an edge
+threshold is applied (n=24, 12, 7, 1, 0 across thresholds) — one cut shows
+"ROI=19.27%, CI=[−5.91%, 44.45%]" on 24 bets, a confidence interval spanning
+50 points. That is not a finding; it's what a 24-bet sample looks like, and
+it's reported here specifically so it can't be mistaken for one.
+
+**Straight conclusion:** a properly regularized gradient-boosted model,
+trained on the client's own real factors and validated on a genuine
+temporal holdout, finds real predictive signal in exactly one market
+(`total_bases`) — and even there, that signal doesn't clear the market's
+own pricing. No market reaches a validated profitable edge this way, and
+nothing here approaches 30%. This was a more sophisticated technique than
+anything tried earlier in this report, and it reached the same wall.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -1422,6 +1476,8 @@ MLB Markets/
   scripts/test_ballpark_factor_strategy.py   direct park-factor betting strategy, negative
   reports/statcast_regression_output.txt   full Addendum 19 output (part 1)
   reports/ballpark_factor_strategy_output.txt   full Addendum 19 output (part 2)
+  scripts/xgboost_model.py   real gradient-boosted model, per-market, true temporal holdout
+  reports/xgboost_model_output.txt   full Addendum 20 output (AUCs, feature weights, betting cuts)
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```

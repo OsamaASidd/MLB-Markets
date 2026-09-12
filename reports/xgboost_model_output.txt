@@ -1,0 +1,115 @@
+
+====================================================================================================
+hits  (n=15,005, 47 usable factor columns)
+====================================================================================================
+  AUC  TRAIN=0.609   TEST=0.487   (0.500 = no better than chance)
+  top 10 learned feature weights:
+    score_batter_obp                         0.1230
+    score_batter_hit_rate                    0.0816
+    score_opp_pitcher_pitchtype_quality      0.0648
+    score_lineup_spot                        0.0602
+    score_batter_hard_hit                    0.0571
+    score_ballpark_factor                    0.0568
+    score_recent_at_bats                     0.0557
+    score_weather_temp                       0.0555
+    score_batter_vs_pitcher_hand_split       0.0545
+    score_opposing_pitcher_quality           0.0536
+
+  -- betting on model edge, minus-money only, TEST (holdout) --
+    edge>0.0   n=2395   WR=57.2  ROI=-6.57  CI=[-9.83,-3.3]  fail
+    edge>0.03  n=1736   WR=57.0  ROI=-5.38  CI=[-9.28,-1.49]  fail
+    edge>0.05  n=1312   WR=55.4  ROI=-7.05  CI=[-11.59,-2.5]  fail
+    edge>0.08  n=833    WR=55.6  ROI=-4.98  CI=[-10.79,0.83]  fail
+    edge>0.1   n=569    WR=57.1  ROI=-1.02  CI=[-8.12,6.07]  fail
+
+====================================================================================================
+total_bases  (n=14,351, 47 usable factor columns)
+====================================================================================================
+  AUC  TRAIN=0.684   TEST=0.626   (0.500 = no better than chance)
+  top 10 learned feature weights:
+    score_batter_launch_angle                0.1512
+    score_lineup_spot                        0.0560
+    score_batter_exit_velo_trend             0.0486
+    score_batter_obp                         0.0469
+    score_ballpark_factor                    0.0445
+    score_batter_barrel_rate                 0.0391
+    score_batter_power_rate                  0.0388
+    score_batter_sweet_spot                  0.0374
+    score_batter_hard_hit                    0.0369
+    score_lineup_consistency                 0.0354
+
+  -- betting on model edge, minus-money only, TEST (holdout) --
+    edge>0.0   n=1206   WR=61.5  ROI=-3.34  CI=[-7.69,1.02]  fail
+    edge>0.03  n=759    WR=61.9  ROI=-1.01  CI=[-6.59,4.56]  fail
+    edge>0.05  n=533    WR=61.7  ROI=-0.23  CI=[-6.97,6.5]  fail
+    edge>0.08  n=292    WR=57.9  ROI=-4.68  CI=[-14.1,4.73]  fail
+    edge>0.1   n=172    WR=57.0  ROI=-4.38  CI=[-16.91,8.15]  fail
+
+====================================================================================================
+pitcher_strikeouts  (n=1,949, 14 usable factor columns)
+====================================================================================================
+  AUC  TRAIN=0.662   TEST=0.523   (0.500 = no better than chance)
+  top 10 learned feature weights:
+    score_pitcher_form                       0.1904
+    score_pitcher_k_rate                     0.1628
+    score_umpire_k_zone                      0.1461
+    score_pitch_count_trend                  0.1423
+    score_rest_pitcher                       0.1335
+    score_ballpark_factor                    0.1243
+    score_opposing_lineup_k                  0.1006
+    score_line_movement                      0.0000
+    score_trend                              0.0000
+    score_low_min_risk                       0.0000
+
+  -- betting on model edge, minus-money only, TEST (holdout) --
+    edge>0.0   n=207    WR=57.0  ROI=1.13  CI=[-10.9,13.17]  fail
+    edge>0.03  n=157    WR=55.4  ROI=-1.24  CI=[-15.19,12.72]  fail
+    edge>0.05  n=119    WR=56.3  ROI=1.23  CI=[-14.91,17.38]  fail
+    edge>0.08  n=75     WR=58.7  ROI=5.81  CI=[-14.5,26.12]  fail
+    edge>0.1   n=49     WR=61.2  ROI=11.06  CI=[-14.05,36.17]  fail
+
+====================================================================================================
+rbis  (n=11,576, 47 usable factor columns)
+====================================================================================================
+  AUC  TRAIN=0.663   TEST=0.630   (0.500 = no better than chance)
+  top 10 learned feature weights:
+    score_lineup_consistency                 0.1235
+    score_ballpark_factor                    0.0968
+    score_batter_form                        0.0945
+    score_opp_pitcher_pitchtype_quality      0.0842
+    score_batter_hit_rate                    0.0757
+    score_batter_vs_pitcher_hand_split       0.0566
+    score_weather_wind                       0.0504
+    score_opposing_pitcher_quality           0.0486
+    score_batter_xba                         0.0463
+    score_batter_power_rate                  0.0422
+
+  -- betting on model edge, minus-money only, TEST (holdout) --
+    edge>0.0   n=24     WR=79.2  ROI=19.27  CI=[-5.91,44.45]  fail
+    edge>0.03  n=12     WR=83.3  ROI=28.98  CI=[-5.37,63.33]  fail
+    edge>0.05  n=7      WR=85.7  ROI=36.24  CI=[-8.51,81.0]  fail
+    edge>0.08  n=1      WR=0.0  ROI=-100.0  CI=[None,None]  fail
+    edge>0.1   n=0      WR=None  ROI=None  CI=[None,None]  fail
+
+====================================================================================================
+runs_scored  (n=6,859, 45 usable factor columns)
+====================================================================================================
+  AUC  TRAIN=0.718   TEST=0.582   (0.500 = no better than chance)
+  top 10 learned feature weights:
+    score_hitter_streak_fatigue              0.0702
+    score_batter_launch_angle                0.0459
+    score_batter_form                        0.0439
+    score_opposing_pitcher_quality           0.0405
+    score_bullpen_quality                    0.0358
+    score_batter_vs_pitcher_hand_split       0.0346
+    score_batter_exit_velo_trend             0.0329
+    score_day_after_night_fatigue            0.0322
+    score_batter_lineup_protection           0.0316
+    score_batter_pull_rate                   0.0314
+
+  -- betting on model edge, minus-money only, TEST (holdout) --
+    edge>0.0   n=760    WR=61.6  ROI=-2.1  CI=[-7.66,3.46]  fail
+    edge>0.03  n=577    WR=61.0  ROI=-2.73  CI=[-9.15,3.69]  fail
+    edge>0.05  n=464    WR=59.5  ROI=-4.85  CI=[-12.08,2.37]  fail
+    edge>0.08  n=309    WR=61.2  ROI=-1.46  CI=[-10.31,7.4]  fail
+    edge>0.1   n=233    WR=62.2  ROI=1.06  CI=[-9.16,11.29]  fail
