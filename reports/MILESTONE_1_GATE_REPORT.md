@@ -1013,6 +1013,65 @@ and matching real execution-level data, not from further backtesting.
 
 ---
 
+## Addendum 14: re-run on all 4 real seasons (2023 backfilled) — one FAIL strengthens, the one PASS weakens
+
+Addendum 9's real box scores only covered 2024-2026; 2023's real closing-odds
+(641,974 rows, already loaded) sat ungraded because no real outcome data
+existed for that season in this repo. Backfilled it for real — 1,708 games,
+50,266 box-score rows, free MLB Stats API, no key, no cost — then re-ran
+Addendum 9 and Addendum 10 across all 4 real seasons instead of 3. This is
+an honest update, not a quiet edit of the earlier numbers: one result got
+more certain, the other got weaker, and a piece of evidence used to justify
+trusting the PASS no longer holds.
+
+**`total_bases → under` moves from "flat" to a confirmed FAIL.** Previously
+(3 seasons): n=101,203, ROI −0.2%, CI [−0.78%, 0.38%] — crossed zero, called
+"flat, no edge." Now (4 seasons): **n=162,201, ROI −0.53%, CI [−0.99%,
+−0.08%]** — the CI no longer crosses zero. More data made this FAIL more
+certain, not less.
+
+**The `hits` odds-band PASS survives, but only barely, and one of its
+supporting arguments does not survive.** Previously (3 seasons): n=13,020,
+ROI +1.93%, CI [0.54%, 3.33%]. Now (4 seasons): **n=19,567, ROI +1.32%, CI
+[0.19%, 2.45%]** — still clears the gate (lower bound is still above zero),
+but the margin shrank noticeably. More importantly: Addendum 10/13 cited
+"point estimates trend upward across seasons, not reversing" (1.36% →
+2.01% → 4.21%) as a reason to trust the aggregate despite individual
+seasons not each clearing the bar. **2023 breaks that trend** — 2023 alone
+is flat (+0.10%, CI [−1.81%, 2.0%], fail), and the tighter `-249..-150`
+sub-band is **negative** in 2023 specifically (−2.25%, CI [−4.34%, −0.16%]
+— a real reversal, not noise around zero). That argument should be
+retracted; it no longer describes the data. What's left is a genuine but
+more marginal PASS on the pooled aggregate — real, but weaker than
+previously reported, and the honest read is "worth continued monitoring,"
+not "confirmed and strengthening."
+
+**One more specific, real pattern worth flagging:** the two sub-bands behave
+differently across all 4 seasons. `-149..-101` (lighter favorites) now
+passes on its own in 2023 too (n=2,263, ROI +4.55%, CI [0.72%, 8.37%],
+PASS) and trends positive in every other season without a single reversal.
+`-249..-150` (heavier favorites) is inconsistent — negative in 2023, mixed
+elsewhere. **If this proposal moves forward, the narrower `-149..-101` band
+is the more defensible version to test/deploy, not the full `-249..-101`
+range** — this is a real refinement the 4-season data supports, not
+speculation.
+
+**Everything else re-confirms unchanged in direction:** `totals→under`
+(n=8,638, ROI −4.94%, CI [−6.99%, −2.88%]), `h2h→away` (n=4,440, ROI −2.21%,
+CI [−5.41%, 1.00%]), `spreads→away` (n=6,939, ROI −5.11%, CI [−7.43%,
+−2.79%]), and unconditional `pitcher_strikeouts` minus-money (n=33,161, ROI
+−4.64%, CI [−5.42%, −3.86%], stable −3.96% to −5.24% in every individual
+season) all stay clearly negative with the 4th season added — no surprises
+there, which is itself a useful confirmation that these verdicts were
+already solid on 3 seasons.
+
+Full updated output: `reports/client_warehouse_grading_output.txt`,
+`reports/verify_moderate_odds_hits_output.txt` (both regenerated in place —
+diff against git history for the 3-season numbers if wanted).
+`scripts/backfill_2023_boxscores.py` is the reusable 2023 box-score puller.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -1126,6 +1185,8 @@ MLB Markets/
   reports/addendum11_hits_tb_weight_check.md   full weight-vs-correlation writeup for hits/total_bases
   reports/addendum12_execution_gap.md   full execution-vs-selection-gap investigation
   reports/addendum13_hits_odds_band_proposal.md   standalone change-request proposal (not deployed)
+  scripts/backfill_2023_boxscores.py   pulls real 2023 box scores (free MLB Stats API)
+  reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
 

@@ -112,7 +112,7 @@ def main():
         SELECT co.*, g.game_pk
         FROM client_closing_odds co
         JOIN client_games g ON co.event_id = g.event_id
-        WHERE co.season IN (2024, 2025, 2026)
+        WHERE co.season IN (2023, 2024, 2025, 2026)
     """).fetchdf()
     odds["game_pk"] = pd.to_numeric(odds["game_pk"], errors="coerce")
     odds["line"] = pd.to_numeric(odds["line"], errors="coerce")
@@ -120,7 +120,7 @@ def main():
     odds["best_under_odds"] = pd.to_numeric(odds["best_under_odds"], errors="coerce")
     odds["name_norm"] = odds["player_name"].map(norm_name)
     odds["season"] = pd.to_numeric(odds["season"], errors="coerce")
-    print(f"real closing-odds rows loaded (2024-2026 only, gradable window): {len(odds):,}")
+    print(f"real closing-odds rows loaded (2023-2026, now that 2023 box scores are backfilled): {len(odds):,}")
 
     box = load_boxscore_lookup(con)
     print(f"boxscore rows available for grading: {len(box):,}")
@@ -133,8 +133,8 @@ def main():
     g["win"] = g["hits"] < g["line"]
     g["profit"] = g.apply(lambda r: profit(r["win"], r["best_under_odds"]), axis=1)
     print("\n=== hits: always UNDER (client policy default) ===")
-    print_stat("FULL 2024-2026", stat(g))
-    for s in [2024, 2025, 2026]:
+    print_stat("FULL 2023-2026", stat(g))
+    for s in [2023, 2024, 2025, 2026]:
         print_stat(f"season {s}", stat(g[g.season == s]))
     results["hits_under"] = g
 
@@ -144,8 +144,8 @@ def main():
     g["win"] = g["total_bases"] < g["line"]
     g["profit"] = g.apply(lambda r: profit(r["win"], r["best_under_odds"]), axis=1)
     print("\n=== total_bases: always UNDER (client policy default) ===")
-    print_stat("FULL 2024-2026", stat(g))
-    for s in [2024, 2025, 2026]:
+    print_stat("FULL 2023-2026", stat(g))
+    for s in [2023, 2024, 2025, 2026]:
         print_stat(f"season {s}", stat(g[g.season == s]))
     results["tb_under"] = g
 
@@ -158,8 +158,8 @@ def main():
     both = both[both.odds < 0]  # minus-money only
     both["profit"] = both.apply(lambda r: profit(r["win"], r["odds"]), axis=1)
     print("\n=== pitcher_strikeouts: minus-money only, both sides (currently vetoed by client policy) ===")
-    print_stat("FULL 2024-2026", stat(both))
-    for s in [2024, 2025, 2026]:
+    print_stat("FULL 2023-2026", stat(both))
+    for s in [2023, 2024, 2025, 2026]:
         print_stat(f"season {s}", stat(both[both.season == s]))
 
     # --- game markets: h2h always away, spreads away, totals always under ---
@@ -174,8 +174,8 @@ def main():
     m["win"] = m["total_runs"] < m["line"]
     m["profit"] = m.apply(lambda r: profit(r["win"], r["best_under_odds"]), axis=1)
     print("\n=== totals: always UNDER (client policy default) ===")
-    print_stat("FULL 2024-2026", stat(m))
-    for s in [2024, 2025, 2026]:
+    print_stat("FULL 2023-2026", stat(m))
+    for s in [2023, 2024, 2025, 2026]:
         print_stat(f"season {s}", stat(m[m.season == s]))
 
     # home/away team_id per game_pk, via lineups (event_id, team_side, player_id) -> boxscore (player_id -> team_id)
@@ -200,16 +200,16 @@ def main():
     m["win"] = m["away_runs_"] > m["home_runs_"]
     m["profit"] = m.apply(lambda r: profit(r["win"], r["best_over_odds"]), axis=1)
     print("\n=== h2h: always AWAY moneyline (client policy default) ===")
-    print_stat("FULL 2024-2026", stat(m))
-    for s in [2024, 2025, 2026]:
+    print_stat("FULL 2023-2026", stat(m))
+    for s in [2023, 2024, 2025, 2026]:
         print_stat(f"season {s}", stat(m[m.season == s]))
 
     m = odds[odds.market_key == "spreads__away"].merge(game_res, on="game_pk", how="inner")
     m["win"] = (m["away_runs_"] + m["line"]) > m["home_runs_"]
     m["profit"] = m.apply(lambda r: profit(r["win"], r["best_over_odds"]), axis=1)
     print("\n=== spreads: always AWAY (near-miss in Addendum 1, re-checked at full scale) ===")
-    print_stat("FULL 2024-2026", stat(m))
-    for s in [2024, 2025, 2026]:
+    print_stat("FULL 2023-2026", stat(m))
+    for s in [2023, 2024, 2025, 2026]:
         print_stat(f"season {s}", stat(m[m.season == s]))
 
     con.close()

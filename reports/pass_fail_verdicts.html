@@ -85,9 +85,9 @@
       <span class="tag directional">directional — CI crosses zero</span>
     </div>
     <div class="stat-card">
-      <div class="n pos">+1.93%</div>
-      <div class="label">batter_hits → under, moderate-odds band (−249 to −101), pooled 2024–2026 (n=13,020)</div>
-      <span class="tag confirmed">clears the gate</span>
+      <div class="n pos">+1.32%</div>
+      <div class="label">batter_hits → under, moderate-odds band (−249 to −101), pooled 2023–2026, all 4 real seasons (n=19,567)</div>
+      <span class="tag confirmed">clears the gate — marginally</span>
     </div>
   </div>
   <div class="note">
@@ -95,11 +95,14 @@
     The <b>+2.61%</b> figure is real and honestly computed, but its 95% CI is
     <b>[−5.34%, +10.55%]</b> — it does not clear this project's own gate rule, and should be
     described as promising, execution-focused evidence from a small (696-pick), single-week
-    sample, not a proven edge. The <b>+1.93%</b> figure is the one result in this entire audit
+    sample, not a proven edge. The <b>+1.32%</b> figure is the one result in this entire audit
     that genuinely clears <code>n≥500 AND CI-lower-bound&nbsp;&gt;&nbsp;0</code> on its own —
-    <b>CI [0.54%, 3.33%]</b> — and is the more defensible "we found a real positive ROI" claim
-    if only one number can be used. Full derivation of both: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>,
-    Addendums&nbsp;10 and&nbsp;12.
+    <b>CI [0.19%, 2.45%]</b> — but it <i>weakened</i> when a 4th real season (2023) was added
+    (was +1.93%, CI [0.54%, 3.33%] on 3 seasons), and a "consistent upward trend across seasons"
+    argument used earlier to support it did not survive 2023 being added (2023 alone is flat, and
+    the tighter −249..−150 sub-band actually reverses negative in 2023). Still the most defensible
+    "real positive ROI" claim in this audit — just a more marginal one than first reported. Full
+    derivation: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>, Addendums&nbsp;10,&nbsp;12,&nbsp;14.
   </div>
 
   <h2>Primary verdict — every MLB market, full sample</h2>
@@ -122,18 +125,19 @@
   <p class="note">Two markets here (<code>hits</code>, <code>total_bases</code>-unders) were previously declared PASS by a harness backtest run against historical odds rather than real production picks — that verdict does not hold on the data above. See report §"Why the harness said PASS and production says FAIL."</p>
 
   <h2>Full real-market re-check — client's own 2023-2026 odds warehouse</h2>
-  <p class="lede">2.42M real closing-odds rows, best price across 56 books, graded against real box scores (2024-2026). Tests the client's own adopted default policy unconditionally — every line, not just what production happened to pick.</p>
+  <p class="lede">2.42M real closing-odds rows, best price across 56 books, graded against real box scores — all 4 real seasons (2023 box scores backfilled from the free MLB Stats API). Tests the client's own adopted default policy unconditionally — every line, not just what production happened to pick.</p>
   <div class="table-scroll">
   <table>
     <tr><th>Market → default side</th><th class="num">n</th><th class="num">ROI %</th><th>95% CI</th><th>Verdict</th></tr>
-    <tr><td>hits → under</td><td class="num">107,855</td><td class="num">+0.10</td><td>[−0.54, 0.75]</td><td><span class="verdict fail">FAIL (flat)</span></td></tr>
-    <tr><td>total_bases → under</td><td class="num">101,203</td><td class="num">−0.20</td><td>[−0.78, 0.38]</td><td><span class="verdict fail">FAIL (flat)</span></td></tr>
-    <tr><td>totals → under</td><td class="num">4,565</td><td class="num">−3.48</td><td>[−6.30, −0.67]</td><td><span class="verdict fail">FAIL</span></td></tr>
-    <tr><td>h2h → away</td><td class="num">2,477</td><td class="num">−3.69</td><td>[−7.94, 0.57]</td><td><span class="verdict fail">FAIL</span></td></tr>
-    <tr><td>spreads → away</td><td class="num">3,450</td><td class="num">−3.80</td><td>[−7.10, −0.49]</td><td><span class="verdict fail">FAIL</span></td></tr>
-    <tr><td>strikeouts, minus-money, no filter</td><td class="num">24,147</td><td class="num">−4.89</td><td>[−5.79, −4.00]</td><td><span class="verdict fail">FAIL (confirms veto)</span></td></tr>
+    <tr><td>hits → under</td><td class="num">171,902</td><td class="num">+0.31</td><td>[−0.19, 0.81]</td><td><span class="verdict fail">FAIL (flat)</span></td></tr>
+    <tr><td>total_bases → under</td><td class="num">162,201</td><td class="num">−0.53</td><td>[−0.99, −0.08]</td><td><span class="verdict fail">FAIL (confirmed negative)</span></td></tr>
+    <tr><td>totals → under</td><td class="num">8,638</td><td class="num">−4.94</td><td>[−6.99, −2.88]</td><td><span class="verdict fail">FAIL</span></td></tr>
+    <tr><td>h2h → away</td><td class="num">4,440</td><td class="num">−2.21</td><td>[−5.41, 1.00]</td><td><span class="verdict fail">FAIL</span></td></tr>
+    <tr><td>spreads → away</td><td class="num">6,939</td><td class="num">−5.11</td><td>[−7.43, −2.79]</td><td><span class="verdict fail">FAIL</span></td></tr>
+    <tr><td>strikeouts, minus-money, no filter</td><td class="num">33,161</td><td class="num">−4.64</td><td>[−5.42, −3.86]</td><td><span class="verdict fail">FAIL (confirms veto)</span></td></tr>
   </table>
   </div>
+  <p class="note">Adding the 4th season (2023) sharpened <code>total_bases</code> from "flat, CI crosses zero" to a confirmed negative — more data made this FAIL more certain, not less.</p>
 
   <h2>Near-misses and the one validated lever</h2>
   <p class="lede">Selective cuts, not blanket betting — the only places a real signal has survived every check applied in this audit.</p>
@@ -142,11 +146,12 @@
     <tr><th>Cut</th><th class="num">n</th><th class="num">ROI %</th><th>95% CI</th><th>Verdict</th></tr>
     <tr><td>pitcher_strikeouts, conf≥60 + minus-money</td><td class="num">477</td><td class="num">+3.34</td><td>[−4.14, 10.83]</td><td><span class="verdict cond">near-miss — n&lt;500</span></td></tr>
     <tr><td>spreads, conf≥60 + minus-money</td><td class="num">513</td><td class="num">+5.53</td><td>[−1.33, 12.39]</td><td><span class="verdict cond">near-miss — CI crosses 0</span></td></tr>
-    <tr><td><b>hits → under, odds −249..−101, pooled 2024–2026</b></td><td class="num"><b>13,020</b></td><td class="num"><b>+1.93</b></td><td><b>[0.54, 3.33]</b></td><td><span class="verdict pass">PASS</span></td></tr>
+    <tr><td><b>hits → under, odds −249..−101, pooled 2023–2026 (4 seasons)</b></td><td class="num"><b>19,567</b></td><td class="num"><b>+1.32</b></td><td><b>[0.19, 2.45]</b></td><td><span class="verdict pass">PASS</span></td></tr>
+    <tr><td>↳ narrower sub-band −149..−101 only (2023 also passes here)</td><td class="num">2,263 (2023)</td><td class="num">+4.55</td><td>[0.72, 8.37]</td><td><span class="verdict pass">PASS (2023)</span></td></tr>
     <tr><td>hits+total_bases, best-price re-check (execution test)</td><td class="num">696</td><td class="num">+2.61</td><td>[−5.34, 10.55]</td><td><span class="verdict cond">directional only</span></td></tr>
   </table>
   </div>
-  <p class="note">The <code>hits</code> odds-band PASS is a <b>proposal only</b> — not deployed, requires written sign-off before any production change (Addendum 13). Its own risk check (cluster-robust SE by game) confirmed it isn't inflated the way an earlier tempting-looking result in this audit turned out to be.</p>
+  <p class="note">The <code>hits</code> odds-band PASS is a <b>proposal only</b> — not deployed, requires written sign-off before any production change (Addendum 13). It weakened when 2023 was added (was +1.93%, CI [0.54%, 3.33%] on 3 seasons) — still clears the gate, more marginally. The narrower <code>−149..−101</code> sub-band is more consistent across all 4 seasons than the full <code>−249..−101</code> range and is the more defensible version to pursue further (Addendum 14). Its multiplicity risk was independently checked via cluster-robust SE by game and confirmed not inflated the way an earlier tempting-looking result in this audit turned out to be.</p>
 
   <h2>Why production underperforms even the flat baseline</h2>
   <p class="lede">The +2.61% figure above comes from this investigation (Addendum 12): holding 696 identical real picks fixed (same player, game, line, outcome) and swapping only the recorded price.</p>

@@ -46,7 +46,7 @@ odds = con.execute("""
     SELECT co.game_pk, co.line, co.best_under_odds, co.season, co.player_name
     FROM (SELECT co.*, g.game_pk FROM client_closing_odds co
           JOIN client_games g ON co.event_id = g.event_id) co
-    WHERE co.market_key = 'batter_hits' AND co.season IN ('2024','2025','2026')
+    WHERE co.market_key = 'batter_hits' AND co.season IN ('2023','2024','2025','2026')
 """).fetchdf()
 odds["game_pk"] = pd.to_numeric(odds["game_pk"], errors="coerce")
 odds["line"] = pd.to_numeric(odds["line"], errors="coerce")
@@ -62,17 +62,17 @@ MIN_GRADED = 500
 
 print("hits -> under, odds -249..-101 (merged moderate band), full CI, by season:")
 sub = m[(m.best_under_odds <= -101) & (m.best_under_odds >= -249)]
-for season in [2024, 2025, 2026, None]:
+for season in [2023, 2024, 2025, 2026, None]:
     s = stat(sub if season is None else sub[sub.season == season])
     passed = s["n"] >= MIN_GRADED and s["lo"] is not None and s["lo"] > 0
-    label = "ALL 2024-2026" if season is None else f"season {season}"
+    label = "ALL 2023-2026" if season is None else f"season {season}"
     print(f"  {label:<16} n={s['n']:<7} WR={s['wr']}  ROI={s['roi']}  CI=[{s['lo']},{s['hi']}]  {'PASS' if passed else 'fail'}")
 
 print("\nsplit into the two original bands separately, full CI:")
 for lo_b, hi_b, label in [(-249, -150, "-249..-150"), (-149, -101, "-149..-101")]:
     sub2 = m[(m.best_under_odds <= hi_b) & (m.best_under_odds >= lo_b)]
     print(f"\n  band {label}:")
-    for season in [2024, 2025, 2026]:
+    for season in [2023, 2024, 2025, 2026]:
         s = stat(sub2[sub2.season == season])
         passed = s["n"] >= MIN_GRADED and s["lo"] is not None and s["lo"] > 0
         print(f"    season {season}: n={s['n']:<7} WR={s['wr']}  ROI={s['roi']}  CI=[{s['lo']},{s['hi']}]  {'PASS' if passed else 'fail'}")
@@ -82,7 +82,7 @@ print("\nmoderate-odds band, split by line value:")
 for line_val in [0.5, 1.5]:
     sub3 = sub[sub.line == line_val]
     print(f"\n  line={line_val}:")
-    for season in [2024, 2025, 2026]:
+    for season in [2023, 2024, 2025, 2026]:
         s = stat(sub3[sub3.season == season])
         passed = s["n"] >= MIN_GRADED and s["lo"] is not None and s["lo"] > 0
         print(f"    season {season}: n={s['n']:<7} WR={s['wr']}  ROI={s['roi']}  CI=[{s['lo']},{s['hi']}]  {'PASS' if passed else 'fail'}")
