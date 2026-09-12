@@ -273,21 +273,30 @@
   <section>
     <div class="sec-head"><span class="sec-no">06</span><h2>Every strategy and model tried beyond the gate itself</h2></div>
     <p class="lede">Six independent custom strategies, a fine-grained odds sweep, and a real gradient-boosted model — all built on real data with proper train/test discipline, checking whether anything beats the verdicts above.</p>
+    <div class="note callout">
+      <b>Why these are negative, specifically — not just "the market is efficient."</b>
+      Every row below tests something <i>public and obvious</i>: team records, who pitched in relief
+      yesterday, a decade-old sabermetric stat, a park-factor table anyone can look up. A sportsbook's
+      entire business model depends on pricing exactly these things correctly — that's not a wall
+      unique to this audit, it's what "professionally priced market" means. A real edge here would
+      need either information the market doesn't have yet, or a genuinely better model than what
+      oddsmakers already run — a much higher bar than "notice something obvious first."
+    </div>
 
     <div class="table-scroll">
     <table>
-      <tr><th>Approach</th><th class="num">Result</th><th>Verdict</th></tr>
-      <tr><td>Team power ranking (Elo) + recent-form fading</td><td class="num">market beats both signals every period tested</td><td><span class="verdict fail">negative</span></td></tr>
-      <tr><td>Starting-pitcher quality (rolling RA/9)</td><td class="num">weaker than team Elo, not stronger</td><td><span class="verdict fail">negative</span></td></tr>
-      <tr><td>Bullpen fatigue (relief innings, last 2 days)</td><td class="num">corr +0.02 with total runs, essentially zero</td><td><span class="verdict fail">negative</span></td></tr>
-      <tr><td>Statcast xBA vs. actual BA (regression to mean)</td><td class="num">corr −0.004 with outcome</td><td><span class="verdict fail">negative</span></td></tr>
-      <tr><td>Direct ballpark-factor betting</td><td class="num">home_runs "over" at hitter parks: n=66,187, ROI −43.85%</td><td><span class="verdict fail">negative</span></td></tr>
-      <tr><td>home_runs / rbis "over", plus-money, fine-grained odds bins (+100 to +3000+)</td><td class="num">every single bin negative, no sweet spot at any granularity</td><td><span class="verdict fail">unconditionally unprofitable</span></td></tr>
-      <tr><td>XGBoost model on real factors, true temporal holdout</td><td class="num">total_bases: genuine TEST AUC 0.626 — real skill</td><td><span class="verdict cond">skill real, edge not</span></td></tr>
-      <tr><td>↳ isotonic calibration on that model (3-way split)</td><td class="num">betting on calibrated edge: worse than uncalibrated, not better</td><td><span class="verdict fail">negative</span></td></tr>
+      <tr><th>Approach</th><th>Why it should plausibly work</th><th>What actually happened</th><th>Verdict</th></tr>
+      <tr><td>Team power ranking (Elo) + recent-form fading</td><td>team quality looks like real, quantifiable information</td><td>the market's own price predicts outcomes better than Elo in every period tested — oddsmakers see the same records plus far more (starter, weather, bullpen)</td><td><span class="verdict fail">negative</span></td></tr>
+      <tr><td>Starting-pitcher quality (rolling RA/9)</td><td>the starter is the single biggest lever in a baseball game</td><td>weaker than team Elo, not stronger — precisely because it's <i>so</i> obvious that it's priced before first pitch, every time</td><td><span class="verdict fail">negative</span></td></tr>
+      <tr><td>Bullpen fatigue (relief innings, last 2 days)</td><td>a tired bullpen should allow more runs</td><td>corr +0.02 with total runs — anyone, including the book, can read yesterday's box score</td><td><span class="verdict fail">negative</span></td></tr>
+      <tr><td>Statcast xBA vs. actual BA (regression to mean)</td><td>a real, published sabermetric regression effect</td><td>corr −0.004 with outcome — it's been public for a decade; any modeling vendor a book uses has already absorbed it</td><td><span class="verdict fail">negative</span></td></tr>
+      <tr><td>Direct ballpark-factor betting</td><td>Coors Field really does inflate offense</td><td>home_runs "over" at hitter parks: n=66,187, ROI −43.85% — using the exact public factor numbers a book would use too</td><td><span class="verdict fail">negative</span></td></tr>
+      <tr><td>home_runs / rbis "over", plus-money, fine-grained odds bins (+100 to +3000+)</td><td>maybe a narrow price band is mispriced even if the average isn't</td><td>every single bin negative, no sweet spot at any granularity — this is vig structure at the tails, not a signal that got priced in</td><td><span class="verdict fail">unconditionally unprofitable</span></td></tr>
+      <tr><td>XGBoost model on real factors, true temporal holdout</td><td>a real model might beat a hand-built linear scorecard</td><td>total_bases: genuine TEST AUC 0.626 — real, reproducible skill. Not "no signal" — see next row</td><td><span class="verdict cond">skill real, edge not</span></td></tr>
+      <tr><td>↳ isotonic calibration on that model (3-way split)</td><td>maybe the skill wasn't correctly priced against the market yet</td><td>betting on calibrated edge: worse than uncalibrated, not better — the market's own number already reflects what the model found</td><td><span class="verdict fail">negative</span></td></tr>
     </table>
     </div>
-    <p class="note">The <code>home_runs</code>/<code>rbis</code> "over" finding is worth reading precisely: at true full market scale, across hundreds of thousands of real bets, betting a batter to homer or drive in runs at <i>any</i> plus-money price is a near-guaranteed loser — not a soft guideline, a mechanical fact confirmed at every odds granularity checked. The XGBoost result is the most interesting non-result in this audit: <code>total_bases</code> has real, reproducible predictive signal (confirmed across three separate holdout splits) that the market's own price already absorbs — a genuine finding about market efficiency, not a failed experiment. Full detail on every row: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>, Addendums&nbsp;16&#8211;21.</p>
+    <p class="note">The one row that isn't simply "negative": XGBoost found <b>real</b> predictive skill in <code>total_bases</code> (confirmed across three separate holdout splits) — it just isn't a bettable edge, because the market's own price already reflects a comparable-or-better read on the same information. Skill and edge are different things; this table is the clearest place in the whole audit where that distinction shows up directly. Full detail on every row: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>, Addendums&nbsp;16&#8211;21.</p>
   </section>
 
   <footer>
