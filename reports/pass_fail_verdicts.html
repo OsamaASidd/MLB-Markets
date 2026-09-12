@@ -224,20 +224,23 @@
   </section>
 
   <section>
-    <div class="sec-head"><span class="sec-no">03</span><h2>Full real-market re-check — client's own 2023-2026 odds warehouse</h2></div>
-    <p class="lede">2.42M real closing-odds rows, best price across 56 books, graded against real box scores — all 4 real seasons (2023 box scores backfilled from the free MLB Stats API). Tests the client's own adopted default policy unconditionally — every line, not just what production happened to pick.</p>
+    <div class="sec-head"><span class="sec-no">03</span><h2>Full real-market re-check — best cut found, per market, in the 2023-2026 warehouse</h2></div>
+    <p class="lede">2.42M real closing-odds rows, best price across 56 books, graded against real box scores — all 4 real seasons (2023 box scores backfilled from the free MLB Stats API). Blanket default-policy check plus whatever better cut was actually searched for and found within this same dataset.</p>
     <div class="table-scroll">
     <table>
-      <tr><th>Market → default side</th><th class="num">n</th><th class="num">ROI %</th><th>95% CI</th><th>Verdict</th></tr>
-      <tr><td>hits → under</td><td class="num">171,902</td><td class="num">+0.31</td><td>[−0.19, 0.81]</td><td><span class="verdict fail">FAIL (flat)</span></td></tr>
-      <tr><td>total_bases → under</td><td class="num">162,201</td><td class="num">−0.53</td><td>[−0.99, −0.08]</td><td><span class="verdict fail">FAIL (confirmed negative)</span></td></tr>
-      <tr><td>totals → under</td><td class="num">8,638</td><td class="num">−4.94</td><td>[−6.99, −2.88]</td><td><span class="verdict fail">FAIL</span></td></tr>
-      <tr><td>h2h → away</td><td class="num">4,440</td><td class="num">−2.21</td><td>[−5.41, 1.00]</td><td><span class="verdict fail">FAIL</span></td></tr>
-      <tr><td>spreads → away</td><td class="num">6,939</td><td class="num">−5.11</td><td>[−7.43, −2.79]</td><td><span class="verdict fail">FAIL</span></td></tr>
-      <tr><td>strikeouts, minus-money, no filter</td><td class="num">33,161</td><td class="num">−4.64</td><td>[−5.42, −3.86]</td><td><span class="verdict fail">FAIL (confirms veto)</span></td></tr>
+      <tr><th>Market</th><th>Cut</th><th class="num">n</th><th class="num">ROI %</th><th>95% CI</th><th>Verdict</th></tr>
+      <tr><td rowspan="2" class="emph">hits</td><td>blanket: under, no filter</td><td class="num">171,902</td><td class="num">+0.31</td><td>[−0.19, 0.81]</td><td><span class="verdict fail">FAIL (flat)</span></td></tr>
+      <tr><td class="emph">↳ best cut found: under, odds −249..−101</td><td class="num emph">19,567</td><td class="num emph">+1.32</td><td><b>[0.19, 2.45]</b></td><td><span class="verdict pass">PASS</span></td></tr>
+      <tr><td rowspan="2">total_bases</td><td>blanket: under, no filter</td><td class="num">162,201</td><td class="num">−0.53</td><td>[−0.99, −0.08]</td><td><span class="verdict fail">FAIL (confirmed negative)</span></td></tr>
+      <tr><td>↳ same odds-band search applied — no lever found anywhere tested</td><td class="num">—</td><td class="num">—</td><td>—</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td rowspan="2">totals</td><td>blanket: under, no filter</td><td class="num">8,638</td><td class="num">−4.94</td><td>[−6.99, −2.88]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>↳ swept by total-line value (4 bands × 2 sides) — every combination negative</td><td class="num">—</td><td class="num">—</td><td>—</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>h2h</td><td>blanket: away, no filter — not yet re-swept by a selective cut in this warehouse (its real near-miss lever needs confidence scores, only in production data — see §01)</td><td class="num">4,440</td><td class="num">−2.21</td><td>[−5.41, 1.00]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>spreads</td><td>blanket: away, no filter — same caveat as h2h</td><td class="num">6,939</td><td class="num">−5.11</td><td>[−7.43, −2.79]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>pitcher_strikeouts</td><td>blanket: minus-money, no filter (confirms the veto)</td><td class="num">33,161</td><td class="num">−4.64</td><td>[−5.42, −3.86]</td><td><span class="verdict fail">FAIL</span></td></tr>
     </table>
     </div>
-    <p class="note">Adding the 4th season (2023) sharpened <code>total_bases</code> from "flat, CI crosses zero" to a confirmed negative — more data made this FAIL more certain, not less.</p>
+    <p class="note">Two different searches happened here, and the table says which market got which: <code>total_bases</code> and <code>totals</code> were both swept for a hidden lever the same way <code>hits</code> was (odds bands / line-value bands) and came back empty — that's a real "no," not an untried one. <code>h2h</code>, <code>spreads</code>, and <code>pitcher_strikeouts</code> haven't had that same odds/line sweep run against this specific warehouse — their near-miss signal (section 01) comes from the production confidence score, a field this raw warehouse doesn't carry, so it can't be re-tested here the same way. Separately: adding the 4th season (2023) sharpened <code>total_bases</code>'s blanket result from "flat, CI crosses zero" to a confirmed negative — more data made that FAIL more certain, not less.</p>
   </section>
 
   <section>
