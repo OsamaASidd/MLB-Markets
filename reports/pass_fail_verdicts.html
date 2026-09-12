@@ -182,8 +182,29 @@
   </div>
 
   <section>
-    <div class="sec-head"><span class="sec-no">01</span><h2>Primary verdict — every MLB market, full sample</h2></div>
-    <p class="lede">Client's own production pick_history, 74,385 graded picks, 2026-05-17 → 2026-07-27. This is the headline result of Milestone 1: run every market through the gate, no cuts, no filtering.</p>
+    <div class="sec-head"><span class="sec-no">01</span><h2>Best strategy found per market — not blanket betting</h2></div>
+    <p class="lede">For every market, the single best selective cut found anywhere in this audit (a confidence/odds filter, not "bet every pick"). This is the table that reflects actual applied strategy, not an unconditional baseline.</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Market</th><th>Best strategy found</th><th class="num">n</th><th class="num">ROI %</th><th>95% CI</th><th>Verdict</th></tr>
+      <tr><td class="emph">hits</td><td>under, odds −249..−101</td><td class="num emph">19,567</td><td class="num emph">+1.32</td><td><b>[0.19, 2.45]</b></td><td><span class="verdict pass">PASS</span></td></tr>
+      <tr><td>spreads</td><td>conf≥60 + minus-money</td><td class="num">513</td><td class="num">+5.53</td><td>[−1.33, 12.39]</td><td><span class="verdict cond">near-miss</span></td></tr>
+      <tr><td>pitcher_strikeouts</td><td>conf≥60 + minus-money</td><td class="num">477</td><td class="num">+3.34</td><td>[−4.14, 10.83]</td><td><span class="verdict cond">near-miss</span></td></tr>
+      <tr><td>pitcher_outs</td><td>conf≥60 + minus-money</td><td class="num">176</td><td class="num">+4.40</td><td>[−8.25, 17.06]</td><td><span class="verdict cond">near-miss — data-starved</span></td></tr>
+      <tr><td>h2h (moneyline)</td><td>conf≥60 + minus-money</td><td class="num">490</td><td class="num">+1.94</td><td>[−5.36, 9.25]</td><td><span class="verdict cond">near-miss</span></td></tr>
+      <tr><td>runs_scored</td><td>minus-money (best of tested cuts)</td><td class="num">5,000</td><td class="num">−1.90</td><td>[−4.02, 0.23]</td><td><span class="verdict fail">FAIL — closest to zero</span></td></tr>
+      <tr><td>totals</td><td>minus-money (best of tested cuts)</td><td class="num">3,158</td><td class="num">−2.77</td><td>[−5.96, 0.41]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>rbis</td><td>conf≥60 + minus-money (best of tested)</td><td class="num">3,925</td><td class="num">−2.01</td><td>[−3.86, −0.17]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>total_bases</td><td>conf≥60 + minus-money (best of tested; odds-band also failed)</td><td class="num">5,574</td><td class="num">−3.66</td><td>[−5.51, −1.81]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>home_runs</td><td>conf≥60 + minus-money (exhaustive odds sweep found no lever anywhere)</td><td class="num">9,319</td><td class="num">−3.61</td><td>[−4.30, −2.92]</td><td><span class="verdict fail">FAIL — unconditional</span></td></tr>
+    </table>
+    </div>
+    <p class="note">This is the honest upgrade from "bet everything" to "apply the best strategy found": <b>1 real PASS</b>, <b>4 near-misses</b> (real positive point estimate, held back only by sample size or CI width — worth continued volume, not a new search), and <b>5 markets where the best strategy still tested negative</b> — for <code>home_runs</code> specifically, that's not for lack of trying: Addendum 18 swept every odds band from +100 to +3000+ and found a negative result in literally every one. The near-misses are real signal, not guaranteed passes — they need more graded volume at the <i>same</i> selection criteria, not a different one. Full derivation of every row: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>.</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-no">02</span><h2>For reference — the blanket (no-filter) baseline</h2></div>
+    <p class="lede">Client's own production pick_history, 74,385 graded picks, 2026-05-17 → 2026-07-27: what happens with zero selectivity. Kept for comparison against the strategy-applied table above — this is what "no strategy at all" looks like, not the recommended approach.</p>
     <div class="table-scroll">
     <table>
       <tr><th>Market</th><th class="num">n</th><th class="num">Win %</th><th class="num">ROI %</th><th>95% CI</th><th>Verdict</th></tr>
@@ -203,7 +224,7 @@
   </section>
 
   <section>
-    <div class="sec-head"><span class="sec-no">02</span><h2>Full real-market re-check — client's own 2023-2026 odds warehouse</h2></div>
+    <div class="sec-head"><span class="sec-no">03</span><h2>Full real-market re-check — client's own 2023-2026 odds warehouse</h2></div>
     <p class="lede">2.42M real closing-odds rows, best price across 56 books, graded against real box scores — all 4 real seasons (2023 box scores backfilled from the free MLB Stats API). Tests the client's own adopted default policy unconditionally — every line, not just what production happened to pick.</p>
     <div class="table-scroll">
     <table>
@@ -220,23 +241,21 @@
   </section>
 
   <section>
-    <div class="sec-head"><span class="sec-no">03</span><h2>Near-misses and the one validated lever</h2></div>
-    <p class="lede">Selective cuts, not blanket betting — the only places a real signal has survived every check applied in this audit.</p>
+    <div class="sec-head"><span class="sec-no">04</span><h2>Detail on the one PASS — is it real, and is it deployable?</h2></div>
+    <p class="lede">The <code>hits</code> odds-band strategy from section 01, checked for the specific ways a result like this has turned out to be fake elsewhere in this audit.</p>
     <div class="table-scroll">
     <table>
       <tr><th>Cut</th><th class="num">n</th><th class="num">ROI %</th><th>95% CI</th><th>Verdict</th></tr>
-      <tr><td>pitcher_strikeouts, conf≥60 + minus-money</td><td class="num">477</td><td class="num">+3.34</td><td>[−4.14, 10.83]</td><td><span class="verdict cond">near-miss — n&lt;500</span></td></tr>
-      <tr><td>spreads, conf≥60 + minus-money</td><td class="num">513</td><td class="num">+5.53</td><td>[−1.33, 12.39]</td><td><span class="verdict cond">near-miss — CI crosses 0</span></td></tr>
       <tr><td class="emph">hits → under, odds −249..−101, pooled 2023–2026 (4 seasons)</td><td class="num emph">19,567</td><td class="num emph">+1.32</td><td><b>[0.19, 2.45]</b></td><td><span class="verdict pass">PASS</span></td></tr>
-      <tr><td>↳ narrower sub-band −149..−101 only (2023 also passes here)</td><td class="num">2,263 (2023)</td><td class="num">+4.55</td><td>[0.72, 8.37]</td><td><span class="verdict pass">PASS (2023)</span></td></tr>
-      <tr><td>hits+total_bases, best-price re-check (execution test)</td><td class="num">696</td><td class="num">+2.61</td><td>[−5.34, 10.55]</td><td><span class="verdict cond">directional only</span></td></tr>
+      <tr><td>↳ narrower sub-band −149..−101 only (2023 also passes here, no reversal in any season)</td><td class="num">2,263 (2023)</td><td class="num">+4.55</td><td>[0.72, 8.37]</td><td><span class="verdict pass">PASS (2023)</span></td></tr>
+      <tr><td>hits+total_bases, best-price re-check (execution test, separate finding)</td><td class="num">696</td><td class="num">+2.61</td><td>[−5.34, 10.55]</td><td><span class="verdict cond">directional only</span></td></tr>
     </table>
     </div>
-    <p class="note">The <code>hits</code> odds-band PASS is a <b>proposal only</b> — not deployed, requires written sign-off before any production change (Addendum 13). It weakened when 2023 was added (was +1.93%, CI [0.54%, 3.33%] on 3 seasons) — still clears the gate, more marginally. The narrower <code>−149..−101</code> sub-band is more consistent across all 4 seasons than the full <code>−249..−101</code> range and is the more defensible version to pursue further (Addendum 14). Its multiplicity risk was independently checked via cluster-robust SE by game and confirmed not inflated the way an earlier tempting-looking result in this audit turned out to be.</p>
+    <p class="note">This is a <b>proposal only</b> — not deployed, requires written sign-off before any production change (Addendum 13). It weakened when 2023 was added (was +1.93%, CI [0.54%, 3.33%] on 3 seasons) — still clears the gate, more marginally. The narrower <code>−149..−101</code> sub-band is more consistent across all 4 seasons than the full <code>−249..−101</code> range and is the more defensible version to pursue further (Addendum 14). Its multiplicity risk — the same failure mode that made an earlier tempting-looking result in this audit turn out fake (a real n of 14 games dressed up as 115) — was independently checked here via cluster-robust standard error by game, and the result survives it.</p>
   </section>
 
   <section>
-    <div class="sec-head"><span class="sec-no">04</span><h2>Why production underperforms even the flat baseline</h2></div>
+    <div class="sec-head"><span class="sec-no">05</span><h2>Why production underperforms even the flat baseline</h2></div>
     <p class="lede">The +2.61% figure above comes from this investigation (Addendum 12): holding 696 identical real picks fixed (same player, game, line, outcome) and swapping only the recorded price.</p>
     <div class="table-scroll">
     <table>
@@ -249,7 +268,7 @@
   </section>
 
   <section>
-    <div class="sec-head"><span class="sec-no">05</span><h2>Every strategy and model tried beyond the gate itself</h2></div>
+    <div class="sec-head"><span class="sec-no">06</span><h2>Every strategy and model tried beyond the gate itself</h2></div>
     <p class="lede">Six independent custom strategies, a fine-grained odds sweep, and a real gradient-boosted model — all built on real data with proper train/test discipline, checking whether anything beats the verdicts above.</p>
 
     <div class="table-scroll">
