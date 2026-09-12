@@ -248,6 +248,26 @@
     <p class="note">78% of matched picks got a measurably worse price than what the market actually offered at the time — a ~19-point ROI swing from price alone, big enough to explain the entire live production shortfall on its own. No bookmaker field is currently logged, so the exact source can't be traced yet; that's the single highest-leverage fix identified in this whole audit.</p>
   </section>
 
+  <section>
+    <div class="sec-head"><span class="sec-no">05</span><h2>Every strategy and model tried beyond the gate itself</h2></div>
+    <p class="lede">Six independent custom strategies, a fine-grained odds sweep, and a real gradient-boosted model — all built on real data with proper train/test discipline, checking whether anything beats the verdicts above.</p>
+
+    <div class="table-scroll">
+    <table>
+      <tr><th>Approach</th><th class="num">Result</th><th>Verdict</th></tr>
+      <tr><td>Team power ranking (Elo) + recent-form fading</td><td class="num">market beats both signals every period tested</td><td><span class="verdict fail">negative</span></td></tr>
+      <tr><td>Starting-pitcher quality (rolling RA/9)</td><td class="num">weaker than team Elo, not stronger</td><td><span class="verdict fail">negative</span></td></tr>
+      <tr><td>Bullpen fatigue (relief innings, last 2 days)</td><td class="num">corr +0.02 with total runs, essentially zero</td><td><span class="verdict fail">negative</span></td></tr>
+      <tr><td>Statcast xBA vs. actual BA (regression to mean)</td><td class="num">corr −0.004 with outcome</td><td><span class="verdict fail">negative</span></td></tr>
+      <tr><td>Direct ballpark-factor betting</td><td class="num">home_runs "over" at hitter parks: n=66,187, ROI −43.85%</td><td><span class="verdict fail">negative</span></td></tr>
+      <tr><td>home_runs / rbis "over", plus-money, fine-grained odds bins (+100 to +3000+)</td><td class="num">every single bin negative, no sweet spot at any granularity</td><td><span class="verdict fail">unconditionally unprofitable</span></td></tr>
+      <tr><td>XGBoost model on real factors, true temporal holdout</td><td class="num">total_bases: genuine TEST AUC 0.626 — real skill</td><td><span class="verdict cond">skill real, edge not</span></td></tr>
+      <tr><td>↳ isotonic calibration on that model (3-way split)</td><td class="num">betting on calibrated edge: worse than uncalibrated, not better</td><td><span class="verdict fail">negative</span></td></tr>
+    </table>
+    </div>
+    <p class="note">The <code>home_runs</code>/<code>rbis</code> "over" finding is worth reading precisely: at true full market scale, across hundreds of thousands of real bets, betting a batter to homer or drive in runs at <i>any</i> plus-money price is a near-guaranteed loser — not a soft guideline, a mechanical fact confirmed at every odds granularity checked. The XGBoost result is the most interesting non-result in this audit: <code>total_bases</code> has real, reproducible predictive signal (confirmed across three separate holdout splits) that the market's own price already absorbs — a genuine finding about market efficiency, not a failed experiment. Full detail on every row: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>, Addendums&nbsp;16&#8211;21.</p>
+  </section>
+
   <footer>
     Milestone 1 · MLB Markets gate audit · full methodology, scripts, and raw output: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>
   </footer>
