@@ -1,0 +1,12 @@
+real games with fatigue features: 3,858
+
+corr(combined bullpen fatigue [outs, last 2 days], total_runs): 0.02
+
+matched to real totals odds: 8,702
+
+-- bet OVER when combined bullpen fatigue is in the top quartile (both teams' last-2-day relief workload) --
+  season 2023      n=1437    WR=50.9  ROI=-1.62  CI=[-6.63,3.4]  fail
+  season 2024      n=559     WR=50.8  ROI=-1.23  CI=[-9.31,6.85]  fail
+  season 2025      n=210     WR=44.3  ROI=-14.02  CI=[-27.11,-0.93]  fail
+  season 2026      n=0       WR=None  ROI=None  CI=[None,None]  fail
+  ALL 2023-2026    n=2206    WR=50.2  ROI=-2.7  CI=[-6.75,1.35]  fail

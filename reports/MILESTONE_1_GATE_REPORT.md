@@ -1108,6 +1108,41 @@ not a new backtest.
 
 ---
 
+## Addendum 16: bullpen fatigue (sourced from sports-betting research) — also negative
+
+Attempted to source new hypotheses from sports-betting community research.
+Direct note on method: Reddit itself is not fetchable in this environment
+(`reddit.com`/`old.reddit.com` both blocked), and web search did not surface
+actual community threads, only SEO content sites — disclosed rather than
+worked around. Two specific, well-reasoned, testable angles came out of that
+content regardless: bullpen fatigue and umpire strike-zone tendency. Only
+the first was actually buildable with real data already in this repo.
+
+**Hypothesis:** a team's bullpen, having thrown heavy relief innings in the
+prior 1-2 days, is fatigued and should allow more runs — relevant to
+`totals` (already a confirmed FAIL market). Built point-in-time correct
+from real box scores already in this repo (relief innings pitched by
+non-starters, summed per team per day, only games strictly before the game
+in question counted) across all 4 real seasons.
+
+**Result: no signal.** Correlation between combined two-team bullpen
+fatigue and actual total runs: **+0.02** (real, essentially zero). Betting
+overs when combined fatigue is in the top quartile: **n=2,206, ROI −2.70%,
+CI [−6.75%, 1.35%]** — fails, and clearly negative in 2025 specifically
+(−14.02%, n=210). Consistent with the pattern seen throughout this audit:
+a real, physically-grounded effect that's commonly cited in betting
+literature, but doesn't show up as exploitable once actually tested against
+real outcomes — most likely already priced into the total line by the book
+before it's posted, the same story as Addendum 7's weather-effect finding.
+
+This makes four independent custom-strategy angles now tested (team Elo,
+streak-fading, pitcher quality, bullpen fatigue) plus the weather research —
+all negative, all for the same underlying reason: whatever a well-known,
+publicly-discussed signal predicts, MLB books have generally already priced
+it in by closing time.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -1224,6 +1259,8 @@ MLB Markets/
   scripts/backfill_2023_boxscores.py   pulls real 2023 box scores (free MLB Stats API)
   scripts/overall_portfolio_roi.py   pools every market/side into one blended whole-data ROI
   reports/overall_portfolio_roi_output.txt   full Addendum 15 output
+  scripts/test_bullpen_fatigue.py   point-in-time bullpen fatigue vs totals, negative result
+  reports/bullpen_fatigue_output.txt   full Addendum 16 output
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
