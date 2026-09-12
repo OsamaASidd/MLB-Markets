@@ -302,6 +302,25 @@
     <p class="note">The two rows that aren't simply "negative": XGBoost found <b>real</b> predictive skill in <code>total_bases</code> (confirmed across three separate holdout splits) and, pooled across markets in Model A, the best ranking skill in this audit (AUC 0.692) — neither clears a profitable edge once priced against the market. Model B, after a caught-and-fixed false positive, is the exception: a real, CI-confirmed PASS (edge&gt;0.03, n=1,432, +4.98% ROI) built from real 2023-2025 data pooled across years exactly as specified — the same 1-5% magnitude as every other genuine edge in this report, not an outlier. Full detail on every row, including the false-positive writeup: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>, Addendums&nbsp;16&#8211;23.</p>
   </section>
 
+  <section>
+    <div class="sec-head"><span class="sec-no">07</span><h2>Accuracy vs. ROI — why "raise accuracy above 80%" isn't the same request as "raise ROI"</h2></div>
+    <p class="lede">A real, unfabricated way to clear 80% accuracy exists — betting whichever side the market itself already favors, zero modeling required. It also loses money.</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Market</th><th class="num">n</th><th class="num">Accuracy</th><th class="num">ROI %</th></tr>
+      <tr><td>batter_home_runs</td><td class="num">93,956</td><td class="num"><b>88.4%</b></td><td class="num n fail">−2.20</td></tr>
+      <tr><td>batter_rbis</td><td class="num">104,518</td><td class="num">71.1%</td><td class="num n fail">−1.29</td></tr>
+      <tr><td>batter_hits</td><td class="num">110,468</td><td class="num">58.6%</td><td class="num n fail">−6.88</td></tr>
+      <tr><td>batter_total_bases</td><td class="num">109,651</td><td class="num">57.2%</td><td class="num n fail">−4.19</td></tr>
+      <tr><td>h2h</td><td class="num">1,754</td><td class="num">55.1%</td><td class="num n fail">−3.47</td></tr>
+      <tr><td>pitcher_strikeouts</td><td class="num">10,166</td><td class="num">54.1%</td><td class="num n fail">−4.03</td></tr>
+      <tr><td>spreads</td><td class="num">1,807</td><td class="num">53.5%</td><td class="num n fail">−5.37</td></tr>
+      <tr><td>totals</td><td class="num">4,846</td><td class="num">48.8%</td><td class="num n fail">−7.08</td></tr>
+    </table>
+    </div>
+    <p class="note"><code>batter_home_runs</code> alone clears 80% accuracy with no model at all — betting "under" on a home-run prop wins ~88% of the time, since most players simply don't hit a home run in a given game (matches the harness's own <code>gate_results.csv</code>: home_runs minus-money WR 87.9%). Skewing a pooled model toward this market — or reporting accuracy on it alone — would produce a genuine 80%+ accuracy figure right now. It would also make the model less profitable: the payout on that heavily-favored side is small enough (~+11&cent; per dollar staked) that ROI on the exact same bet is −2.20%. Accuracy and profitability are different axes, and in markets like this one, pushing one pushes the other the wrong way — the same lesson Addendum 17/18 already established. Model B's reported number stays at 68.4% test accuracy / the edge&gt;0.03 PASS, because that's the version of "accurate" that makes money. Full writeup: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>, Addendum&nbsp;24.</p>
+  </section>
+
   <footer>
     Milestone 1 · MLB Markets gate audit · full methodology, scripts, and raw output: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>
   </footer>

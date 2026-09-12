@@ -1539,6 +1539,52 @@ milestone.
 
 ---
 
+## Addendum 24: why "raise accuracy above 80%" and "raise ROI" are different, sometimes opposite, requests
+
+Directly requested: push Model B's accuracy above 80% (up from the reported
+68.4% test accuracy). Investigated rather than dismissed — and there is a
+real, non-fabricated way to do it.
+
+**Test (`scripts/check_favorite_accuracy_vs_roi.py`): bet the side the
+market's own price already favors (`market_prob > 0.5`) on every pooled
+market, zero modeling required, and report accuracy next to ROI:**
+
+| market | n | accuracy | ROI |
+|---|---:|---:|---:|
+| batter_home_runs | 93,956 | **88.4%** | −2.20% |
+| batter_rbis | 104,518 | 71.1% | −1.29% |
+| batter_hits | 110,468 | 58.6% | −6.88% |
+| batter_total_bases | 109,651 | 57.2% | −4.19% |
+| h2h | 1,754 | 55.1% | −3.47% |
+| pitcher_strikeouts | 10,166 | 54.1% | −4.03% |
+| spreads | 1,807 | 53.5% | −5.37% |
+| totals | 4,846 | 48.8% | −7.08% |
+
+`batter_home_runs` alone clears 80% accuracy with no model at all — betting
+"under" on a home-run prop wins ~88% of the time, since most players simply
+don't hit a home run in a given game. This is the identical lopsided-
+favorite structure the harness's own gate already showed (`gate_results.csv`:
+`home_runs` minus-money WR 87.9%, conf≥60 WR 89.3%) and that Addendum 17/18
+already priced as unconditionally unprofitable.
+
+**Skewing Model B's pooled mix toward `home_runs` — or reporting accuracy on
+that market alone — would produce a genuine, unfabricated accuracy figure
+above 80% right now. It would also make the model less profitable, not
+more:** the payout on that heavily-favored side is small enough (~+11 cents
+per dollar staked) that ROI on the exact same bet is −2.20%. Accuracy and
+profitability are different axes here, and in this specific market pushing
+one pushes the other the wrong way — the same lesson Addendum 17/18 already
+established, arrived at again by a different route.
+
+**Not changed as a result:** Model B's reported number stays at 68.4% test
+accuracy / the edge>0.03 PASS (n=1,432, ROI +4.98%, CI [1.13%, 8.82%]),
+because that is the version of "accurate" that makes money. An 80%+-accuracy
+version exists and is disclosed above, labeled for what it is, in case
+accuracy independent of ROI is ever a stated deliverable requirement on its
+own.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -1673,6 +1719,8 @@ MLB Markets/
   reports/xgboost_pooled_A_output.txt   full Addendum 22 output (AUC 0.692, best in report)
   scripts/xgboost_pooled_B_multiyear.py   Model B: one pooled model, 8 markets, real 2023-2026 features
   reports/xgboost_pooled_B_output.txt   full Addendum 23 output (corrected, after a caught false positive)
+  scripts/check_favorite_accuracy_vs_roi.py   accuracy-vs-ROI check: betting the market's own favorite
+  reports/favorite_accuracy_vs_roi_output.txt   full Addendum 24 output (80%+ accuracy exists, loses money)
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
