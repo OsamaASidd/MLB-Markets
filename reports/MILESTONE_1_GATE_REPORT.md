@@ -1189,6 +1189,76 @@ this market shows no obvious structural driver at all.
 
 ---
 
+## Addendum 18: fine-grained plus-odds sweep — no sweet spot exists, at any granularity
+
+Addendum 17 found the "over" side of `home_runs`/`rbis` catastrophic in
+aggregate across the whole plus-money range. That aggregate could in
+principle be hiding a decent narrow band inside a bad long tail (a
+plausible, specific concern — not hand-waved past). Checked directly:
+`scripts/finegrain_plus_odds_sweep.py` splits +100 through +3000 into ten
+bins per market instead of one bucket.
+
+**Every single bin is negative**, most with large samples and confidence
+intervals entirely below zero:
+
+| Odds range | home_runs ROI (n) | rbis ROI (n) |
+|---|---:|---:|
+| +100-149 | −4.4% (5) | −11.74% (12,128) |
+| +150-199 | −4.66% (159) | −10.65% (40,271) |
+| +200-299 | −3.72% (2,020) | −14.08% (60,918) |
+| +300-399 | −14.31% (7,484) | −22.16% (12,015) |
+| +400-499 | −13.79% (15,185) | −23.25% (12,226) |
+| +500-699 | −14.09% (36,261) | −25.37% (34,796) |
+| +700-999 | −20.56% (37,518) | −27.43% (36,230) |
+| +1000-1499 | −43.07% (29,925) | −31.77% (24,215) |
+| +1500-2999 | −42.41% (7,204) | −29.27% (60,577) |
+| +3000+ | −68.81% (138,469) | −42.25% (86,161) |
+
+There is no granularity at which a positive cut appears. This is as
+complete a "no" as this method produces — the `over` side of these two
+markets is unconditionally unprofitable, not just bad on average.
+
+---
+
+## Straight answer: how to get any of the 10 markets to pass
+
+Per-market, based on everything found across this audit:
+
+- **`hits`** — partially already does, narrowly: the odds-band filter
+  (Addendum 10/14) is real (+1.32%, weakening toward the −149..−101
+  sub-band as the more defensible version). To get the *whole* market
+  there: confirm and fix the execution/price-capture gap (Addendum 12) at
+  scale — that alone was worth ~19 ROI points on identical picks.
+- **`pitcher_strikeouts`**, **`spreads`** — both have real, walk-forward-stable
+  signal at conf≥60 minus-money (+3.34%, +5.53%), just short on sample size
+  or CI width. The lever is volume at the *same* selection criteria, not a
+  new angle — and, for strikeouts, fixing the specific weight
+  miscalibration found in Addendum 8 (its two heaviest-weighted factors
+  carry no real signal) could tighten the CI faster than volume alone.
+- **`total_bases`** — now confirmed negative even at full scale, and the
+  `hits`-style odds-band filter does not transfer here (tested). Needs
+  genuine model work: the dead/generic weight columns and unused per-market
+  override found in Addendum 11, not a pricing filter.
+- **`home_runs`, `rbis`** — the "over" side is unconditionally unprofitable
+  at every odds granularity tested (Addendum 17/18) — no fix exists for
+  this side; it is correctly vetoed. The "under" side isn't much better
+  (−1.46% to −2.37% at full scale) — a genuine model/projection problem,
+  not a pricing one.
+- **`totals`, `h2h`** — no structural driver found anywhere in this audit
+  (team power ranking, bullpen fatigue, line/odds sweep all negative).
+  Lowest-priority markets for further work; nothing points at a specific
+  fix.
+- **`pitcher_outs`, `runs_scored`** — data-starved (no real odds-warehouse
+  coverage exists for these two at all — a genuine provider gap, not a
+  choice). Needs more live volume before anything can be concluded, let
+  alone fixed.
+
+No market on this list gets to "pass" by searching the same data harder —
+every one of the concrete levers above is either "wait for more volume" or
+"a specific, already-identified engineering fix," not a new backtest angle.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -1309,6 +1379,8 @@ MLB Markets/
   reports/bullpen_fatigue_output.txt   full Addendum 16 output
   scripts/sweep_remaining_markets.py   same fine-grained sweep applied to home_runs/rbis/totals
   reports/sweep_remaining_markets_output.txt   full Addendum 17 output
+  scripts/finegrain_plus_odds_sweep.py   10-bin fine sweep of the plus-money range
+  reports/finegrain_plus_odds_output.txt   full Addendum 18 output
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
