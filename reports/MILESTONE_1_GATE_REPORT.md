@@ -1072,6 +1072,42 @@ diff against git history for the 3-season numbers if wanted).
 
 ---
 
+## Addendum 15: the single blended number — whole data, whole policy
+
+Every prior addendum reports per-market numbers. Asked directly: what's the
+ROI if you pool literally everything — every market the client's adopted
+default policy covers, every real pick that policy would generate, all 4
+real seasons, no cuts (`scripts/overall_portfolio_roi.py`)?
+
+**n = 354,120 real graded picks. ROI = −0.34%. 95% CI = [−0.67%, −0.01%].
+FAIL** — the CI is entirely negative, not just crossing zero. This is the
+single most complete answer this audit can give to "what's the overall
+ROI on the whole data": a confirmed small loss, at a sample size about as
+close to definitive as sports-betting data gets.
+
+This number is not in tension with Addendum 14's `hits`-under PASS (+1.32%,
+n=19,567) — that PASS is a narrow sub-segment (a specific odds band) found
+*inside* a market (`hits`) whose own blanket ROI is flat (+0.31%, n=171,902).
+Both are true at once: the blanket policy across all 5 markets loses money
+overall, and one small, specific slice within one of those markets has a
+real, validated (if modest) edge. Selectivity, not scale, is where value
+exists in this data — a theme this entire audit keeps returning to.
+
+**On whether this can reach +10%:** no — not from this data, and not from
+searching it more. Addendum 7 already ran an exhaustive search (a
+79,310-candidate historical sweep, a full factor reweight, three independent
+custom strategies, and real sports-betting literature review) and found the
+same ceiling every time: validated MLB edges run 2-5% for actual
+professionals in a market this liquid; a genuine, generalized 10%+ would be
+an outlier that, if real and public, would already be arbitraged away. The
+more realistic, already-identified path to a materially better blended
+number is the execution fix from Addendum 12 (production is losing ~19
+points of ROI to bad price capture, more than enough to flip several of
+these markets from loss to breakeven-or-better on its own) — infrastructure,
+not a new backtest.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -1186,6 +1222,8 @@ MLB Markets/
   reports/addendum12_execution_gap.md   full execution-vs-selection-gap investigation
   reports/addendum13_hits_odds_band_proposal.md   standalone change-request proposal (not deployed)
   scripts/backfill_2023_boxscores.py   pulls real 2023 box scores (free MLB Stats API)
+  scripts/overall_portfolio_roi.py   pools every market/side into one blended whole-data ROI
+  reports/overall_portfolio_roi_output.txt   full Addendum 15 output
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```

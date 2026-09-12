@@ -80,18 +80,33 @@
 
   <div class="headline">
     <div class="stat-card">
-      <div class="n warn">+2.61%</div>
-      <div class="label">ROI on hits+total_bases picks, re-priced at best available odds instead of production's actual captured price (n=696)</div>
-      <span class="tag directional">directional — CI crosses zero</span>
+      <div class="n" style="color:var(--fail)">−0.34%</div>
+      <div class="label">Whole-data blended ROI — every market/side in the client's default policy, pooled, all 4 real seasons (n=354,120)</div>
+      <span class="tag" style="background:var(--fail-bg);color:var(--fail)">confirmed negative — CI entirely below zero</span>
     </div>
     <div class="stat-card">
       <div class="n pos">+1.32%</div>
       <div class="label">batter_hits → under, moderate-odds band (−249 to −101), pooled 2023–2026, all 4 real seasons (n=19,567)</div>
       <span class="tag confirmed">clears the gate — marginally</span>
     </div>
+    <div class="stat-card">
+      <div class="n warn">+2.61%</div>
+      <div class="label">ROI on hits+total_bases picks, re-priced at best available odds instead of production's actual captured price (n=696)</div>
+      <span class="tag directional">directional — CI crosses zero</span>
+    </div>
   </div>
   <div class="note">
-    <b>Read this carefully before repeating either number as "confirmed."</b>
+    <b>The single most honest answer to "what's the ROI on the whole data": −0.34%.</b>
+    That's every pick the client's entire adopted default policy would generate across all 5
+    markets it covers, all 4 real seasons, pooled — a confirmed small loss (CI is entirely
+    negative, not just crossing zero). This is not in conflict with the +1.32% PASS below — that's
+    a narrow, specific sub-segment inside one market (<code>hits</code>) whose own blanket ROI is
+    flat. Selectivity, not scale, is where any value exists in this data. A validated +10% blended
+    ROI is not achievable from this data by searching further — see Addendum 7 (an exhaustive prior
+    search) and Addendum 15 for why.
+  </div>
+  <div class="note">
+    <b>Detail on the other two cards above, before repeating either as "confirmed."</b>
     The <b>+2.61%</b> figure is real and honestly computed, but its 95% CI is
     <b>[−5.34%, +10.55%]</b> — it does not clear this project's own gate rule, and should be
     described as promising, execution-focused evidence from a small (696-pick), single-week
