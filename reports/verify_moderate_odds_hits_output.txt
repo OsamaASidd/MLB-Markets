@@ -1,0 +1,33 @@
+hits -> under, odds -249..-101 (merged moderate band), full CI, by season:
+  season 2024      n=5327    WR=62.2  ROI=1.36  CI=[-0.81,3.52]  fail
+  season 2025      n=6549    WR=61.9  ROI=2.01  CI=[0.03,3.98]  PASS
+  season 2026      n=1144    WR=62.3  ROI=4.21  CI=[-0.59,9.01]  fail
+  ALL 2024-2026    n=13020   WR=62.1  ROI=1.93  CI=[0.54,3.33]  PASS
+
+split into the two original bands separately, full CI:
+
+  band -249..-150:
+    season 2024: n=2976    WR=68.6  ROI=0.92  CI=[-1.54,3.38]  fail
+    season 2025: n=3329    WR=69.1  ROI=1.76  CI=[-0.55,4.08]  fail
+    season 2026: n=505     WR=71.5  ROI=4.74  CI=[-1.05,10.53]  fail
+
+  band -149..-101:
+    season 2024: n=2351    WR=54.2  ROI=1.91  CI=[-1.88,5.7]  fail
+    season 2025: n=3220    WR=54.5  ROI=2.25  CI=[-0.98,5.48]  fail
+    season 2026: n=639     WR=55.1  ROI=3.79  CI=[-3.5,11.07]  fail
+
+moderate-odds band, split by line value:
+
+  line=0.5:
+    season 2024: n=2360    WR=54.9  ROI=2.6  CI=[-1.17,6.36]  fail
+    season 2025: n=3240    WR=55.0  ROI=2.58  CI=[-0.63,5.78]  fail
+    season 2026: n=632     WR=55.1  ROI=3.65  CI=[-3.67,10.97]  fail
+
+  line=1.5:
+    season 2024: n=2967    WR=68.1  ROI=0.37  CI=[-2.11,2.85]  fail
+    season 2025: n=3308    WR=68.8  ROI=1.43  CI=[-0.91,3.76]  fail
+    season 2026: n=512     WR=71.3  ROI=4.9  CI=[-0.9,10.7]  fail
+2024   n=24313   WR=61.8 ROI=0.12 CI=[-0.88,1.12] fail
+2025   n=24311   WR=60.1 ROI=0.45 CI=[-0.59,1.49] fail
+2026   n=4462    WR=60.0 ROI=-0.46 CI=[-2.87,1.95] fail
+ALL    n=53086   WR=60.9 ROI=0.22 CI=[-0.47,0.91] fail

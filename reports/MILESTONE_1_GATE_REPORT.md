@@ -847,6 +847,70 @@ anything else in this report.
 
 ---
 
+## Addendum 10: how to actually increase the ROI in Addendum 9
+
+Searched for real sub-segments within the flat/negative Addendum 9 results —
+same discipline as the "under 0.5" search that produced a false positive
+earlier, but this time on a 100x larger real sample (13K-107K vs ~1,400) and
+requiring the pattern to hold across multiple independent seasons before
+trusting it (`scripts/find_roi_improvement_levers.py`,
+`scripts/verify_moderate_odds_hits.py`).
+
+**One real, validated lever found — narrow, not universal.** Restricting
+`batter_hits → under` to a moderate odds band (−249 to −101, i.e. exclude
+both extreme favorites and underdogs) turns the flat +0.1% baseline into:
+
+| | n | ROI | 95% CI | Verdict |
+|---|---:|---:|---|---|
+| 2024 only | 5,327 | +1.36% | [−0.81%, 3.52%] | fail (CI crosses 0) |
+| 2025 only | 6,549 | +2.01% | [0.03%, 3.98%] | PASS (barely) |
+| 2026 only | 1,144 | +4.21% | [−0.59%, 9.01%] | fail (small n) |
+| **Pooled 2024-2026** | **13,020** | **+1.93%** | **[0.54%, 3.33%]** | **PASS** |
+
+Honest framing: the pooled sample clears the gate cleanly, but each
+individual season doesn't independently confirm it with full confidence —
+the point estimates are consistently positive (1.36% → 2.01% → 4.21%,
+trending up, not reversing), which is a good sign, but the per-season CIs
+are wide enough that this should be called "real and promising," not
+"proven beyond doubt." **The same filter does NOT work on `total_bases`** —
+tested identically, it stays flat (pooled n=53,086, ROI +0.22%, CI
+[−0.47%, 0.91%], fail). This is market-specific, not a universal
+odds-avoidance rule — a useful boundary to know before assuming it
+generalizes further.
+
+**Broader, non-data-mined levers, grounded in everything else found in this
+audit:**
+
+1. **Selection, not blanket betting.** Every "flat" or "negative" result in
+   Addendum 9 tested *unconditionally betting every single line offered*.
+   The two markets with real, validated edges in this entire project
+   (strikeouts +3.34%, spreads +5.53%) both depend on the production
+   confidence≥60 filter selecting a narrow subset — betting everything
+   dilutes any real edge back toward zero. The lever above (odds-band
+   filtering) is one cheap, transparent version of this same idea for hits;
+   a properly recalibrated confidence score (see next point) would be the
+   general version.
+2. **Fix the weight miscalibration found in Addendum 8** before trying to
+   improve selection further. If `pitcher_strikeouts`'s live scorer is
+   over-weighting near-zero-correlation factors, it's worth checking whether
+   `hits`/`total_bases` have the same issue — a confidence score built on
+   correlated factors, applied *in addition to* the odds-band filter above,
+   is the most direct path to a bigger, more reliable edge than either alone.
+3. **Close the gap between "best available price" and what production
+   actually gets filled at.** This addendum's baseline already assumes
+   best-price-across-56-books; Addendum 1 found *actual* production picks
+   underperform even that flat baseline by 4-7 points. That gap is worth
+   its own investigation — it suggests either worse execution (single-book
+   pricing) or that production's current selection is actively picking
+   worse spots than random, not just failing to find better ones.
+4. **Patience over more searching, for strikeouts/spreads specifically.**
+   Addendum 9 already confirmed their unconditional/veto-scope baselines are
+   genuinely negative — the edge that exists there is real but narrow and
+   needs more graded volume at the *same* selective criteria, not a new
+   angle.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -953,6 +1017,10 @@ MLB Markets/
   scripts/load_client_odds_warehouse.py   loads the client's real 2.42M-row odds export (local-only db)
   scripts/grade_client_odds_warehouse.py   grades it against real box scores, tests the adopted policy
   reports/client_warehouse_grading_output.txt   full Addendum 9 output
+  scripts/find_roi_improvement_levers.py   sweeps line/odds sub-segments, 2-3 season replication check
+  scripts/verify_moderate_odds_hits.py   full-CI verification of the one lever that held up
+  reports/roi_improvement_levers_output.txt   full Addendum 10 sweep output
+  reports/verify_moderate_odds_hits_output.txt   full Addendum 10 verification output
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
 
