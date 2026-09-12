@@ -1,0 +1,48 @@
+
+====================================================================================================
+home_runs (batter_home_runs) -- sweep by side x odds band
+====================================================================================================
+
+  -- side=under --
+    odds <=-250       pooled n=106675  ROI=-2.37  CI=[-2.58,-2.15]  (positive in 0/4 seasons with n>=200)
+    odds -249..-150   pooled n=286     ROI=2.23  CI=[-5.57,10.02]  (positive in 0/4 seasons with n>=200)
+    odds -149..-101   pooled n=0       ROI=None  CI=[None,None]  (positive in 0/4 seasons with n>=200)
+    odds plus         pooled n=0       ROI=None  CI=[None,None]  (positive in 0/4 seasons with n>=200)
+
+  -- side=over --
+    odds <=-250       pooled n=0       ROI=None  CI=[None,None]  (positive in 0/4 seasons with n>=200)
+    odds -249..-150   pooled n=0       ROI=None  CI=[None,None]  (positive in 0/4 seasons with n>=200)
+    odds -149..-101   pooled n=0       ROI=None  CI=[None,None]  (positive in 0/4 seasons with n>=200)
+    odds plus         pooled n=274230  ROI=-46.42  CI=[-48.04,-44.8]  (positive in 0/4 seasons with n>=200)
+
+====================================================================================================
+rbis (batter_rbis) -- sweep by side x odds band
+====================================================================================================
+
+  -- side=under --
+    odds <=-250       pooled n=84553   ROI=-1.46  CI=[-1.82,-1.09]  (positive in 0/4 seasons with n>=200)
+    odds -249..-150   pooled n=45679   ROI=-1.75  CI=[-2.4,-1.1]  (positive in 2/4 seasons with n>=200)
+    odds -149..-101   pooled n=2491    ROI=0.93  CI=[-2.48,4.34]  (positive in 1/4 seasons with n>=200)
+    odds plus         pooled n=130     ROI=30.9  CI=[12.99,48.81]  (positive in 0/4 seasons with n>=200)
+
+  -- side=over --
+    odds <=-250       pooled n=0       ROI=None  CI=[None,None]  (positive in 0/4 seasons with n>=200)
+    odds -249..-150   pooled n=3       ROI=-44.44  CI=[-153.33,64.44]  (positive in 0/4 seasons with n>=200)
+    odds -149..-101   pooled n=409     ROI=-3.21  CI=[-12.37,5.94]  (positive in 0/4 seasons with n>=200)
+    odds plus         pooled n=379537  ROI=-26.45  CI=[-27.56,-25.34]  (positive in 0/4 seasons with n>=200)
+
+====================================================================================================
+totals -- sweep by side x total-line value
+====================================================================================================
+
+  -- side=under --
+    total line <=7.5    pooled n=1635    ROI=-6.3  CI=[-11.08,-1.52]
+    total line 8-8.5    pooled n=3808    ROI=-4.09  CI=[-7.2,-0.98]
+    total line 9-9.5    pooled n=2399    ROI=-7.68  CI=[-11.53,-3.83]
+    total line >=10     pooled n=796     ROI=2.08  CI=[-4.65,8.81]
+
+  -- side=over --
+    total line <=7.5    pooled n=1635    ROI=-4.78  CI=[-9.45,-0.1]
+    total line 8-8.5    pooled n=3808    ROI=-7.88  CI=[-10.94,-4.82]
+    total line 9-9.5    pooled n=2399    ROI=-9.5  CI=[-13.43,-5.57]
+    total line >=10     pooled n=796     ROI=-17.38  CI=[-24.09,-10.67]

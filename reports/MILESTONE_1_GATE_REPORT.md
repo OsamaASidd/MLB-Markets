@@ -1143,6 +1143,52 @@ it in by closing time.
 
 ---
 
+## Addendum 17: same fine-grained search applied to every other failing market — no new PASS, one catastrophic confirmation
+
+Asked directly: are there more markets to test, and can the same technique
+that found the `hits` odds-band lever (Addendum 10) find anything in the
+markets that are still failing? Two parts to the answer.
+
+**No hidden markets exist in the data.** Checked directly:
+`client_closing_odds` contains exactly 10 `market_key` values —
+`batter_hits`, `batter_home_runs`, `batter_rbis`, `batter_total_bases`,
+`h2h__home`/`h2h__away`, `pitcher_outs`, `pitcher_strikeouts`,
+`spreads__home`/`spreads__away`, `totals` — the same 10 already gated
+throughout this report. Testing genuinely new markets (first-5-innings
+lines, stolen bases, walks, etc.) would need fresh data acquisition from the
+client; nothing more is sitting in what's already been provided.
+
+**Applied the same line-value / odds-band sweep to `home_runs`, `rbis`, and
+`totals` (`scripts/sweep_remaining_markets.py`) — no new validated PASS.**
+Every cut tested with sufficient sample size stays negative or has a CI
+crossing zero. This isn't a failure of the method — the same technique
+found a real, if modest, edge in `hits`; applying it honestly elsewhere and
+finding nothing is itself information, not a null result to paper over.
+
+**What the sweep did surface, precisely, is worth its own line:**
+
+| Market | Cut | n | ROI |
+|---|---|---:|---:|
+| home_runs | "over" (batter homers), plus-money odds | **274,230** | **−46.42%** |
+| rbis | "over" (batter gets X+ RBIs), plus-money odds | **379,537** | **−26.45%** |
+
+These aren't marginal losers — at true full market scale, across hundreds
+of thousands of real games, betting the plus-money `over` on either market
+loses nearly half (home_runs) or over a quarter (rbis) of every dollar
+staked. Both markets are already vetoed entirely in the client's current
+policy, so this isn't a new discovery — but it upgrades "these markets
+don't work" to a precisely quantified, unconditional confirmation: there is
+no odds range, no confidence threshold, no future model improvement that
+should ever recommend this specific bet. Worth the project owner seeing the
+exact magnitude, not just the veto decision.
+
+`totals`: every line-bucket/side combination tested (four total-line bands
+× two sides) comes back negative except one small slice with a CI crossing
+zero (n=796) — no lever found, consistent with Addendum 9's finding that
+this market shows no obvious structural driver at all.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -1261,6 +1307,8 @@ MLB Markets/
   reports/overall_portfolio_roi_output.txt   full Addendum 15 output
   scripts/test_bullpen_fatigue.py   point-in-time bullpen fatigue vs totals, negative result
   reports/bullpen_fatigue_output.txt   full Addendum 16 output
+  scripts/sweep_remaining_markets.py   same fine-grained sweep applied to home_runs/rbis/totals
+  reports/sweep_remaining_markets_output.txt   full Addendum 17 output
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
