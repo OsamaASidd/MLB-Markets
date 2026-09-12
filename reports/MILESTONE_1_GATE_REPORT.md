@@ -911,6 +911,108 @@ audit:**
 
 ---
 
+## Addendums 11-13: three parallel investigations into the Addendum 10 levers
+
+Three independent, parallel investigations, one per lever raised at the end
+of Addendum 10. Full detail in each standalone file; synthesis here.
+
+### Addendum 11 — does hits/total_bases have the same weight miscalibration as strikeouts? (`reports/addendum11_hits_tb_weight_check.md`)
+
+**Overturns part of Addendum 8's framing for these two markets, not just
+extends it.** Reading the actual scoring code (`scoring_mlb_v2.ts`) instead
+of matching weight-column names found that **the `w_mlb_hits_*`/`w_mlb_tb_*`
+columns in `algorithm_weights` are dead schema — production never reads
+them.** `hits` and `total_bases` are scored today by one shared function
+using the same **generic** `w_mlb_batter_*` weights also used for
+`home_runs`/`rbis` (already-vetoed markets), differing only by one power/non-power
+branch. A per-market override mechanism (`mlb_market_weight_overrides`
+JSONB, built for exactly this) exists and is currently empty (`{}`).
+
+Once the *real* weight→factor mapping was read from the code line-by-line,
+the same pattern as strikeouts showed up: **18 flagged miscalibrations (9
+per market)** — heavily-weighted (1.25-1.5) factors like `pitcher_quality`,
+`vs_pitcher_hand_split`, `xwoba`, `weather_temp` carrying |corr| < 0.02,
+while the few factors with real signal (`exit_velo_trend` +0.086,
+`lineup_spot` +0.057, `barrel_rate` +0.051, all `total_bases`) sit at a
+merely middling weight. **Bonus find, outside the original scope:**
+`score_batter_launch_angle` shows the single strongest correlation in the
+whole check (−0.157) — but backwards from what the factor's own bucket
+logic assumes (it scores highest for the launch angles the code calls the
+"sweet spot," yet those correlate negatively with outcomes) — a candidate
+sign/threshold bug worth a direct code review, separate from any weight
+retuning.
+
+**Practical implication:** the fix path is not the dead `w_mlb_hits_*`/`w_mlb_tb_*`
+columns — it's populating the already-built `mlb_market_weight_overrides`
+for these two markets with weights that track real correlation (per Addendum
+8's discipline), and separately reviewing the launch-angle sign bug. Both
+are scoped, existing-mechanism fixes, not a rebuild — though both still fall
+under "do not edit `scoring_mlb_v2.ts`/`algorithm_weights` without written
+GO," same as everywhere else in this report.
+
+### Addendum 12 — why does production underperform the flat best-price baseline? (`reports/addendum12_execution_gap.md`)
+
+**Verdict: overwhelmingly an execution/price-capture gap, not a selection
+gap** — with an honest caveat that the matched sample is small (696-960
+rows) and confined to an 8-day window where the odds warehouse and
+production's logging window happen to overlap (the 2026 warehouse stops at
+2026-05-24; production logging runs through 2026-07-27).
+
+Holding the *exact same picks* fixed (same player, game, line, win/loss —
+only the recorded price changes) and comparing production's actual logged
+price against the best price genuinely available in the market at the same
+moment: ROI flips from **−16.69% (production's actual price) to +2.61% (best
+available price)** — a ~19-point swing, large enough on its own to fully
+explain the −4% to −7% production shortfall found in Addendum 1. **78% of
+matched picks got a measurably worse price than what was available**; the
+average gap is roughly 10 points of implied probability, and some individual
+picks are off by hundreds of odds points. Confidence-based selection was
+checked and cleared: it correlates *positively* with outcomes (+0.11) and
+best-price ROI, and is uncorrelated with how bad the execution price is — no
+evidence the confidence filter is picking worse spots.
+
+**The one blocking gap for a full-confidence answer:** no matched row has a
+populated `bookmaker` field, so which book/feed supplied the bad price can't
+be traced from data alone. **Concrete, low-effort recommendation: instrument
+`pick_history` to log which bookmaker supplied the captured odds for
+hits/total_bases.** That single logging fix turns the next version of this
+check from "quantifies the gap" into "names the root cause."
+
+### Addendum 13 — formal proposal for the Addendum 10 odds-band filter (`reports/addendum13_hits_odds_band_proposal.md`)
+
+A standalone, reviewable change-request document (not a code change) for the
+`batter_hits`-under moderate-odds-band veto (−249 to −101), written in the
+same side/veto style as the codebase's existing `mlb_ev_policy.ts`, with the
+full evidence table and an explicit **"requires written GO from the project
+owner"** gate before any deployment — consistent with the hard rule that
+already-live markets aren't changed without sign-off.
+
+**One extra piece of rigor worth calling out directly:** rather than assume
+the 13,020-pick sample was safe from the same trap that produced Addendum
+7's false positive (a single game's many correlated lines inflating the
+apparent sample size), the proposal queried the data directly — 13,020 picks
+map to 3,730 distinct games (~3.5 picks/game, real but mild clustering, far
+short of Addendum 7's ~10x case) — and recomputed the confidence interval
+with a cluster-robust standard error grouped by game: **[0.38%, 3.48%]**
+versus the naive **[0.54%, 3.33%]**, effective n ≈10,600 vs. the raw 13,020.
+The result survives the correction. Recommends paper-trading 4-6 weeks
+forward before any live rollout, even with a GO.
+
+### What these three add up to
+
+Together, these reframe "improve projections" for `hits`/`total_bases` away
+from "build a better model" and toward three concrete, scoped, low-risk
+engineering fixes: (1) populate the already-built per-market weight override
+with correlation-informed weights instead of sharing generic
+home_runs/rbis-style weights, (2) review the `launch_angle` sign bug, and (3)
+log the executing bookmaker so the price-capture gap — which alone may
+explain the entire live-production shortfall — can be root-caused instead of
+just measured. None of these were things the original Addendum 8 framing
+would have found; all three came from actually reading the production code
+and matching real execution-level data, not from further backtesting.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -1021,6 +1123,9 @@ MLB Markets/
   scripts/verify_moderate_odds_hits.py   full-CI verification of the one lever that held up
   reports/roi_improvement_levers_output.txt   full Addendum 10 sweep output
   reports/verify_moderate_odds_hits_output.txt   full Addendum 10 verification output
+  reports/addendum11_hits_tb_weight_check.md   full weight-vs-correlation writeup for hits/total_bases
+  reports/addendum12_execution_gap.md   full execution-vs-selection-gap investigation
+  reports/addendum13_hits_odds_band_proposal.md   standalone change-request proposal (not deployed)
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
 
