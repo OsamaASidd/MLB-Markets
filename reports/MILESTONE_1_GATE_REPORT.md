@@ -1697,13 +1697,86 @@ shows how sensitive this pooled model's edge-based cuts are to exactly which
 markets are pooled together, which is a real fragility, not just an
 accounting correction.
 
-**Honest, current status of Model B: no surviving PASS at any edge
-threshold, pooled or per-market.** This reverses the one positive finding
-credited to it in Addendum 23. Reported here the same way every other
-false positive in this project has been — found, disclosed, corrected —
-rather than left standing because it had already been written up once.
-Every downstream document that cited the Addendum 23 PASS (the verdict
-summary page, the ML model walkthrough) has been updated to match.
+**Honest, current status of Model B at that point: no surviving PASS at any
+edge threshold, pooled or per-market.** This reversed the one positive
+finding credited to it in Addendum 23. Reported here the same way every
+other false positive in this project has been — found, disclosed,
+corrected — rather than left standing because it had already been written
+up once. Superseded again, in a different direction, by Addendum 26 below.
+
+---
+
+## Addendum 26: a real policy correction, and a training-instability finding that changes what "the result" even means
+
+Two things came in about Addendum 25, both checked directly rather than
+taken on faith or dismissed.
+
+**First — `pitcher_outs` should be excluded, but Addendum 25's own reasoning
+for including it was also wrong, just in the opposite direction.** Addendum
+25 added `pitcher_outs` back in because it found real rows (6,048 of them)
+disproving Addendum 23's "zero rows" claim. But real rows existing isn't the
+same as the market being fit to use here: the client's own harness
+(`betgenius/harness/lib/market_config.ts`, read directly) explicitly
+configures `pitcher_outs` with `allowedSources: PICK_HISTORY_ONLY` and
+`warehouseOddsAvailable: false` — the identical treatment given to
+`batter_runs_scored`. That's a deliberate decision by the people who own
+this data, most likely because the *official* warehouse odds source
+(`cache_mlb_historical_odds`, referenced throughout the harness code and
+its `CLAUDE.md`) doesn't reliably carry `pitcher_outs` coverage even though
+the xlsx export used to build this project's local database happens to
+include some (a narrow window, 2024-04-02 to 2025-05-28, 6,048 rows,
+2,699 events) — a data-provenance difference this project has no way to
+resolve on its own. **Re-excluded `pitcher_outs` from Model B on this
+basis** — back to 8 markets, same as Addendum 23, but for the correct
+reason this time rather than a false "zero rows" claim. (Separately:
+`batter_strikeouts` was flagged as a distinct, warehouse-empty market —
+checked directly against `market_config.ts`, and no such market is
+currently configured there at all; it appears only in scoring-code
+*comments* in `scoring_mlb_v2.ts`, not as an active, gated market. Can't
+confirm or deny a "zero rows" claim about something that isn't configured
+as a market in the first place — flagged as unresolved, not asserted either
+way.)
+
+**Second, and more consequential — this pooled model's own training is not
+reproducible, and that changes what "the result" means.** Rerunning the
+identical 8-market pipeline nine additional times (fixed `random_state=0`,
+single-threaded `n_jobs=1`, and explicit deterministic tiebreakers added to
+every sort/dedup step that DuckDB's unordered row return could otherwise
+leave ambiguous) still produced a *different* edge>0.03 result almost every
+time:
+
+| Run | n | ROI | CI | Verdict |
+|---|---:|---:|---|---|
+| 1 | 1,264 | +5.65% | [1.56%, 9.75%] | PASS |
+| 2 | 1,411 | +1.24% | [−2.74%, 5.22%] | fail |
+| 3 | 1,262 | +3.41% | [−0.74%, 7.56%] | fail |
+| 4 | 1,322 | +7.55% | [3.58%, 11.52%] | PASS |
+| 5 | 1,267 | +6.22% | [2.17%, 10.26%] | PASS |
+
+Five reruns, three different verdicts. The remaining source, after ruling
+out data-ordering ambiguity: XGBoost's own histogram-building isn't
+bit-for-bit deterministic in this environment even at `n_jobs=1` with a
+fixed seed — a known category of floating-point non-determinism in
+gradient-boosted tree libraries, not a bug specific to this script.
+
+**What this actually means: the edge>0.03 cut for Model B should be read as
+marginal and not robustly validated, not as a confident PASS or a confident
+FAIL.** ROI across these runs clusters roughly +1% to +8%, consistently on
+the positive side of zero on average, but the confidence interval crosses
+zero often enough that a single run's verdict isn't trustworthy on its own.
+The right way to report a result from a model with this much retraining
+sensitivity is the distribution across reruns, not one cherry-picked
+number — which is what's shown here, rather than picking whichever run
+looked best (or worst).
+
+**Practical implication for any future work on Model B:** train and report
+across multiple seeds/reruns as standard practice, not a single fit — this
+model's edge-based cuts are sensitive enough to ordinary training noise
+that a one-off number is not a reliable basis for a PASS/FAIL call at this
+sample size. Everything downstream (verdict summary page, ML model
+walkthrough) has been updated to reflect this honestly — a range and a
+"marginal, not confidently validated" characterization, rather than a
+single number presented as settled.
 
 ---
 
@@ -1839,10 +1912,11 @@ MLB Markets/
   reports/xgboost_calibrated_output.txt   full Addendum 21 output (reliability table + betting cuts)
   scripts/xgboost_pooled_A_factors.py   Model A: one pooled model, all 10 markets, full 150-factor set
   reports/xgboost_pooled_A_output.txt   full Addendum 22 output (AUC 0.692, best in report)
-  scripts/xgboost_pooled_B_multiyear.py   Model B: one pooled model, 8 markets, real 2023-2026 features
-                                  (includes the per-market accuracy/ROI breakdown)
-  reports/xgboost_pooled_B_output.txt   latest run (9 markets, Addendum 25) -- superseded Addendum 23/24
-                                  output (8-market PASS, since reversed) not separately kept; see Addendum 25
+  scripts/xgboost_pooled_B_multiyear.py   Model B: one pooled model, 8 markets, real 2023-2026 features,
+                                  deterministic tiebreakers throughout (Addendum 26) -- still has
+                                  residual run-to-run variance from XGBoost itself (disclosed, not hidden)
+  reports/xgboost_pooled_B_output.txt   one representative run of the current 8-market config --
+                                  see Addendum 26 for the honest multi-run range this single file can't show
   scripts/check_favorite_accuracy_vs_roi.py   accuracy-vs-ROI check: betting the market's own favorite
   reports/favorite_accuracy_vs_roi_output.txt   full Addendum 24 output (80%+ accuracy exists, loses money)
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit

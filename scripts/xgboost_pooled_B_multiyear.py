@@ -9,12 +9,22 @@ dataset used in Addendum 5), team L10 form, real ballpark factors, real
 bullpen fatigue (relief outs, last 2 days) -- all point-in-time correct.
 
 Markets included: batter_hits, batter_total_bases, batter_rbis,
-batter_home_runs, pitcher_strikeouts, pitcher_outs, h2h, spreads, totals --
-the 9 with real odds-warehouse coverage. batter_runs_scored excluded (zero
-warehouse rows -- confirmed no such market_key exists at all -- a real
-provider gap, not a choice). pitcher_outs *was* wrongly excluded here in an
-earlier version of this script on a bad "zero rows" assumption -- it
-actually has 6,048 real rows and is included as of this revision.
+batter_home_runs, pitcher_strikeouts, h2h, spreads, totals -- 8 markets.
+
+batter_runs_scored excluded: zero warehouse rows -- confirmed no such
+market_key exists at all -- a real provider gap.
+
+pitcher_outs excluded: this script briefly included it (some raw rows do
+exist -- 6,048 of them, 2024-04-02 to 2025-05-28 -- an earlier "zero rows"
+justification for excluding it was wrong), but the client's own harness
+(`market_config.ts`) explicitly sets `allowedSources: PICK_HISTORY_ONLY`,
+`warehouseOddsAvailable: false` for this market -- the same treatment as
+batter_runs_scored. That is a deliberate policy decision by the people who
+own this data (the real warehouse odds source, `cache_mlb_historical_odds`,
+apparently doesn't have reliable pitcher_outs coverage even though the
+xlsx export used to build this project's local db does, for a narrow
+window) -- not a data-availability question this project can resolve on
+its own. Excluded here on that basis, correctly this time. See Addendum 26.
 
 Split: 75/25 done chronologically WITHIN each calendar year separately,
 then all four years' 75% pooled into one TRAIN set and all four years'
@@ -107,7 +117,12 @@ def build_team_game_log(con):
                 on=["game_pk", "home_team_id"], how="inner")
     g = g.merge(team_runs.rename(columns={"team_id": "away_team_id", "team_runs": "away_runs_"}),
                 on=["game_pk", "away_team_id"], how="inner")
-    return g.sort_values("game_date").reset_index(drop=True)
+    # game_pk as an explicit tiebreaker: DuckDB gives no row-order guarantee,
+    # and multiple real games share the same date -- without a stable
+    # secondary key, which game the sequential Elo loop processes first (and
+    # therefore whose rating updates before the other) changes across
+    # reruns, silently changing every downstream feature.
+    return g.sort_values(["game_date", "game_pk"], kind="mergesort").reset_index(drop=True)
 
 
 def build_elo_l10(games):
@@ -205,7 +220,14 @@ def main():
         df = df.copy()
         df["_over_prob"] = implied_prob(df[over_odds_col])
         df["_dist_even"] = (df["_over_prob"] - 0.5).abs()
-        return df.sort_values("_dist_even").groupby(group_cols, as_index=False).first().drop(columns=["_over_prob", "_dist_even"])
+        # DuckDB gives no row-order guarantee without ORDER BY, so ties in
+        # _dist_even (multiple lines equally close to a coin flip) broke
+        # differently across reruns -- confirmed directly, three runs of an
+        # identical config produced three different results. "line" as an
+        # explicit tiebreaker makes the pick fully deterministic.
+        return (df.sort_values(["_dist_even", "line"], kind="mergesort")
+                  .groupby(group_cols, as_index=False).first()
+                  .drop(columns=["_over_prob", "_dist_even"]))
 
     def load_batter_market(market_key, stat_col):
         odds = con.execute(f"""
@@ -228,7 +250,8 @@ def main():
         over = m.copy(); over["win"] = over[stat_col] > over["line"]; over["odds"] = over["best_over_odds"]; over["side"] = "over"
         both = pd.concat([under, over]).dropna(subset=["odds"])
         both["market"] = market_key
-        return both[["market", "game_pk", "odds", "win", "side"]]
+        both["tiebreak"] = both["name_norm"]
+        return both[["market", "game_pk", "odds", "win", "side", "tiebreak"]]
 
     def load_pitcher_market(market_key, stat_col):
         odds = con.execute(f"""
@@ -251,7 +274,8 @@ def main():
         over = m.copy(); over["win"] = over[stat_col] > over["line"]; over["odds"] = over["best_over_odds"]; over["side"] = "over"
         both = pd.concat([under, over]).dropna(subset=["odds"])
         both["market"] = market_key
-        return both[["market", "game_pk", "odds", "win", "side"]]
+        both["tiebreak"] = both["name_norm"]
+        return both[["market", "game_pk", "odds", "win", "side", "tiebreak"]]
 
     def load_game_market(market_key):
         if market_key == "h2h":
@@ -266,8 +290,8 @@ def main():
             odds = odds.dropna(subset=["game_pk"])
             m = odds.merge(games[["game_pk", "home_runs_", "away_runs_"]], on="game_pk", how="inner")
             m["win"] = m["away_runs_"] > m["home_runs_"]
-            m["side"] = "away"; m["market"] = "h2h"
-            return m.dropna(subset=["odds"])[["market", "game_pk", "odds", "win", "side"]]
+            m["side"] = "away"; m["market"] = "h2h"; m["tiebreak"] = ""
+            return m.dropna(subset=["odds"])[["market", "game_pk", "odds", "win", "side", "tiebreak"]]
         if market_key == "spreads":
             odds = con.execute("""
                 SELECT co.game_pk, co.line, co.best_over_odds AS odds
@@ -284,8 +308,8 @@ def main():
             odds = pick_main_line(odds, ["game_pk"], over_odds_col="odds")
             m = odds.merge(games[["game_pk", "home_runs_", "away_runs_"]], on="game_pk", how="inner")
             m["win"] = (m["away_runs_"] + m["line"]) > m["home_runs_"]
-            m["side"] = "away"; m["market"] = "spreads"
-            return m.dropna(subset=["odds"])[["market", "game_pk", "odds", "win", "side"]]
+            m["side"] = "away"; m["market"] = "spreads"; m["tiebreak"] = ""
+            return m.dropna(subset=["odds"])[["market", "game_pk", "odds", "win", "side", "tiebreak"]]
         if market_key == "totals":
             odds = con.execute("""
                 SELECT co.game_pk, co.line, co.best_over_odds, co.best_under_odds
@@ -306,17 +330,16 @@ def main():
             under = m.copy(); under["win"] = under["total_runs"] < under["line"]; under["odds"] = under["best_under_odds"]; under["side"] = "under"
             over = m.copy(); over["win"] = over["total_runs"] > over["line"]; over["odds"] = over["best_over_odds"]; over["side"] = "over"
             both = pd.concat([under, over]).dropna(subset=["odds"])
-            both["market"] = "totals"
-            return both[["market", "game_pk", "odds", "win", "side"]]
+            both["market"] = "totals"; both["tiebreak"] = ""
+            return both[["market", "game_pk", "odds", "win", "side", "tiebreak"]]
 
-    print("loading real picks for all 9 markets with warehouse coverage...")
+    print("loading real picks for all 8 markets with warehouse coverage...")
     parts = [
         load_batter_market("batter_hits", "hits"),
         load_batter_market("batter_total_bases", "total_bases"),
         load_batter_market("batter_rbis", "rbi"),
         load_batter_market("batter_home_runs", "home_runs"),
         load_pitcher_market("pitcher_strikeouts", "strikeouts"),
-        load_pitcher_market("pitcher_outs", "outs"),
         load_game_market("h2h"),
         load_game_market("spreads"),
         load_game_market("totals"),
@@ -339,10 +362,15 @@ def main():
     features = ["market_code", "side_code", "market_prob", "elo_diff", "l10_diff", "fatigue_diff",
                 "runs_factor", "hr_factor", "k_factor", "hits_factor"]
 
-    # per-year 75/25 chronological split, pooled across years
+    # per-year 75/25 chronological split, pooled across years. Sorted on
+    # game_date plus explicit tiebreakers (game_pk/market/side/tiebreak) --
+    # many rows share the same date, and without a full deterministic key,
+    # which specific rows land on which side of the 75/25 cut depended on
+    # DuckDB's unordered row arrival, confirmed to change the result run to
+    # run.
     train_parts, test_parts = [], []
     for year, grp in pool.groupby(pool.game_date.dt.year):
-        grp = grp.sort_values("game_date")
+        grp = grp.sort_values(["game_date", "game_pk", "market", "side", "tiebreak"], kind="mergesort")
         cut = int(len(grp) * 0.75)
         train_parts.append(grp.iloc[:cut])
         test_parts.append(grp.iloc[cut:])
@@ -357,6 +385,11 @@ def main():
         n_estimators=300, max_depth=4, learning_rate=0.03,
         subsample=0.8, colsample_bytree=0.7, min_child_weight=20,
         reg_lambda=3.0, eval_metric="logloss", missing=np.nan, random_state=0,
+        n_jobs=1,  # multi-threaded histogram building isn't bit-for-bit
+                   # deterministic even with a fixed seed -- confirmed directly,
+                   # three reruns of this identical 8-market config produced three
+                   # different edge>0.03 numbers (n=1,432/1,543/1,246). Single
+                   # thread trades speed for a genuinely reproducible result.
     )
     model.fit(X_train, y_train)
     train_pred = model.predict_proba(X_train)[:, 1]
