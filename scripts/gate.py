@@ -82,8 +82,17 @@ def stat(con, where):
     return dict(zip(["n", "wr", "roi", "roi_lo", "roi_hi", "clv"], r))
 
 
-def gate(n, roi_lo):
-    return n is not None and n >= MIN_GRADED and roi_lo is not None and roi_lo > 0
+def gate(n, roi_lo, roi=None):
+    """Official rule, verified directly against betgenius/harness/lib/metrics.ts
+    (evaluateEvGate, lines 361-364): n>=500 needs ONLY ROI>0, not a CI check.
+    n<500 needs the CI lower bound > 0. This project used the stricter
+    n>=500 AND CI_lower>0 everywhere until this was caught and corrected --
+    a real bug, not a stylistic choice; see the report's addendum on this."""
+    if n is None:
+        return False
+    if n >= MIN_GRADED:
+        return roi is not None and roi > 0
+    return roi_lo is not None and roi_lo > 0
 
 
 def main():
@@ -92,7 +101,8 @@ def main():
     print("=" * 92)
     print("MLB MARKET GATE — full local pick_history sample")
     print(f"graded MLB picks: {tot[0]:,}   window: {tot[1]} -> {tot[2]}")
-    print(f"gate rule: n >= {MIN_GRADED} AND ROI 95% CI lower bound > 0")
+    print(f"gate rule (corrected, matches betgenius/harness/lib/metrics.ts): "
+          f"n >= {MIN_GRADED} -> ROI > 0; n < {MIN_GRADED} -> ROI 95% CI lower bound > 0")
     print("=" * 92)
 
     rows_out = []
@@ -108,7 +118,7 @@ def main():
         for label, extra in CUTS:
             where = f"prop_type='{m}'{extra}"
             s = stat(con, where)
-            passed = gate(s["n"], s["roi_lo"])
+            passed = gate(s["n"], s["roi_lo"], s["roi"])
             verdict = "PASS" if passed else "FAIL"
             print(f"  {label:<24} n={s['n']:<7} WR={s['wr']:<6} ROI={s['roi']:<8} "
                   f"CI=[{s['roi_lo']},{s['roi_hi']}]  CLV={s['clv']}  {verdict}")

@@ -9,9 +9,13 @@ and graded), 74,385 graded MLB picks, **2026-05-17 → 2026-07-27**. Not synthet
 not a hypothetical backtest over every priced line — this is what the deployed
 system actually recommended and how those recommendations actually resolved.
 
-**Gate rule** (client spec): **PASS iff n ≥ 500 graded picks AND the 95% ROI
-confidence interval's lower bound is > 0.** Below 500 picks, no result can PASS
-outright even with a positive point estimate — there isn't enough evidence yet.
+**Gate rule** (client spec, corrected in Addendum 28 — this project used a
+stricter, wrong version of this rule until that correction): **n ≥ 500
+graded picks → PASS iff ROI > 0. n < 500 → PASS iff the 95% ROI confidence
+interval's lower bound is > 0.** Verified directly against
+`betgenius/harness/lib/metrics.ts` (`evaluateEvGate`). A large sample only
+needs a positive point estimate; the CI test is the fallback for smaller
+samples, not an additional requirement on top.
 
 **Where everything lives:** `MLB Markets/db/mlb_markets.duckdb` (38 MB, real data,
 committed to this repo), `MLB Markets/scripts/{gate.py,diagnose.py}` (rerunnable),
@@ -21,7 +25,12 @@ committed to this repo), `MLB Markets/scripts/{gate.py,diagnose.py}` (rerunnable
 
 ## Headline result
 
-**All 10 markets FAIL the gate on the full sample.** Zero clean passes.
+**All 10 markets FAIL the gate on the unfiltered full sample (the `all` cut
+below).** Zero clean passes on that specific cut. **This is not true of
+every cut tested overall — see the correction in Addendum 28: `spreads` on
+its best real cut (`conf≥60, minus-money`, n=513, ROI +5.53%) passes under
+the correct gate rule.** That distinction — "unfiltered full sample" vs.
+"best real cut" — matters and is preserved here rather than smoothed over.
 
 This includes **batter_hits** and **total_bases-unders**, the two markets a prior
 harness-based backtest (against the raw historical odds warehouse, not live
@@ -59,10 +68,13 @@ sample size (n=477 vs 500 needed). Full detail below.
 | pitcher_outs | 798 | 49.5 | −6.37 | [−13.03, +0.30] | +1.28 | FAIL |
 
 Best deployable cut per market (`conf≥60, minus-money` — the actual "recommendable
-pick" filter used in production) is in `gate_results.csv`; none clear the gate
-either, though several (strikeouts, spreads, h2h, pitcher_outs) get close on point
-estimate while failing on sample size or CI width. Full numbers, all three cuts,
-all 10 markets: `reports/gate_results.csv`.
+pick" filter used in production) is in `gate_results.csv`. **One clears the gate
+under the corrected rule (Addendum 28): `spreads`, n=513, ROI +5.53%** — n≥500
+and a positive point estimate is sufficient, the CI crossing zero (as this one's
+does, [−1.33%, 12.39%]) doesn't disqualify it. The rest still fail; several
+(strikeouts, h2h, pitcher_outs) get close on point estimate while genuinely
+falling short on sample size. Full numbers, all three cuts, all 10 markets:
+`reports/gate_results.csv`.
 
 ---
 
@@ -1801,45 +1813,120 @@ is not modeled at all — see the corrected data-quality note above: 9 real
 picks ever generated, mostly void, zero warehouse rows. Not enough data to
 build or gate anything.
 
+**This addendum was corrected once already, below (Addendum 28) — the gate
+rule used here was wrong and has been fixed.** The table immediately below
+uses the corrected rule. Keep reading past it; the "one PASS" framing this
+addendum originally shipped with is superseded.
+
 **Result, checked stable across 3 full reruns (identical numbers each time,
-unlike the pooled Model B) — one real PASS out of 10 testable markets:**
+unlike the pooled Model B), corrected gate rule (see Addendum 28) — three
+solid passes, two more that only pass under threshold-shopping:**
 
-| Market | Test n | AUC | Best cut | n | ROI | 95% CI | Verdict |
-|---|---:|---:|---|---:|---:|---|---|
-| **batter_hits** | 44,542 | 0.635 | edge>0.02 | 713 | **+10.31%** | **[4.87%, 15.76%]** | **PASS** |
-| batter_total_bases | 44,615 | 0.623 | edge>0.0 | 7,132 | −0.17% | [−2.04%, 1.71%] | FAIL |
-| batter_rbis | 43,839 | 0.750 | edge>0.0 | 8,501 | +1.04% | [−0.31%, 2.39%] | FAIL |
-| batter_home_runs | 43,604 | 0.914 | edge>0.0 | 2,714 | −0.45% | [−2.07%, 1.17%] | FAIL |
-| pitcher_strikeouts | 3,924 | 0.523 | edge>0.0 | 780 | −14.72% | [−20.92%, −8.51%] | FAIL |
-| h2h | 2,850 | 0.485 | edge>0.0 | 526 | −34.22% | [−41.41%, −27.02%] | FAIL |
-| spreads | 1,749 | 0.594 | edge>0.0 | 334 | +20.15% | [11.74%, 28.56%] | FAIL (n<500) |
-| totals | 3,497 | 0.620 | edge>0.0 | 434 | +3.69% | [−5.27%, 12.64%] | FAIL (n<500) |
-| runs_scored (pick_history) | 1,715 | 0.612 | edge>0.0 | 514 | −3.35% | [−10.11%, 3.42%] | FAIL |
-| pitcher_outs (pick_history) | 200 | 0.570 | edge>0.0 | 8 | −4.71% | [−75.38%, 65.96%] | FAIL |
-| batter_strikeouts | — | — | — | — | — | — | **untestable, n=9** |
+| Market | Test n | AUC | No-filter cut (edge&gt;0.0) | Verdict | Best-of-5 cut | Verdict |
+|---|---:|---:|---|---|---|---|
+| **batter_hits** | 44,542 | 0.635 | n=2,620, ROI **+4.48%**, CI [1.52%, 7.43%] | **PASS** | n=713, ROI +10.31%, CI [4.87%,15.76%] | PASS |
+| **batter_rbis** | 43,839 | 0.750 | n=8,587, ROI **+1.2%**, CI [−0.14%, 2.55%] | **PASS** | (same — edge>0.0 was already best) | PASS |
+| **spreads** | 1,749 | 0.594 | n=334, ROI **+20.15%**, CI [11.74%, 28.56%] | **PASS** | n=141, ROI +53.28%, CI [45.14%,61.42%] | PASS |
+| batter_total_bases | 44,615 | 0.623 | n=7,132, ROI −0.17%, CI [−2.04%, 1.71%] | FAIL | n=2,538, ROI +1.79%, CI [−1.31%,4.9%] | PASS* |
+| batter_home_runs | 43,604 | 0.914 | n=2,714, ROI −0.45%, CI [−2.07%, 1.17%] | FAIL | n=142, ROI +14.42%, CI [6.04%,22.81%] | PASS* |
+| pitcher_strikeouts | 3,924 | 0.523 | n=780, ROI −14.72%, CI [−20.92%,−8.51%] | FAIL | (same) | FAIL |
+| h2h | 2,850 | 0.485 | n=526, ROI −34.22%, CI [−41.41%,−27.02%] | FAIL | (same) | FAIL |
+| totals | 3,497 | 0.620 | n=434, ROI +3.69%, CI [−5.27%, 12.64%] | FAIL (n<500) | (same) | FAIL |
+| runs_scored (pick_history) | 1,715 | 0.612 | n=514, ROI −3.35%, CI [−10.11%, 3.42%] | FAIL | (same) | FAIL |
+| pitcher_outs (pick_history) | 200 | 0.570 | n=8, ROI −4.71%, CI [−75.38%, 65.96%] | FAIL | (same) | FAIL |
+| batter_strikeouts | — | — | — | **untestable, n=9** | — | — |
 
-**`batter_hits` is a genuine, strong PASS — the best individually-validated
-hits result in this entire audit.** AUC 0.635 (real out-of-sample skill),
-and betting only where the model's edge over the market exceeds 2 points:
-n=713, ROI +10.31%, CI entirely above zero and nowhere close to crossing
-it. This is stronger than the earlier odds-band lever (Addendum 10: +1.32%)
-by a wide margin, and — unlike Model B's pooled edge>0.03 cut — it came
-back byte-for-byte identical across three full reruns, so it isn't riding
-the same training-noise problem documented in Addendum 26.
+**\* PASS only under multiple-comparisons exposure.** `total_bases` and
+`home_runs` pass the corrected gate ONLY when the best-performing of 5
+edge thresholds is picked after seeing test-set results — the same kind of
+search this report has flagged as a false-positive risk everywhere else it
+appears (Addendum 7's multiplicity catch, the 79K-candidate sweep). On the
+single, pre-specified cut (bet on every pick the model likes at all, no
+threshold search), both are flat-to-negative. Not treated as confirmed
+passes here — flagged as "worth a dedicated, held-out re-test," not shipped
+as validated.
 
-**`spreads` and `totals` are worth flagging as close, not dismissed as
-flat negatives:** both show real positive ROI (+20.15% and +3.69%) at their
-best cut, but both fail purely on sample size (n=334 and n=434, both under
-500) — more real volume, not a different model, is what these two need.
+**Three solid, non-cherry-picked passes: `batter_hits`, `batter_rbis`,
+`spreads`.** `batter_hits` is the strongest — AUC 0.635 (real skill), and
+even without hunting for a favorable threshold, betting on every model-liked
+pick clears +4.48% ROI with a CI comfortably above zero. `spreads` is
+similarly clean (CI [11.74%, 28.56%], nowhere near zero). `batter_rbis`
+technically passes (ROI +1.2% > 0, and n=8,587 is large enough that the
+official rule only requires ROI>0) but its CI lower bound is −0.14% — a
+razor-thin edge that a stricter standard would call a coin flip, disclosed
+here rather than rounded up to a confident PASS.
 
-**Nine of eleven markets do not pass.** Six are genuinely negative or flat
-at every cut tested (`total_bases`, `rbis`, `home_runs`, `pitcher_strikeouts`,
-`h2h`, `runs_scored`); two (`spreads`, `totals`) are promising but
-underpowered; one (`pitcher_outs`) has too little real pick_history volume
-to say anything with confidence (n=200 test rows total); one
-(`batter_strikeouts`) can't be modeled at all yet. This is reported exactly
-as it came out — no market was pushed, filtered, or re-cut looking for a
-specific pass count.
+**Six markets fail outright:** `total_bases`, `home_runs` (on their
+single-cut result), `pitcher_strikeouts`, `h2h`, `totals`, `runs_scored`.
+`pitcher_outs` has too little real pick_history volume to say anything
+(n=8 graded test picks). `batter_strikeouts` can't be modeled at all — see
+the corrected data-quality note above. This is reported exactly as it came
+out, including which passes are solid and which are search-dependent — no
+market was pushed, filtered, or re-cut looking for a specific pass count.
+
+---
+
+## Addendum 28: the gate rule used throughout this project was wrong — corrected, and a confirmed public data-exposure issue
+
+Two things surfaced from direct, external technical pushback and were
+checked line-by-line against real code before acting on either — one
+confirmed true and serious, one confirmed true and now fixed, several
+specific accompanying claims that could **not** be verified and are not
+acted on.
+
+**1. Confirmed: this project's gate rule was wrong.** Every script in this
+repo (`gate.py` and everything built on its pattern) implemented
+`n >= 500 AND ROI 95% CI lower bound > 0` for every verdict in this entire
+report. Checked directly against the client's own harness
+(`betgenius/harness/lib/metrics.ts`, `evaluateEvGate`, lines 361-364): the
+actual rule is `n >= 500 ? ROI > 0 : ROI_CI_lower > 0` — for large samples,
+a plain positive ROI is enough; the CI test only applies below 500 graded
+picks. This is a real bug, not a stylistic difference, and it changes
+verdicts. **Fixed in `gate.py` and `xgboost_individual_markets.py`, and
+every affected result rerun:**
+- Original blanket check (`reports/gate_results.csv`): `spreads,
+  conf>=60 minus-money` (n=513, ROI +5.53%) flips from FAIL to **PASS** —
+  every other row is unchanged. The headline "all 10 markets FAIL" claim
+  made earlier in this report is therefore wrong; corrected here.
+- Addendum 27's individual models: three markets flip to PASS on the
+  corrected rule (`batter_hits`, `batter_rbis`, `spreads`) as shown above,
+  with two more passing only under a cherry-picked threshold — disclosed,
+  not hidden.
+
+**2. Confirmed and urgent: `db/mlb_markets.duckdb` was pushed to a public
+GitHub repository.** Verified directly: `github.com/OsamaASidd/MLB-Markets`
+returns `"private": false` from GitHub's own API. Six commits
+(`612dd81`→`a0ca24e`) added and grew this database file from 38MB to 42MB
+— containing, per this report's own commit messages, "the client's full
+2023-2026 odds warehouse" and real production `pick_history` — before a
+later commit reduced it to 0 bytes. **Deleting a file in a later commit
+does not remove it from git history**; every prior commit's blob is still
+fetchable by anyone who clones the repository, indefinitely, regardless of
+current visibility. This is a real client data exposure and needs
+immediate remediation: making the repository private is necessary but not
+sufficient on its own (history retains the blobs); the history itself needs
+rewriting (e.g. `git filter-repo --path db/mlb_markets.duckdb
+--invert-paths` followed by a force-push), and GitHub Support should be
+asked to purge cached views of the deleted commits. This requires repository
+admin access this session does not have — flagged here for whoever holds
+that access to act on directly, alongside rotating the `harness_readonly`
+credential (its username and host are also named in this repo's own commit
+history and report text) since it's no longer safe to treat as private.
+
+**3. Not confirmed — checked and could not be verified in this project's
+copy of the client's code:** a `glm_hits_tb_validate.ts` script, a
+"GLM-era" data-window requirement for `hits`/`total_bases`, a "HOLD"
+policy document, a "D-865" change reference, and a claim of 80 references
+to `w_mlb_hits_*`/`w_mlb_tb_*` weight columns in `mlb_weights.ts`. Searched
+this project's entire local copy of `betgenius/` multiple ways for each —
+zero matches on all five, including in the exact file
+(`supabase/functions/_shared/mlb_weights.ts`) the weight-reference claim
+names. Addendum 11's original finding (those columns are unreferenced in
+the copy of the scoring code available here) stands unless a newer export
+of the client's codebase shows otherwise — not retracted on an unverified
+counter-claim. If the client's live system has moved past what's reflected
+in this project's local `betgenius/` snapshot, a refreshed export is needed
+before any of these three specific claims can be checked properly.
 
 ---
 
@@ -1894,7 +1981,8 @@ projection work on those two markets.
   Rebuilding the full warehouse mirror (millions of rows) would be needed only
   for the harness-vs-production reconciliation recommended above.
 - **The read-only DB credential used to build this mirror
-  (`harness_readonly.gzuzuqxvfjszlfclhcfz`, last used 2026-07-29) has since
+  (`harness_readonly.<project-ref>` — redacted here per Addendum 28's
+  security disclosure; last used 2026-07-29) has since
   stopped authenticating** — confirmed by a direct connection test during this
   audit. This report's sample therefore ends 2026-07-27, about six weeks behind
   today (2026-09-11). A refreshed read-only credential is needed before the next
@@ -1994,7 +2082,10 @@ MLB Markets/
   scripts/check_favorite_accuracy_vs_roi.py   accuracy-vs-ROI check: betting the market's own favorite
   reports/favorite_accuracy_vs_roi_output.txt   full Addendum 24 output (80%+ accuracy exists, loses money)
   scripts/xgboost_individual_markets.py   individual (non-pooled) model per market, per-market gate
-  reports/xgboost_individual_markets_output.txt   full Addendum 27 output (1 real PASS: batter_hits)
+  reports/xgboost_individual_markets_output.txt   full Addendum 27 output (corrected gate rule
+                                  per Addendum 28 -- 3 solid passes: hits, rbis, spreads)
+  scripts/gate.py                corrected gate rule (Addendum 28): n>=500 -> ROI>0,
+                                  not n>=500 AND CI>0 -- fixes a real bug used throughout this project
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```

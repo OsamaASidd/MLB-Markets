@@ -82,7 +82,13 @@ def stat(profits, wins):
 
 
 def gate(s):
-    return s["n"] >= MIN_GRADED and s["lo"] is not None and s["lo"] > 0
+    """Official rule, verified against betgenius/harness/lib/metrics.ts
+    (evaluateEvGate): n>=500 needs only ROI>0; n<500 needs CI lower bound>0.
+    Corrected from an earlier, stricter n>=500 AND CI>0 rule used throughout
+    this project -- a real bug, caught and fixed."""
+    if s["n"] >= MIN_GRADED:
+        return s["roi"] is not None and s["roi"] > 0
+    return s["lo"] is not None and s["lo"] > 0
 
 
 def build_team_game_log(con):
@@ -294,22 +300,30 @@ def _fit_and_report(both, games, market_key):
     test["model_prob"] = test_pred
     test["edge"] = test["model_prob"] - test["market_prob"]
 
+    all_cuts = []
     best = None
     for thresh in [0.0, 0.02, 0.03, 0.05, 0.08]:
         sub = test[(test.odds < 0) & (test.edge > thresh)]
         profits = sub.apply(lambda r: profit(r["win"], r["odds"]), axis=1)
         s = stat(profits, sub["win"])
         passed = gate(s)
+        all_cuts.append({"thresh": thresh, **s, "passed": passed})
         if best is None or (passed and not best.get("passed")):
             best = {"thresh": thresh, **s, "passed": passed}
         elif passed and best.get("passed") and s["roi"] and best["roi"] and s["roi"] > best["roi"]:
             best = {"thresh": thresh, **s, "passed": passed}
 
     verdict = "PASS" if best and best["passed"] else "FAIL"
-    print(f"  {market_key:<20} n(train/test)={len(train):,}/{len(test):,}  AUC={auc:.3f}  acc={acc:.3f}  "
-          f"best cut: edge>{best['thresh']} n={best['n']} ROI={best['roi']} CI=[{best['lo']},{best['hi']}]  {verdict}")
+    no_filter = all_cuts[0]  # edge>0.0 -- the one non-cherry-picked cut
+    nf_verdict = "PASS" if no_filter["passed"] else "FAIL"
+    print(f"  {market_key:<20} n(train/test)={len(train):,}/{len(test):,}  AUC={auc:.3f}  acc={acc:.3f}")
+    print(f"    edge>0.0 (no threshold search): n={no_filter['n']} ROI={no_filter['roi']} "
+          f"CI=[{no_filter['lo']},{no_filter['hi']}]  {nf_verdict}")
+    print(f"    best of 5 thresholds tried on this same test set: edge>{best['thresh']} n={best['n']} "
+          f"ROI={best['roi']} CI=[{best['lo']},{best['hi']}]  {verdict}  (multiple-comparisons exposed)")
     return {"market": market_key, "n_train": len(train), "n_test": len(test), "auc": round(auc, 3),
-            "acc": round(acc, 3), "best_cut": best, "verdict": verdict}
+            "acc": round(acc, 3), "no_filter": no_filter, "best_cut": best,
+            "verdict": verdict, "no_filter_verdict": nf_verdict}
 
 
 def run_pick_history_market(con, market_key, prop_type, grade_col):
@@ -355,23 +369,30 @@ def run_pick_history_market(con, market_key, prop_type, grade_col):
     test["market_prob"] = implied_prob(test["odds"])
     test["edge"] = test["model_prob"] - test["market_prob"]
 
+    all_cuts = []
     best = None
     for thresh in [0.0, 0.02, 0.03, 0.05, 0.08]:
         sub = test[(test.odds < 0) & (test.edge > thresh)]
         profits = sub.apply(lambda r: profit(r["win"], r["odds"]), axis=1)
         s = stat(profits, sub["win"])
         passed = gate(s)
+        all_cuts.append({"thresh": thresh, **s, "passed": passed})
         if best is None or (passed and not best.get("passed")):
             best = {"thresh": thresh, **s, "passed": passed}
         elif passed and best.get("passed") and s["roi"] and best["roi"] and s["roi"] > best["roi"]:
             best = {"thresh": thresh, **s, "passed": passed}
 
     verdict = "PASS" if best and best["passed"] else "FAIL"
-    print(f"  {market_key:<20} n(train/test)={len(train):,}/{len(test):,}  AUC={auc:.3f}  acc={acc:.3f}  "
-          f"best cut: edge>{best['thresh']} n={best['n']} ROI={best['roi']} CI=[{best['lo']},{best['hi']}]  {verdict}  "
-          f"(pick_history-only, 2.5mo window -- see note)")
+    no_filter = all_cuts[0]
+    nf_verdict = "PASS" if no_filter["passed"] else "FAIL"
+    print(f"  {market_key:<20} n(train/test)={len(train):,}/{len(test):,}  AUC={auc:.3f}  acc={acc:.3f}  (pick_history-only, 2.5mo window)")
+    print(f"    edge>0.0 (no threshold search): n={no_filter['n']} ROI={no_filter['roi']} "
+          f"CI=[{no_filter['lo']},{no_filter['hi']}]  {nf_verdict}")
+    print(f"    best of 5 thresholds tried on this same test set: edge>{best['thresh']} n={best['n']} "
+          f"ROI={best['roi']} CI=[{best['lo']},{best['hi']}]  {verdict}  (multiple-comparisons exposed)")
     return {"market": market_key, "n_train": len(train), "n_test": len(test), "auc": round(auc, 3),
-            "acc": round(acc, 3), "best_cut": best, "verdict": verdict}
+            "acc": round(acc, 3), "no_filter": no_filter, "best_cut": best,
+            "verdict": verdict, "no_filter_verdict": nf_verdict}
 
 
 def main():
@@ -423,9 +444,11 @@ def main():
     results.append({"market": "batter_strikeouts", "n": 9, "verdict": "untestable (n=9)"})
 
     print("\n=== SUMMARY: individual per-market verdicts, 11 markets ===")
+    print(f"  {'market':<20} {'no-filter (edge>0.0)':<24} {'best-of-5 (multi-comparisons)':<20}")
     for r in results:
-        v = r.get("verdict", "?")
-        print(f"  {r['market']:<20} {v}")
+        nf = r.get("no_filter_verdict", "-")
+        best = r.get("verdict", "?")
+        print(f"  {r['market']:<20} {nf:<24} {best:<20}")
 
     con.close()
 

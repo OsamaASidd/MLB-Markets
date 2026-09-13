@@ -34,10 +34,22 @@ pip install -r requirements.txt
 ## Data access before you run anything
 
 Almost every script connects to `db/mlb_markets.duckdb` — most of them `read_only`. That
-file is **intentionally not committed**: at various points it has held the client's real,
-proprietary production data (pick history, box scores, and a full 2.42M-row real odds
-warehouse), and per an explicit decision that data stays local-only, never pushed to a
-public remote. This means **a fresh clone of this repo cannot run most of these scripts
+file is **not currently committed** and going forward is `.gitignore`'d: at various points
+it has held the client's real, proprietary production data (pick history, box scores, and
+a full 2.42M-row real odds warehouse).
+
+**⚠ Correction, confirmed directly: this file WAS previously committed and pushed to this
+repository's public GitHub remote.** Six commits grew it from 38MB to 42MB before a later
+commit removed it. Deleting a file in a later commit does **not** remove it from git
+history — every one of those earlier commits' blobs remains fetchable by anyone who clones
+this repository, regardless of the file's current absence or this repo's current
+visibility setting. An earlier version of this README claimed the data was "never pushed
+to a public remote" — that claim was false and has been corrected here. See
+`reports/MILESTONE_1_GATE_REPORT.md`, Addendum 28, for the full disclosure and required
+remediation (repo visibility, history rewrite, credential rotation) — none of which this
+project has the repository-admin access to perform itself.
+
+This means **a fresh clone of this repo cannot run most of these scripts
 out of the box** — that's expected, not a bug. Three ways the db gets populated:
 
 | Path | Script(s) | Needs | Unlocks |
