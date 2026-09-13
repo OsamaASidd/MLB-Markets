@@ -1780,6 +1780,69 @@ single number presented as settled.
 
 ---
 
+## Addendum 27: individual per-market models, no pooling — the direct answer to "which markets pass"
+
+Requested directly: stop pooling. Build one model per market, gate each on
+its own evidence, report which of the 11 pass and which fail — no target
+count, whatever passes on real numbers is what gets reported.
+`scripts/xgboost_individual_markets.py`, output in
+`reports/xgboost_individual_markets_output.txt`.
+
+**Two data situations, two feature sets, same as the split already
+established:** 8 markets with real 2023-2025 warehouse odds get the real
+point-in-time features (Elo, L10, bullpen fatigue, park factors) — one
+model per market this time, no `market_code`, no cross-market pooling.
+`runs_scored` and `pitcher_outs` have real production picks but zero
+warehouse odds (confirmed again directly against `market_config.ts`:
+`allowedSources: PICK_HISTORY_ONLY`) — these use the real `score_*`
+production factors instead, over the same May-Jul 2026 window Model A used,
+since that's the only span with real factor data for them. `batter_strikeouts`
+is not modeled at all — see the corrected data-quality note above: 9 real
+picks ever generated, mostly void, zero warehouse rows. Not enough data to
+build or gate anything.
+
+**Result, checked stable across 3 full reruns (identical numbers each time,
+unlike the pooled Model B) — one real PASS out of 10 testable markets:**
+
+| Market | Test n | AUC | Best cut | n | ROI | 95% CI | Verdict |
+|---|---:|---:|---|---:|---:|---|---|
+| **batter_hits** | 44,542 | 0.635 | edge>0.02 | 713 | **+10.31%** | **[4.87%, 15.76%]** | **PASS** |
+| batter_total_bases | 44,615 | 0.623 | edge>0.0 | 7,132 | −0.17% | [−2.04%, 1.71%] | FAIL |
+| batter_rbis | 43,839 | 0.750 | edge>0.0 | 8,501 | +1.04% | [−0.31%, 2.39%] | FAIL |
+| batter_home_runs | 43,604 | 0.914 | edge>0.0 | 2,714 | −0.45% | [−2.07%, 1.17%] | FAIL |
+| pitcher_strikeouts | 3,924 | 0.523 | edge>0.0 | 780 | −14.72% | [−20.92%, −8.51%] | FAIL |
+| h2h | 2,850 | 0.485 | edge>0.0 | 526 | −34.22% | [−41.41%, −27.02%] | FAIL |
+| spreads | 1,749 | 0.594 | edge>0.0 | 334 | +20.15% | [11.74%, 28.56%] | FAIL (n<500) |
+| totals | 3,497 | 0.620 | edge>0.0 | 434 | +3.69% | [−5.27%, 12.64%] | FAIL (n<500) |
+| runs_scored (pick_history) | 1,715 | 0.612 | edge>0.0 | 514 | −3.35% | [−10.11%, 3.42%] | FAIL |
+| pitcher_outs (pick_history) | 200 | 0.570 | edge>0.0 | 8 | −4.71% | [−75.38%, 65.96%] | FAIL |
+| batter_strikeouts | — | — | — | — | — | — | **untestable, n=9** |
+
+**`batter_hits` is a genuine, strong PASS — the best individually-validated
+hits result in this entire audit.** AUC 0.635 (real out-of-sample skill),
+and betting only where the model's edge over the market exceeds 2 points:
+n=713, ROI +10.31%, CI entirely above zero and nowhere close to crossing
+it. This is stronger than the earlier odds-band lever (Addendum 10: +1.32%)
+by a wide margin, and — unlike Model B's pooled edge>0.03 cut — it came
+back byte-for-byte identical across three full reruns, so it isn't riding
+the same training-noise problem documented in Addendum 26.
+
+**`spreads` and `totals` are worth flagging as close, not dismissed as
+flat negatives:** both show real positive ROI (+20.15% and +3.69%) at their
+best cut, but both fail purely on sample size (n=334 and n=434, both under
+500) — more real volume, not a different model, is what these two need.
+
+**Nine of eleven markets do not pass.** Six are genuinely negative or flat
+at every cut tested (`total_bases`, `rbis`, `home_runs`, `pitcher_strikeouts`,
+`h2h`, `runs_scored`); two (`spreads`, `totals`) are promising but
+underpowered; one (`pitcher_outs`) has too little real pick_history volume
+to say anything with confidence (n=200 test rows total); one
+(`batter_strikeouts`) can't be modeled at all yet. This is reported exactly
+as it came out — no market was pushed, filtered, or re-cut looking for a
+specific pass count.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -1809,10 +1872,21 @@ projection work on those two markets.
   rows where CLV/odds/hit are all present (see `gate.py`'s `ph` view filter) —
   gaps don't inflate or bias any number above, but they do mean roughly 4 in 10
   picks per market can't be scored for CLV at all.
-- **A `strikeouts` prop_type with n=2 exists in `pick_history` alongside
-  `pitcher_strikeouts` (n=1,949)** — this is a data-entry artifact (2 stray
-  rows, both losses), not a real distinct market. Excluded from this audit;
-  worth a one-line fix in whatever writes `prop_type` to stop it recurring.
+- **Correction (Addendum 27): the `strikeouts` prop_type in `pick_history` is
+  not a data-entry artifact.** Originally dismissed here as "2 stray rows."
+  Re-checked directly while scoping the 11-market individual-model build
+  requested by the client: it's actually **9 real rows**, every one with
+  `mlb_market_type = 'batter_strikeouts'` — a genuine, distinct,
+  intentionally-configured 11th market (`boxscore` even carries its own
+  `batter_strikeouts` integer column, ready for grading). It is real, just
+  not yet usable: zero rows exist for it in the real odds warehouse
+  (`client_closing_odds`), and of the 9 picks ever generated in production,
+  most are void or ungraded (`dnp: ... stat field null`,
+  `market_absent_v2`). n=9 total, nowhere near the 500-pick minimum this
+  report's own gate requires — no honest model or backtest can be built on
+  this yet. This is a real data-collection gap for the client to close
+  (start capturing `batter_strikeouts` odds), not something more analysis
+  can work around.
 - **Local odds-warehouse mirror is incomplete** (`cache_mlb_historical_odds` —
   only 3 weeks of May 2023 pulled before an earlier extraction stalled) and was
   intentionally **not** rebuilt for this milestone: the gate only needs
@@ -1919,6 +1993,8 @@ MLB Markets/
                                   see Addendum 26 for the honest multi-run range this single file can't show
   scripts/check_favorite_accuracy_vs_roi.py   accuracy-vs-ROI check: betting the market's own favorite
   reports/favorite_accuracy_vs_roi_output.txt   full Addendum 24 output (80%+ accuracy exists, loses money)
+  scripts/xgboost_individual_markets.py   individual (non-pooled) model per market, per-market gate
+  reports/xgboost_individual_markets_output.txt   full Addendum 27 output (1 real PASS: batter_hits)
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```

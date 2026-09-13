@@ -1,0 +1,33 @@
+building real team game log, Elo, L10, bullpen fatigue from 2023-2026 client data...
+
+=== 8 markets with real warehouse odds (2023-2025) ===
+  batter_hits          n(train/test)=133,620/44,542  AUC=0.635  acc=0.597  best cut: edge>0.02 n=713 ROI=10.31 CI=[4.87,15.76]  PASS
+  batter_total_bases   n(train/test)=133,844/44,615  AUC=0.623  acc=0.586  best cut: edge>0.0 n=7132 ROI=-0.17 CI=[-2.04,1.71]  FAIL
+  batter_rbis          n(train/test)=131,515/43,839  AUC=0.750  acc=0.716  best cut: edge>0.0 n=8501 ROI=1.04 CI=[-0.31,2.39]  FAIL
+  batter_home_runs     n(train/test)=130,806/43,604  AUC=0.914  acc=0.889  best cut: edge>0.0 n=2714 ROI=-0.45 CI=[-2.07,1.17]  FAIL
+  pitcher_strikeouts   n(train/test)=11,769/3,924  AUC=0.523  acc=0.505  best cut: edge>0.0 n=780 ROI=-14.72 CI=[-20.92,-8.51]  FAIL
+  h2h                  n(train/test)=8,543/2,850  AUC=0.485  acc=0.466  best cut: edge>0.0 n=526 ROI=-34.22 CI=[-41.41,-27.02]  FAIL
+  spreads              n(train/test)=5,244/1,749  AUC=0.594  acc=0.518  best cut: edge>0.0 n=334 ROI=20.15 CI=[11.74,28.56]  FAIL
+  totals               n(train/test)=10,489/3,497  AUC=0.620  acc=0.588  best cut: edge>0.0 n=434 ROI=3.69 CI=[-5.27,12.64]  FAIL
+
+=== 2 markets with real picks but no warehouse odds (pick_history only, May-Jul 2026) ===
+  runs_scored          n(train/test)=5,144/1,715  AUC=0.612  acc=0.599  best cut: edge>0.0 n=514 ROI=-3.35 CI=[-10.11,3.42]  FAIL  (pick_history-only, 2.5mo window -- see note)
+  pitcher_outs         n(train/test)=598/200  AUC=0.570  acc=0.530  best cut: edge>0.0 n=8 ROI=-4.71 CI=[-75.38,65.96]  FAIL  (pick_history-only, 2.5mo window -- see note)
+
+=== batter_strikeouts: NOT modeled ===
+  n=9 real picks ever generated, mostly void/ungraded, zero warehouse odds rows.
+  No honest model or gate test possible on this little data. Real data collection
+  gap for the client to close, not something more analysis can fix.
+
+=== SUMMARY: individual per-market verdicts, 11 markets ===
+  batter_hits          PASS
+  batter_total_bases   FAIL
+  batter_rbis          FAIL
+  batter_home_runs     FAIL
+  pitcher_strikeouts   FAIL
+  h2h                  FAIL
+  spreads              FAIL
+  totals               FAIL
+  runs_scored          FAIL
+  pitcher_outs         FAIL
+  batter_strikeouts    untestable (n=9)

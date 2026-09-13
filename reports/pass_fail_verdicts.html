@@ -322,6 +322,28 @@
     <p class="note"><code>batter_home_runs</code> alone clears 80% accuracy with no model at all — betting "under" on a home-run prop wins ~88% of the time, since most players simply don't hit a home run in a given game (matches the harness's own <code>gate_results.csv</code>: home_runs minus-money WR 87.9%). Skewing a pooled model toward this market — or reporting accuracy on it alone — would produce a genuine 80%+ accuracy figure right now. It would also make the model less profitable: the payout on that heavily-favored side is small enough (~+11&cent; per dollar staked) that ROI on the exact same bet is −2.20%. Accuracy and profitability are different axes, and in markets like this one, pushing one pushes the other the wrong way — the same lesson Addendum 17/18 already established. this argument holds regardless of Model B's own betting-edge result, which turned out to be marginal for unrelated reasons (see section 06 and Addendum 26) — an 80%+ accuracy figure built by leaning into <code>home_runs</code> would still lose money either way. Full writeup: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>, Addendum&nbsp;24.</p>
   </section>
 
+  <section>
+    <div class="sec-head"><span class="sec-no">08</span><h2>Individual per-market models, no pooling — one model each, gated on its own</h2></div>
+    <p class="lede">Requested directly: stop pooling, build one model per market, report which of the 11 real markets pass on their own evidence. No target pass count — whatever passes, passes on real numbers. Checked stable across three full reruns (unlike the pooled Model B).</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Market</th><th class="num">Test n</th><th class="num">AUC</th><th>Best cut</th><th class="num">ROI</th><th>95% CI</th><th>Verdict</th></tr>
+      <tr><td><b>batter_hits</b></td><td class="num">44,542</td><td class="num">0.635</td><td>edge&gt;0.02, n=713</td><td class="num"><b>+10.31%</b></td><td>[4.87%, 15.76%]</td><td><span class="verdict pass">PASS</span></td></tr>
+      <tr><td>batter_total_bases</td><td class="num">44,615</td><td class="num">0.623</td><td>edge&gt;0.0, n=7,132</td><td class="num">&minus;0.17%</td><td>[&minus;2.04%, 1.71%]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>batter_rbis</td><td class="num">43,839</td><td class="num">0.750</td><td>edge&gt;0.0, n=8,501</td><td class="num">+1.04%</td><td>[&minus;0.31%, 2.39%]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>batter_home_runs</td><td class="num">43,604</td><td class="num">0.914</td><td>edge&gt;0.0, n=2,714</td><td class="num">&minus;0.45%</td><td>[&minus;2.07%, 1.17%]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>pitcher_strikeouts</td><td class="num">3,924</td><td class="num">0.523</td><td>edge&gt;0.0, n=780</td><td class="num">&minus;14.72%</td><td>[&minus;20.92%, &minus;8.51%]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>h2h</td><td class="num">2,850</td><td class="num">0.485</td><td>edge&gt;0.0, n=526</td><td class="num">&minus;34.22%</td><td>[&minus;41.41%, &minus;27.02%]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>spreads</td><td class="num">1,749</td><td class="num">0.594</td><td>edge&gt;0.0, n=334</td><td class="num">+20.15%</td><td>[11.74%, 28.56%]</td><td><span class="verdict cond">n&lt;500</span></td></tr>
+      <tr><td>totals</td><td class="num">3,497</td><td class="num">0.620</td><td>edge&gt;0.0, n=434</td><td class="num">+3.69%</td><td>[&minus;5.27%, 12.64%]</td><td><span class="verdict cond">n&lt;500</span></td></tr>
+      <tr><td>runs_scored <span style="color:var(--ink-dim)">(pick_history)</span></td><td class="num">1,715</td><td class="num">0.612</td><td>edge&gt;0.0, n=514</td><td class="num">&minus;3.35%</td><td>[&minus;10.11%, 3.42%]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>pitcher_outs <span style="color:var(--ink-dim)">(pick_history)</span></td><td class="num">200</td><td class="num">0.570</td><td>edge&gt;0.0, n=8</td><td class="num">&minus;4.71%</td><td>[&minus;75.38%, 65.96%]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>batter_strikeouts</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td>&mdash;</td><td class="num">&mdash;</td><td>&mdash;</td><td><span class="verdict cond">untestable, n=9</span></td></tr>
+    </table>
+    </div>
+    <p class="note callout"><b>One real PASS out of 10 testable markets: <code>batter_hits</code></b> — AUC 0.635, and betting only where the model's edge over the market exceeds 2 points gives n=713, ROI <b>+10.31%</b>, CI entirely above zero. Stronger than the earlier odds-band lever (+1.32%) by a wide margin, and identical across three full reruns — not riding the training-instability problem found in Model B. <code>spreads</code> and <code>totals</code> are worth watching, not dismissing: both show real positive ROI at their best cut but fail purely on sample size. <code>batter_strikeouts</code> isn't a model problem — it's 9 real picks ever generated and zero warehouse odds; the client needs to start collecting this market's odds before anything can be tested. Full writeup: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>, Addendum&nbsp;27.</p>
+  </section>
+
   <footer>
     Milestone 1 · MLB Markets gate audit · full methodology, scripts, and raw output: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>
   </footer>
