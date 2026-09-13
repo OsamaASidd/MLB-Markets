@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MLB Market Verdicts</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f8f9;
+    --surface: #eef1f4;
+    --surface-2: #e4e8ec;
+    --line: #d7dce1;
+    --ink: #1a1f28;
+    --ink-dim: #5c6675;
+    --accent: #2c5f74;
+    --accent-bg: #e3edf0;
+    --fail: #ab4438;    --fail-bg: #fbe9e7;
+    --pass: #2f7a52;    --pass-bg: #e6f3ea;
+    --warn: #9c7a1f;    --warn-bg: #f6efd8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1318;
+      --surface: #1a2029;
+      --surface-2: #212834;
+      --line: #2b333f;
+      --ink: #e6e9ed;
+      --ink-dim: #8b96a6;
+      --accent: #6fb0c9;
+      --accent-bg: #1b2a30;
+      --fail: #e08277;    --fail-bg: #331f1c;
+      --pass: #7fcda0;    --pass-bg: #16271d;
+      --warn: #d9b45a;    --warn-bg: #332a13;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1318;
+    --surface: #1a2029;
+    --surface-2: #212834;
+    --line: #2b333f;
+    --ink: #e6e9ed;
+    --ink-dim: #8b96a6;
+    --accent: #6fb0c9;
+    --accent-bg: #1b2a30;
+    --fail: #e08277;    --fail-bg: #331f1c;
+    --pass: #7fcda0;    --pass-bg: #16271d;
+    --warn: #d9b45a;    --warn-bg: #332a13;
+  }
+
+  * { box-sizing: border-box; }
+  html { text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14.5px; line-height: 1.55;
+  }
+  ::selection { background: var(--accent); color: var(--bg); }
+  a { color: var(--accent); }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 22px 70px; }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 600;
+    color: var(--ink-dim); letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  h1 {
+    font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: 25px;
+    letter-spacing: -0.01em; margin: 5px 0 10px; text-wrap: balance;
+  }
+  p.lede { color: var(--ink-dim); margin: 0 0 6px; max-width: 78ch; font-size: 13.6px; }
+
+  .gaterule {
+    display: inline-block; margin: 14px 0 4px; font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px; background: var(--surface); border: 1px solid var(--line);
+    padding: 8px 13px; border-radius: 6px; color: var(--ink); line-height: 1.6;
+  }
+  .gaterule b { color: var(--accent); }
+
+  hr.rule { height: 1px; background: var(--line); border: 0; margin: 20px 0 24px; }
+
+  .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1020px; }
+  th, td { text-align: left; padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  th {
+    color: var(--ink-dim); font-weight: 600; font-family: "IBM Plex Mono", monospace;
+    font-size: 10.3px; text-transform: uppercase; letter-spacing: 0.04em;
+    background: var(--surface-2); position: sticky; top: 0;
+  }
+  td.market { font-weight: 600; white-space: nowrap; }
+  td.kind { color: var(--ink-dim); font-size: 11.5px; font-weight: 400; display: block; margin-top: 2px; }
+  td.num { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; font-size: 12.3px; white-space: nowrap; }
+  td.reason, td.lever { color: var(--ink-dim); max-width: 26ch; }
+  td.decision { text-align: center; }
+
+  .pill {
+    font-family: "IBM Plex Mono", monospace; font-weight: 600; padding: 3px 10px;
+    border-radius: 20px; font-size: 10.8px; display: inline-block; letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .pill.fail { color: var(--fail); background: var(--fail-bg); }
+  .pill.pass { color: var(--pass); background: var(--pass-bg); }
+  .pill.warn { color: var(--warn); background: var(--warn-bg); }
+
+  .yn { font-family: "IBM Plex Mono", monospace; font-weight: 700; font-size: 12.5px; }
+  .yn.yes { color: var(--warn); }
+  .yn.no { color: var(--ink-dim); font-weight: 400; }
+
+  .foot {
+    margin-top: 22px; font-size: 12.6px; color: var(--ink-dim);
+    background: var(--surface-2); border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0; padding: 13px 16px; line-height: 1.65;
+  }
+  .foot b { color: var(--ink); }
+  .foot code { background: var(--surface); border: 1px solid var(--line); padding: 1px 5px; border-radius: 3px; font-size: 0.92em; font-family: "IBM Plex Mono", monospace; }
+  .foot + .foot { margin-top: 10px; }
+
+  footer { margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink-dim); font-size: 11.8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="eyebrow">MLB Phase 1 &middot; Market Verdicts</span>
+  <h1>Which of the 11 markets pass</h1>
+  <p class="lede">One page, current status only. Hits and total bases use the live GLM validation (ev_pass slice, official gate, 18&ndash;19 Aug&ndash;12 Sep 2026). The other 9 use the production pick_history gate at the conf&ge;60, minus-money cut &mdash; the same filter live picks are actually shown under.</p>
+  <div class="gaterule">Official gate: <b>n &ge; 500 &rarr; PASS iff ROI &gt; 0</b> &middot; <b>n &lt; 500 &rarr; PASS iff 95% ROI CI lower bound &gt; 0</b> &middot; otherwise FAIL</div>
+  <hr class="rule">
+
+  <div class="table-scroll">
+  <table>
+    <tr>
+      <th>Market</th>
+      <th>Status</th>
+      <th>Latest number (source &middot; window &middot; slice)</th>
+      <th>Gate</th>
+      <th>Reason</th>
+      <th>Lever</th>
+      <th>Client decision?</th>
+    </tr>
+    <tr>
+      <td class="market">Hits<span class="kind">batter prop</span></td>
+      <td><span class="pill fail">FAIL</span> <span class="pill warn" style="margin-top:4px;display:inline-block;">tiny-n PASS</span></td>
+      <td class="num">over: n=4,825, ROI &minus;7.00%, CI[&minus;9.33,&minus;4.59]<br>under: n=58, ROI +27.17%, CI[+1.67,+53.39]<br><span style="color:var(--ink-dim);font-family:inherit;">glm_hits_tb_validation.json &middot; ev_pass</span></td>
+      <td class="num">over FAIL<br>under PASS (technically)</td>
+      <td class="reason">Over side no edge. Under "passes" on 58 picks &mdash; noise, not a real edge.</td>
+      <td class="lever">None &mdash; stays on the board (standing HOLD)</td>
+      <td class="decision"><span class="yn no">No</span></td>
+    </tr>
+    <tr>
+      <td class="market">Total bases<span class="kind">batter prop</span></td>
+      <td><span class="pill fail">FAIL</span></td>
+      <td class="num">under: n=1,496, ROI &minus;2.30%, CI[&minus;6.75,+1.97]<br>over: n=0, no graded picks yet<br><span style="color:var(--ink-dim);font-family:inherit;">glm_hits_tb_validation.json &middot; ev_pass</span></td>
+      <td class="num">under FAIL<br>over n/a</td>
+      <td class="reason">Under mildly negative, CI crosses zero. Over too new under GLM to judge.</td>
+      <td class="lever">None &mdash; stays on the board (standing HOLD). More live volume before over can be judged.</td>
+      <td class="decision"><span class="yn no">No</span></td>
+    </tr>
+    <tr>
+      <td class="market">RBI<span class="kind">batter prop</span></td>
+      <td><span class="pill fail">FAIL</span></td>
+      <td class="num">n=3,925, ROI &minus;2.01%, CI[&minus;3.86,&minus;0.17]<br><span style="color:var(--ink-dim);font-family:inherit;">pick_history &middot; conf&ge;60 minus-money</span></td>
+      <td class="num">FAIL</td>
+      <td class="reason">Negative ROI at real production volume.</td>
+      <td class="lever">None identified</td>
+      <td class="decision"><span class="yn no">No</span></td>
+    </tr>
+    <tr>
+      <td class="market">Home runs<span class="kind">batter prop</span></td>
+      <td><span class="pill fail">FAIL</span></td>
+      <td class="num">n=9,319, ROI &minus;3.61%, CI[&minus;4.30,&minus;2.92]<br><span style="color:var(--ink-dim);font-family:inherit;">pick_history &middot; conf&ge;60 minus-money</span></td>
+      <td class="num">FAIL</td>
+      <td class="reason">Negative ROI. Plus-money "over" side separately confirmed catastrophic (already vetoed).</td>
+      <td class="lever">None beyond existing plus-money veto</td>
+      <td class="decision"><span class="yn no">No</span></td>
+    </tr>
+    <tr>
+      <td class="market">Runs scored<span class="kind">batter prop</span></td>
+      <td><span class="pill fail">FAIL</span></td>
+      <td class="num">n=1,903, ROI &minus;3.77%, CI[&minus;7.09,&minus;0.44]<br><span style="color:var(--ink-dim);font-family:inherit;">pick_history &middot; conf&ge;60 minus-money</span></td>
+      <td class="num">FAIL</td>
+      <td class="reason">Negative ROI.</td>
+      <td class="lever">None identified</td>
+      <td class="decision"><span class="yn no">No</span></td>
+    </tr>
+    <tr>
+      <td class="market">Batter strikeouts<span class="kind">batter prop</span></td>
+      <td><span class="pill warn">UNTESTABLE</span></td>
+      <td class="num">n=30 picks, all-time<br><span style="color:var(--ink-dim);font-family:inherit;">pick_history &middot; no odds-feed data</span></td>
+      <td class="num">n/a</td>
+      <td class="reason">Odds feed carries no data for this market. Too few picks ever generated to test regardless.</td>
+      <td class="lever">Needs real odds collection before any test is possible</td>
+      <td class="decision"><span class="yn yes">Yes</span></td>
+    </tr>
+    <tr>
+      <td class="market">Pitcher strikeouts<span class="kind">pitcher prop</span></td>
+      <td><span class="pill fail">FAIL</span></td>
+      <td class="num">n=477, ROI +3.34%, CI[&minus;4.14,+10.83]<br><span style="color:var(--ink-dim);font-family:inherit;">pick_history &middot; conf&ge;60 minus-money</span></td>
+      <td class="num">FAIL (n&lt;500)</td>
+      <td class="reason">Positive point estimate, just short on sample &amp; CI width.</td>
+      <td class="lever">More volume at the same cut</td>
+      <td class="decision"><span class="yn no">No</span></td>
+    </tr>
+    <tr>
+      <td class="market">Pitcher outs<span class="kind">pitcher prop</span></td>
+      <td><span class="pill fail">FAIL</span></td>
+      <td class="num">n=176, ROI +4.40%, CI[&minus;8.25,+17.06]<br><span style="color:var(--ink-dim);font-family:inherit;">pick_history &middot; conf&ge;60 minus-money</span></td>
+      <td class="num">FAIL (n&lt;500)</td>
+      <td class="reason">Positive point estimate, far too small a sample.</td>
+      <td class="lever">More volume</td>
+      <td class="decision"><span class="yn no">No</span></td>
+    </tr>
+    <tr>
+      <td class="market">Moneyline<span class="kind">game market (h2h)</span></td>
+      <td><span class="pill fail">FAIL</span></td>
+      <td class="num">n=490, ROI +1.94%, CI[&minus;5.36,+9.25]<br><span style="color:var(--ink-dim);font-family:inherit;">pick_history &middot; conf&ge;60 minus-money</span></td>
+      <td class="num">FAIL (n&lt;500)</td>
+      <td class="reason">Positive point estimate, just under 500, CI crosses zero.</td>
+      <td class="lever">More volume</td>
+      <td class="decision"><span class="yn no">No</span></td>
+    </tr>
+    <tr style="background:var(--pass-bg);">
+      <td class="market">Run line<span class="kind">game market (spreads)</span></td>
+      <td><span class="pill pass">PASS</span></td>
+      <td class="num">n=513, ROI +5.53%, CI[&minus;1.33,+12.39]<br><span style="color:var(--ink-dim);font-family:inherit;">pick_history &middot; conf&ge;60 minus-money</span></td>
+      <td class="num"><b>PASS</b></td>
+      <td class="reason">n&ge;500 and ROI&gt;0 clears the official gate. CI crossing zero doesn't disqualify at this sample size.</td>
+      <td class="lever">None needed &mdash; already passing</td>
+      <td class="decision"><span class="yn yes">Yes</span></td>
+    </tr>
+    <tr>
+      <td class="market">Totals<span class="kind">game market</span></td>
+      <td><span class="pill fail">FAIL</span></td>
+      <td class="num">n=1,148, ROI &minus;1.69%, CI[&minus;6.95,+3.57]<br><span style="color:var(--ink-dim);font-family:inherit;">pick_history &middot; conf&ge;60 minus-money</span></td>
+      <td class="num">FAIL</td>
+      <td class="reason">Negative ROI at real volume.</td>
+      <td class="lever">None identified</td>
+      <td class="decision"><span class="yn no">No</span></td>
+    </tr>
+  </table>
+  </div>
+
+  <div class="foot"><b>Not one of the 11:</b> <i>pitcher record a win</i> &mdash; odds are fetched and loaded, but the market is marked <code>skip_unsupported</code> in <code>process-games-mlb</code>. It is never scored and never produces a pick.</div>
+  <div class="foot"><b>Two client decisions on this page:</b> whether <code>run line</code> gets deployed/promoted now that it clears the official gate, and whether <code>batter strikeouts</code> is worth collecting real odds data for at all, given it's currently hidden and has generated only 30 picks total.</div>
+
+  <footer>
+    MLB Phase 1 &middot; market verdicts, current status only &middot; sources: <code>harness/out/glm_hits_tb_validation.json</code> (hits/TB) and <code>pick_history</code> via the corrected official gate rule (everything else).
+  </footer>
+
+</div>
+</body>
+</html>
