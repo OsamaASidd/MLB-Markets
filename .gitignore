@@ -14,6 +14,18 @@ code/
 00_START_HERE.md
 01_STATUS_AND_NEXT.md
 
+# Pooled-model research (Model A/B, XGBoost pooling, accuracy-vs-ROI check) --
+# out of scope per current client direction ("no new research/models for now").
+# Kept on disk for reference, untracked from git so it doesn't ship in the
+# next clean push.
+reports/ml_model_walkthrough.html
+reports/xgboost_pooled_A_output.txt
+reports/xgboost_pooled_B_output.txt
+reports/favorite_accuracy_vs_roi_output.txt
+scripts/xgboost_pooled_A_factors.py
+scripts/xgboost_pooled_B_multiyear.py
+scripts/check_favorite_accuracy_vs_roi.py
+
 # Raw client data exports (112MB xlsx x2 copies, real production odds data) --
 # never commit these directly; see note in the report about the duckdb copy.
 harness_out/
