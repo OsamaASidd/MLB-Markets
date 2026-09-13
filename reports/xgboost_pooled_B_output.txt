@@ -1,3 +1,5 @@
+C:\Sports\MLB Markets\scripts\xgboost_pooled_B_multiyear.py:380: FutureWarning: DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+  per_market_acc = test.groupby("market").apply(
 building real team game log, Elo, L10, bullpen fatigue from 2023-2026 client data...
 real games with full feature set: 3,884, 2023-05-03 -> 2025-05-28
 loading real picks for all 8 markets with warehouse coverage...
@@ -22,22 +24,43 @@ dtype: int64
 TRAIN n=565,836  TEST n=188,614  (75/25 within each of 2023/2024/2025/2026, pooled)
 
 AUC  TRAIN=0.766  TEST=0.764
-ACCURACY (0.5)  TRAIN=0.689  TEST=0.684
+ACCURACY (0.5)  TRAIN=0.689  TEST=0.685
 
 learned feature weights (multi-year, cross-market):
-  market_prob          0.4742
-  side_code            0.2755
-  market_code          0.1797
-  l10_diff             0.0123
-  hr_factor            0.0121
-  runs_factor          0.0111
-  fatigue_diff         0.0097
-  k_factor             0.0094
-  elo_diff             0.0080
-  hits_factor          0.0080
+  market_prob          0.4560
+  side_code            0.2870
+  market_code          0.1875
+  hr_factor            0.0117
+  runs_factor          0.0117
+  l10_diff             0.0114
+  elo_diff             0.0091
+  k_factor             0.0090
+  fatigue_diff         0.0086
+  hits_factor          0.0079
 
 -- betting on edge, minus-money only, TEST holdout (all years pooled) --
-  edge>0.0   n=19465   WR=65.5  ROI=-1.09  CI=[-2.13,-0.05]  fail
-  edge>0.03  n=1432    WR=68.1  ROI=4.98  CI=[1.13,8.82]  PASS
-  edge>0.05  n=171     WR=70.8  ROI=17.22  CI=[5.44,29.01]  fail
-  edge>0.08  n=48      WR=72.9  ROI=38.01  CI=[13.67,62.34]  fail
+  edge>0.0   n=19795   WR=66.3  ROI=-0.65  CI=[-1.66,0.37]  fail
+  edge>0.03  n=1543    WR=68.2  ROI=5.25  CI=[1.55,8.95]  PASS
+  edge>0.05  n=211     WR=69.7  ROI=11.66  CI=[1.29,22.03]  fail
+  edge>0.08  n=42      WR=76.2  ROI=45.17  CI=[19.92,70.42]  fail
+
+-- per-market breakdown, TEST holdout (all years pooled) --
+  raw 0.5-threshold prediction accuracy, by market:
+    batter_home_runs     n=43487    accuracy=0.888
+    batter_rbis          n=44062    accuracy=0.716
+    spreads              n=1788     accuracy=0.626
+    batter_hits          n=44083    accuracy=0.598
+    totals               n=3575     accuracy=0.589
+    batter_total_bases   n=44776    accuracy=0.582
+    pitcher_strikeouts   n=3782     accuracy=0.504
+    h2h                  n=3061     accuracy=0.462
+
+  betting on edge>0.03, minus-money only, by market:
+    batter_hits          n=249     WR=69.1  ROI=8.36  CI=[-0.85,17.56]  fail
+    batter_total_bases   n=271     WR=66.8  ROI=17.79  CI=[7.79,27.78]  fail
+    batter_rbis          n=496     WR=65.5  ROI=0.62  CI=[-5.89,7.13]  fail
+    batter_home_runs     n=386     WR=76.7  ROI=0.74  CI=[-4.84,6.33]  fail
+    pitcher_strikeouts   n=29      WR=34.5  ROI=-38.03  CI=[-69.76,-6.3]  fail
+    h2h                  n=22      WR=63.6  ROI=8.98  CI=[-26.5,44.45]  fail
+    spreads              n=14      WR=85.7  ROI=46.28  CI=[13.26,79.29]  fail
+    totals               n=76      WR=56.6  ROI=11.37  CI=[-10.71,33.45]  fail

@@ -1506,20 +1506,71 @@ pooled:
 
 | edge threshold | n | WR | ROI | 95% CI | Verdict |
 |---|---:|---:|---:|---|---|
-| >0.00 | 19,465 | 65.5% | −1.09% | [−2.13%, −0.05%] | FAIL |
-| >0.03 | 1,432 | 68.1% | **+4.98%** | **[1.13%, 8.82%]** | **PASS** |
-| >0.05 | 171 | 70.8% | +17.22% | [5.44%, 29.01%] | fail (n<500) |
-| >0.08 | 48 | 72.9% | +38.01% | [13.67%, 62.34%] | fail (n<500) |
+| >0.00 | 19,795 | 66.3% | −0.65% | [−1.66%, 0.37%] | FAIL |
+| >0.03 | 1,543 | 68.2% | **+5.25%** | **[1.55%, 8.95%]** | **PASS** |
+| >0.05 | 211 | 69.7% | +11.66% | [1.29%, 22.03%] | fail (n<500) |
+| >0.08 | 42 | 76.2% | +45.17% | [19.92%, 70.42%] | fail (n<500) |
 
-**One real PASS survives: edge>0.03, n=1,432, ROI +4.98%, CI entirely above
-zero** — in the same 1-5% range as every other genuine edge found in this
-audit (the hits odds-band lever, the near-miss markets), not an outlier, and
-now built from real 2023-2025 data pooled across years exactly as
-specified. The two higher-threshold rows show real, non-fabricated
-confidence intervals that are also entirely positive, but both fail the
-n≥500 sample-size half of the gate and are reported here rather than
-excluded, precisely so a small, noisy sample doesn't get mistaken for a
-stronger finding than edge>0.03 already is.
+**One real PASS survives at the pooled level: edge>0.03, n=1,543, ROI
++5.25%, CI entirely above zero** — in the same 1-5% range as every other
+genuine edge found in this audit (the hits odds-band lever, the near-miss
+markets), not an outlier, and now built from real 2023-2025 data pooled
+across years exactly as specified. The two higher-threshold rows show real,
+non-fabricated confidence intervals that are also entirely positive, but
+both fail the n≥500 sample-size half of the gate and are reported here
+rather than excluded, precisely so a small, noisy sample doesn't get
+mistaken for a stronger finding than edge>0.03 already is.
+
+**Critical honest caveat, asked for directly and worth stating plainly: this
+PASS is a pooled, cross-market finding — not proof that any single one of
+the 8 markets independently passes.** Split the same edge>0.03 cut apart by
+market:
+
+| market | n | WR | ROI | 95% CI | Verdict |
+|---|---:|---:|---:|---|---|
+| batter_total_bases | 271 | 66.8% | +17.79% | [7.79%, 27.78%] | fail (n<500) |
+| batter_hits | 249 | 69.1% | +8.36% | [−0.85%, 17.56%] | fail (n<500, CI crosses 0) |
+| batter_rbis | 496 | 65.5% | +0.62% | [−5.89%, 7.13%] | fail (CI crosses 0) |
+| batter_home_runs | 386 | 76.7% | +0.74% | [−4.84%, 6.33%] | fail (n<500, CI crosses 0) |
+| spreads | 14 | 85.7% | +46.28% | [13.26%, 79.29%] | fail (n<500) |
+| totals | 76 | 56.6% | +11.37% | [−10.71%, 33.45%] | fail (n<500) |
+| h2h | 22 | 63.6% | +8.98% | [−26.5%, 44.45%] | fail (n<500) |
+| pitcher_strikeouts | 29 | 34.5% | **−38.03%** | [−69.76%, −6.30%] | **negative, not noise-neutral** |
+
+No individual market clears both halves of the gate on its own here — some
+look genuinely promising (`total_bases` +17.8%, `hits` +8.4%) but don't yet
+have enough picks to prove it; `pitcher_strikeouts` at this specific cut is
+actively bad, though on only 29 picks. **The PASS is a statement about one
+pooled rule — "bet whenever the model's edge over the market exceeds 3
+points, regardless of which of the 8 markets it's on" — not a claim that any
+single market has independently cleared the bar.** That distinction matters
+for anyone deciding how to act on this: deploying "the edge>0.03 rule" means
+deploying it across all 8 markets together, not cherry-picking the
+best-looking row above (each of those individually is still an unproven
+small sample).
+
+**Raw prediction accuracy is similarly uneven across markets, not a flat
+68.4% everywhere.** At a plain 0.5 probability threshold (no edge
+filter at all), test-set accuracy by market:
+
+| market | n | accuracy |
+|---|---:|---:|
+| batter_home_runs | 43,487 | 88.8% |
+| batter_rbis | 44,062 | 71.6% |
+| spreads | 1,788 | 62.6% |
+| batter_hits | 44,083 | 59.8% |
+| totals | 3,575 | 58.9% |
+| batter_total_bases | 44,776 | 58.2% |
+| pitcher_strikeouts | 3,782 | 50.4% |
+| h2h | 3,061 | 46.2% — worse than a coin flip |
+
+The pooled 68.4% headline accuracy is propped up almost entirely by
+`home_runs` and `rbis` — both structurally lopsided-favorite markets (see
+Addendum 24) where high accuracy is easy and not the same thing as
+profitable. `h2h` is actually below random guessing at a plain 0.5
+threshold, and `pitcher_strikeouts` is essentially a coin flip. This is
+disclosed here specifically so "68% accurate" isn't read as "68% accurate
+in every market" — it isn't.
 
 **One disclosed coverage limit:** this model's real-outcome coverage
 (anything requiring team runs — Elo, L10, h2h, spreads, totals) runs
@@ -1718,7 +1769,9 @@ MLB Markets/
   scripts/xgboost_pooled_A_factors.py   Model A: one pooled model, all 10 markets, full 150-factor set
   reports/xgboost_pooled_A_output.txt   full Addendum 22 output (AUC 0.692, best in report)
   scripts/xgboost_pooled_B_multiyear.py   Model B: one pooled model, 8 markets, real 2023-2026 features
-  reports/xgboost_pooled_B_output.txt   full Addendum 23 output (corrected, after a caught false positive)
+                                  (includes the per-market accuracy/ROI breakdown)
+  reports/xgboost_pooled_B_output.txt   full Addendum 23 output (corrected, after a caught false positive,
+                                  plus the per-market breakdown showing the PASS is pooled, not per-market)
   scripts/check_favorite_accuracy_vs_roi.py   accuracy-vs-ROI check: betting the market's own favorite
   reports/favorite_accuracy_vs_roi_output.txt   full Addendum 24 output (80%+ accuracy exists, loses money)
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit

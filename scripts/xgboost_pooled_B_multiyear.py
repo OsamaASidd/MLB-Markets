@@ -374,6 +374,22 @@ def main():
         s = stat(profits, sub["win"])
         print(f"  edge>{thresh:<5} n={s['n']:<7} WR={s['wr']}  ROI={s['roi']}  CI=[{s['lo']},{s['hi']}]  {'PASS' if gate(s) else 'fail'}")
 
+    print("\n-- per-market breakdown, TEST holdout (all years pooled) --")
+    print("  raw 0.5-threshold prediction accuracy, by market:")
+    test["pred_win"] = test_pred >= 0.5
+    per_market_acc = test.groupby("market").apply(
+        lambda g: pd.Series({"n": len(g), "accuracy": accuracy_score(g["win"], g["pred_win"])})
+    ).sort_values("accuracy", ascending=False)
+    for mkt, row in per_market_acc.iterrows():
+        print(f"    {mkt:<20} n={int(row['n']):<8} accuracy={row['accuracy']:.3f}")
+
+    print("\n  betting on edge>0.03, minus-money only, by market:")
+    for mkt in pool["market"].unique():
+        sub = test[(test.odds < 0) & (test.edge > 0.03) & (test.market == mkt)]
+        profits = sub.apply(lambda r: profit(r["win"], r["odds"]), axis=1)
+        s = stat(profits, sub["win"])
+        print(f"    {mkt:<20} n={s['n']:<7} WR={s['wr']}  ROI={s['roi']}  CI=[{s['lo']},{s['hi']}]  {'PASS' if gate(s) else 'fail'}")
+
     con.close()
 
 
