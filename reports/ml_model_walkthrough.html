@@ -200,7 +200,7 @@
   <div class="masthead">
     <span class="eyebrow">Milestone 1 &middot; how the pooled model actually works</span>
     <h1>One model, all markets, four real seasons</h1>
-    <p class="subtitle">You asked for a single model that pools every market together, learns its own feature weights, and gets validated on a real 75/25 holdout. This is the walkthrough of exactly how that was built, what it found, and the mistake caught along the way &mdash; written for anyone who wasn't in the weeds with the code.</p>
+    <p class="subtitle">You asked for a single model that pools every market together, learns its own feature weights, and gets validated on a real 75/25 holdout. This is the walkthrough of exactly how that was built, what it found, and the two mistakes caught along the way &mdash; written for anyone who wasn't in the weeds with the code.</p>
   </div>
   <hr class="rule">
 
@@ -209,8 +209,8 @@
     <div class="step"><div class="dot">2</div><div class="cap">Build features</div></div>
     <div class="step"><div class="dot">3</div><div class="cap">Split 75/25</div></div>
     <div class="step"><div class="dot">4</div><div class="cap">Train &amp; learn weights</div></div>
-    <div class="step snag"><div class="dot">!</div><div class="cap">Caught a false result</div></div>
-    <div class="step fixed"><div class="dot">&check;</div><div class="cap">Fixed, honest result</div></div>
+    <div class="step snag"><div class="dot">!</div><div class="cap">Caught two false results</div></div>
+    <div class="step fixed"><div class="dot">&check;</div><div class="cap">Corrected, honest result</div></div>
   </div>
 
   <section>
@@ -241,12 +241,12 @@
         <ul>
           <li><b>Source:</b> Elo rating, L10 form, bullpen fatigue, park factors &mdash; rebuilt from raw box scores, since the 150-factor set doesn't exist before 2026</li>
           <li><b>Window:</b> 2023-05-03 &rarr; 2025-05-28 (see the coverage note below)</li>
-          <li><b>Markets pooled:</b> 8 (the ones with real odds-warehouse coverage)</li>
-          <li><b>Rows:</b> 754,450</li>
+          <li><b>Markets pooled:</b> 9 (every market with real odds-warehouse coverage)</li>
+          <li><b>Rows:</b> 761,159</li>
         </ul>
         <div class="metric-row">
-          <div class="metric"><div class="v">0.764</div><div class="l">test auc</div></div>
-          <div class="metric"><div class="v">68.4%</div><div class="l">test accuracy</div></div>
+          <div class="metric"><div class="v">0.763</div><div class="l">test auc</div></div>
+          <div class="metric"><div class="v">68.6%</div><div class="l">test accuracy</div></div>
         </div>
       </div>
     </div>
@@ -290,8 +290,10 @@
   </section>
 
   <section>
-    <div class="sec-head"><span class="sec-no">5</span><h2>The result that got caught before it was reported</h2></div>
-    <p class="lede">Model B's first run produced numbers far outside anything plausible elsewhere in this audit &mdash; exactly the shape of result this process has committed to stopping and investigating, not reporting.</p>
+    <div class="sec-head"><span class="sec-no">5</span><h2>Two mistakes, both caught before they stood</h2></div>
+    <p class="lede">Model B produced a result worth reporting twice &mdash; and both times, the number turned out to rest on a mistake in what data went in, not a real finding. Both are shown here rather than quietly folded away.</p>
+
+    <p style="font-size:13px; color:var(--ink-dim); margin-bottom:6px;"><b style="color:var(--ink)">Mistake 1 &mdash; alt-line row multiplicity</b></p>
     <div class="bug-grid">
       <div class="bug-card before">
         <div class="bh">First run &mdash; killed before reporting</div>
@@ -305,25 +307,40 @@
         <div class="sub">ROI, TEST holdout &middot; AUC 0.764 &middot; CI [1.13%, 8.82%]</div>
       </div>
     </div>
-    <p><b>What was actually wrong:</b> player-prop lines are offered as a full ladder of alternates for every real game &mdash; a total-bases prop at 0.5, 1.5, 2.5, 3.5, and 4.5, all at once, for the same player in the same game. The first version counted every alt-line as its own independent bet (917,981 rows collapsed to just 146,740 real player-games once corrected &mdash; a 6&times; inflation), and a naive fix picked the wrong line as "the" bet 90% of the time &mdash; the extreme 0.5 alt-line, not the book's real, standard line.</p>
-    <p>The fix: one row per real bet, keyed to the line whose price sits closest to a true coin flip &mdash; the book's actual primary line, not the cheapest alt-line technicality. Rerun with that fix, the impossible numbers became plausible ones, and the model's own predicted-probability-vs-actual-outcome table went from backwards (the market implying 92&ndash;97% and reality landing at 70&ndash;73%) to normal bookmaker vig (reality tracking a few points under the market's price, as expected).</p>
+    <p><b>What was actually wrong:</b> player-prop lines are offered as a full ladder of alternates for every real game &mdash; a total-bases prop at 0.5, 1.5, 2.5, 3.5, and 4.5, all at once, for the same player in the same game. The first version counted every alt-line as its own independent bet (917,981 rows collapsed to just 146,740 real player-games once corrected &mdash; a 6&times; inflation), and a naive fix picked the wrong line as "the" bet 90% of the time &mdash; the extreme 0.5 alt-line, not the book's real, standard line. The fix: one row per real bet, keyed to the line whose price sits closest to a true coin flip.</p>
+
+    <p style="font-size:13px; color:var(--ink-dim); margin:22px 0 6px;"><b style="color:var(--ink)">Mistake 2 &mdash; a market wrongly left out</b></p>
+    <div class="bug-grid">
+      <div class="bug-card before">
+        <div class="bh">8-market pool &mdash; reported as a PASS</div>
+        <div class="big">+4.98%</div>
+        <div class="sub">edge&gt;0.03, n=1,432, CI [1.13%, 8.82%]</div>
+      </div>
+      <div class="arrow-between">&darr;</div>
+      <div class="bug-card after" style="background:var(--fail-bg); border-color:var(--fail);">
+        <div class="bh" style="color:var(--fail);">9-market pool &mdash; corrected, current</div>
+        <div class="big">+0.01%</div>
+        <div class="sub">same cut, n=1,657, CI [&minus;3.63%, 3.65%]</div>
+      </div>
+    </div>
+    <p><b>What was actually wrong:</b> <code>pitcher_outs</code> was excluded on the stated grounds of "zero warehouse rows" &mdash; checked directly while adding it back in, and that claim was simply false: it has 6,048 real rows. Adding it back and retraining the same pooled model on the correct 9-market mix doesn't just add a market's worth of picks &mdash; it changes the one shared model's predictions everywhere, including markets whose own data never changed (<code>h2h</code>'s slice of this same cut swung from +8.98% ROI to &minus;63.44% ROI). <b>The PASS does not survive.</b> That sensitivity is itself a real finding: this pooled model's edge-based cuts are fragile to exactly which markets are pooled together.</p>
   </section>
 
   <section>
-    <div class="sec-head"><span class="sec-no">6</span><h2>The honest final result</h2></div>
-    <p class="lede">Betting only where the model's own predicted probability beats the market's implied probability, minus-money only, on the pooled 4-year TEST holdout.</p>
+    <div class="sec-head"><span class="sec-no">6</span><h2>The honest current result</h2></div>
+    <p class="lede">Betting only where the model's own predicted probability beats the market's implied probability, minus-money only, on the pooled 4-year TEST holdout &mdash; the correct 9-market version.</p>
     <div class="table-scroll">
     <table>
       <tr><th>Edge threshold</th><th class="num">n</th><th class="num">Win rate</th><th class="num">ROI</th><th>95% CI</th><th>Verdict</th></tr>
-      <tr><td>&gt; 0.00</td><td class="num">19,795</td><td class="num">66.3%</td><td class="num">&minus;0.65%</td><td>[&minus;1.66%, 0.37%]</td><td><span class="verdict fail">FAIL</span></td></tr>
-      <tr><td>&gt; 0.03</td><td class="num">1,543</td><td class="num">68.2%</td><td class="num"><b>+5.25%</b></td><td>[1.55%, 8.95%]</td><td><span class="verdict pass">PASS</span></td></tr>
-      <tr><td>&gt; 0.05</td><td class="num">211</td><td class="num">69.7%</td><td class="num">+11.66%</td><td>[1.29%, 22.03%]</td><td><span class="verdict cond">n&lt;500</span></td></tr>
-      <tr><td>&gt; 0.08</td><td class="num">42</td><td class="num">76.2%</td><td class="num">+45.17%</td><td>[19.92%, 70.42%]</td><td><span class="verdict cond">n&lt;500</span></td></tr>
+      <tr><td>&gt; 0.00</td><td class="num">20,958</td><td class="num">65.7%</td><td class="num">&minus;0.69%</td><td>[&minus;1.69%, 0.31%]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>&gt; 0.03</td><td class="num">1,657</td><td class="num">64.9%</td><td class="num">+0.01%</td><td>[&minus;3.63%, 3.65%]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>&gt; 0.05</td><td class="num">257</td><td class="num">64.2%</td><td class="num">+2.01%</td><td>[&minus;7.62%, 11.64%]</td><td><span class="verdict fail">FAIL</span></td></tr>
+      <tr><td>&gt; 0.08</td><td class="num">44</td><td class="num">75.0%</td><td class="num">+42.18%</td><td>[17.26%, 67.10%]</td><td><span class="verdict cond">n&lt;500</span></td></tr>
     </table>
     </div>
-    <p class="note callout">One real PASS survives: <b>edge&gt;0.03, n=1,543, ROI +5.25%, CI entirely above zero</b> &mdash; in the same 1&ndash;5% range as every other genuine edge found across this whole audit, not an outlier. The two rows below it show real, positive confidence intervals too, but both fail the n&ge;500 half of the gate on sample size alone &mdash; reported here rather than hidden, so a small, noisy sample can't be mistaken for a stronger finding than the one that actually cleared the bar.</p>
+    <p class="note callout"><b>No pooled cut currently clears the gate.</b> Nothing here has both n&ge;500 and a CI entirely above zero &mdash; the closest, edge&gt;0.03, sits at essentially breakeven (+0.01%) with a CI straddling zero. This reverses what Model B previously reported. It's shown here, not smoothed over, for the same reason every other caught false positive in this audit is shown: an honest FAIL that used to look like a PASS is exactly the kind of thing worth surfacing, not the kind of thing worth quietly fixing and moving past.</p>
 
-    <p style="margin-top:26px;"><b>This PASS is pooled across all 8 markets &mdash; it is not proof that any single market clears the gate on its own.</b> Split the same edge&gt;0.03 cut apart by market:</p>
+    <p style="margin-top:26px;">For reference, the previously-reported (now superseded) 8-market breakdown by individual market, split apart by the same edge&gt;0.03 cut:</p>
     <div class="table-scroll">
     <table>
       <tr><th>Market</th><th class="num">n</th><th class="num">WR</th><th class="num">ROI</th><th>95% CI</th><th>Verdict</th></tr>
@@ -337,17 +354,34 @@
       <tr><td>pitcher_strikeouts</td><td class="num">29</td><td class="num">34.5%</td><td class="num">&minus;38.03%</td><td>[&minus;69.76%, &minus;6.30%]</td><td><span class="verdict fail">negative</span></td></tr>
     </table>
     </div>
-    <p class="note">No individual market clears both halves of the gate alone. Some look genuinely promising (<code>total_bases</code> +17.8%, <code>hits</code> +8.4%) but don't yet have enough picks to prove it on their own; <code>pitcher_strikeouts</code> at this cut is actively bad, on only 29 picks. The honest reading: this validates <b>one pooled rule</b> &mdash; bet whenever the model's edge exceeds 3 points, across all 8 markets together &mdash; not any single market independently. Raw prediction accuracy tells the same story: at a plain 0.5 threshold, <code>home_runs</code> hits 88.8% and <code>rbis</code> 71.6% (both lopsided-favorite markets, see below), while <code>h2h</code> is actually below a coin flip at 46.2% and <code>pitcher_strikeouts</code> sits at 50.4%. The pooled 68.4% headline accuracy is an average across very different markets, not a flat number everywhere.</p>
+    <p class="note">That 8-market table is superseded &mdash; see below for what it looks like with the corrected 9-market pool.</p>
+
+    <p style="margin-top:26px;"><b>Current, correct 9-market breakdown</b> (<code>pitcher_outs</code> added in), same edge&gt;0.03 cut:</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Market</th><th class="num">n</th><th class="num">WR</th><th class="num">ROI</th><th>95% CI</th><th>Verdict</th></tr>
+      <tr><td>batter_total_bases</td><td class="num">276</td><td class="num">66.3%</td><td class="num">+16.58%</td><td>[6.68%, 26.48%]</td><td><span class="verdict cond">n&lt;500</span></td></tr>
+      <tr><td>spreads</td><td class="num">19</td><td class="num">78.9%</td><td class="num">+33.73%</td><td>[1.45%, 66.0%]</td><td><span class="verdict cond">n&lt;500</span></td></tr>
+      <tr><td>totals</td><td class="num">71</td><td class="num">53.5%</td><td class="num">+5.32%</td><td>[&minus;17.68%, 28.31%]</td><td><span class="verdict cond">n&lt;500</span></td></tr>
+      <tr><td>batter_hits</td><td class="num">274</td><td class="num">67.2%</td><td class="num">+4.44%</td><td>[&minus;4.36%, 13.25%]</td><td><span class="verdict cond">n&lt;500</span></td></tr>
+      <tr><td>batter_home_runs</td><td class="num">372</td><td class="num">77.7%</td><td class="num">+2.42%</td><td>[&minus;3.21%, 8.04%]</td><td><span class="verdict cond">n&lt;500</span></td></tr>
+      <tr><td>batter_rbis</td><td class="num">505</td><td class="num">65.7%</td><td class="num">+0.61%</td><td>[&minus;5.82%, 7.03%]</td><td><span class="verdict fail">CI crosses 0</span></td></tr>
+      <tr><td>pitcher_outs</td><td class="num">18</td><td class="num">38.9%</td><td class="num">&minus;30.01%</td><td>[&minus;71.98%, 11.96%]</td><td><span class="verdict cond">n&lt;500</span></td></tr>
+      <tr><td>pitcher_strikeouts</td><td class="num">17</td><td class="num">29.4%</td><td class="num">&minus;47.06%</td><td>[&minus;87.30%, &minus;6.82%]</td><td><span class="verdict fail">negative</span></td></tr>
+      <tr><td>h2h</td><td class="num">105</td><td class="num">21.0%</td><td class="num">&minus;63.44%</td><td>[&minus;77.15%, &minus;49.72%]</td><td><span class="verdict fail">negative</span></td></tr>
+    </table>
+    </div>
+    <p class="note">Still no individual market clears both halves of the gate. More strikingly: <code>h2h</code>'s own slice of this cut swung from +8.98% ROI (8-market version) to &minus;63.44% ROI (9-market version) even though not one real <code>h2h</code> odds or outcome changed &mdash; only the model's overall training mix did. That's the fragility this correction exposed: a pooled model's edge-based cuts can move a lot from a change in what's pooled alongside a market, not just from that market's own signal. Raw prediction accuracy still tells a similarly uneven story: <code>home_runs</code> 88.8% and <code>rbis</code> 71.6% (both lopsided-favorite markets, see below) carry the pooled 68.6% headline, while <code>h2h</code> sits below a coin flip at 53.1% and <code>pitcher_strikeouts</code> at 50.9%.</p>
   </section>
 
   <section>
     <div class="sec-head"><span class="sec-no">7</span><h2>Why "more accurate" isn't automatically "more profitable"</h2></div>
     <p class="lede">A real, unfabricated way to push accuracy above 80% exists in this data. It also loses money &mdash; which is exactly why it isn't what's reported as the model's headline number.</p>
-    <p>Betting whichever side the market already favors on <code>batter_home_runs</code> alone &mdash; no model required &mdash; wins <b>88.4%</b> of the time, since most players simply don't hit a home run in a given game. ROI on that identical bet: <b>&minus;2.20%</b>. The payout on such a heavy favorite is too small to cover the rare miss. Leaning a model toward that market would raise its accuracy number and lower its profitability at the same time &mdash; the two aren't the same target here, and the figure reported for Model B (68.4% accuracy, the edge&gt;0.03 PASS) is the version that makes money rather than the version that merely looks impressive.</p>
+    <p>Betting whichever side the market already favors on <code>batter_home_runs</code> alone &mdash; no model required &mdash; wins <b>88.4%</b> of the time, since most players simply don't hit a home run in a given game. ROI on that identical bet: <b>&minus;2.20%</b>. The payout on such a heavy favorite is too small to cover the rare miss. Leaning a model toward that market would raise its accuracy number and lower its profitability at the same time &mdash; the two aren't the same target here, and this argument holds regardless of what Model B's own betting-edge result shows (see the correction above): an 80%+ accuracy figure built by leaning into <code>home_runs</code> would still lose money either way.</p>
   </section>
 
   <footer>
-    Milestone 1 &middot; MLB Markets gate audit &middot; full methodology, every script, and raw output: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>, Addendums 22&ndash;24. Verdicts across every market: <a href="pass_fail_verdicts.html">pass_fail_verdicts.html</a>.
+    Milestone 1 &middot; MLB Markets gate audit &middot; full methodology, every script, and raw output: <a href="MILESTONE_1_GATE_REPORT.md">MILESTONE_1_GATE_REPORT.md</a>, Addendums 22&ndash;25. Verdicts across every market: <a href="pass_fail_verdicts.html">pass_fail_verdicts.html</a>.
   </footer>
 
 </div>

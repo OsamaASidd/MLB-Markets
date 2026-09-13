@@ -1248,10 +1248,16 @@ Per-market, based on everything found across this audit:
   (team power ranking, bullpen fatigue, line/odds sweep all negative).
   Lowest-priority markets for further work; nothing points at a specific
   fix.
-- **`pitcher_outs`, `runs_scored`** — data-starved (no real odds-warehouse
-  coverage exists for these two at all — a genuine provider gap, not a
-  choice). Needs more live volume before anything can be concluded, let
-  alone fixed.
+- **`runs_scored`** — data-starved: no real odds-warehouse coverage exists
+  for this one at all (confirmed: no `batter_runs_scored` market_key in
+  `client_closing_odds`) — a genuine provider gap, not a choice. Needs more
+  live volume before anything can be concluded, let alone fixed.
+- **`pitcher_outs`** — real odds-warehouse coverage *does* exist (6,048
+  rows, confirmed directly — see Addendum 25, which corrects an earlier
+  wrong "zero rows" claim made about this market both here and in Addendum
+  23). Gated at its own sample size in the main table above (n=798,
+  ROI −6.37%, CI crossing zero) — genuinely data-limited at *production*
+  volume, just not warehouse-absent the way `runs_scored` is.
 
 No market on this list gets to "pass" by searching the same data harder —
 every one of the concrete levers above is either "wait for more volume" or
@@ -1445,11 +1451,13 @@ regression) and L10 form rebuilt game-by-game from real results; real
 bullpen fatigue (relief outs in the prior 2 days); real per-park run/HR/K/
 hits factors joined by venue. Markets: `batter_hits`, `batter_total_bases`,
 `batter_rbis`, `batter_home_runs`, `pitcher_strikeouts`, `h2h`, `spreads`,
-`totals` — the 8 with real warehouse odds coverage (`batter_runs_scored`
-and `pitcher_outs` have zero warehouse rows, a real provider gap, not a
-choice). Split: 75/25 done chronologically **within each calendar year
-separately**, then all four years' 75% pooled into TRAIN and all four
-years' 25% pooled into TEST — exactly as specified, not a single global
+`totals` — 8 of the 9 markets with real warehouse odds coverage
+(`batter_runs_scored` has zero warehouse rows, a real provider gap, not a
+choice; `pitcher_outs` also has real coverage and should have been included
+here too — that was a mistake, corrected in Addendum 25 below). Split: 75/25
+done chronologically **within each calendar year separately**, then all
+four years' 75% pooled into TRAIN and all four years' 25% pooled into
+TEST — exactly as specified, not a single global
 cutoff. `scripts/xgboost_pooled_B_multiyear.py`, output in
 `reports/xgboost_pooled_B_output.txt`.
 
@@ -1520,6 +1528,14 @@ non-fabricated confidence intervals that are also entirely positive, but
 both fail the n≥500 sample-size half of the gate and are reported here
 rather than excluded, precisely so a small, noisy sample doesn't get
 mistaken for a stronger finding than edge>0.03 already is.
+
+> **Superseded — see Addendum 25.** This PASS was built on an 8-market pool
+> that wrongly excluded `pitcher_outs` (the "zero warehouse rows" claim two
+> paragraphs up was incorrect — it has 6,048 real rows). Adding it back in
+> and rerunning drops this same edge>0.03 cut to ROI +0.01% (CI crossing
+> zero) — the PASS does not survive the correction. Left standing here,
+> unedited, as the honest record of what was reported and when; Addendum 25
+> is the current, correct state of Model B.
 
 **Critical honest caveat, asked for directly and worth stating plainly: this
 PASS is a pooled, cross-market finding — not proof that any single one of
@@ -1627,12 +1643,67 @@ profitability are different axes here, and in this specific market pushing
 one pushes the other the wrong way — the same lesson Addendum 17/18 already
 established, arrived at again by a different route.
 
-**Not changed as a result:** Model B's reported number stays at 68.4% test
-accuracy / the edge>0.03 PASS (n=1,432, ROI +4.98%, CI [1.13%, 8.82%]),
-because that is the version of "accurate" that makes money. An 80%+-accuracy
-version exists and is disclosed above, labeled for what it is, in case
-accuracy independent of ROI is ever a stated deliverable requirement on its
-own.
+**Not changed as a result:** Model B's reported accuracy number (~68.5%,
+updated in Addendum 25) stays as the headline over the 80%+-accuracy version
+disclosed above, because it's the version tied to an actual betting rule
+rather than a market picked for its lopsidedness. (That betting rule's own
+status changed for a different, unrelated reason — see Addendum 25, which
+corrects a wrong market exclusion and reverses the edge>0.03 PASS this
+section originally cited. The accuracy-vs-ROI argument above is unaffected
+either way: an 80%+ accuracy figure achieved by leaning into `home_runs`
+would still lose money regardless of what the pooled model's own edge-based
+cut shows.)
+
+---
+
+## Addendum 25: a wrong exclusion caught and corrected — Model B's one PASS does not survive
+
+Addendum 23 excluded `pitcher_outs` from Model B on the stated grounds of
+"zero warehouse rows, a real provider gap, not a choice." **That was wrong.**
+Checked directly before doing the requested work of adding it back:
+`client_closing_odds` has a real `pitcher_outs` market_key with **6,048
+rows** of genuine odds (e.g. Bowden Francis, line 14.5, −115/−119, real
+game 2024-04-02). `batter_runs_scored` remains genuinely excluded — no such
+market_key exists in the warehouse at all, confirmed the same way.
+
+Added `pitcher_outs` in properly (same point-in-time pattern as
+`pitcher_strikeouts`: real innings-pitched converted to outs via
+`ip_to_outs()`, one row per real starter-game) and reran the full pipeline,
+pooling all 9 markets with real coverage instead of 8.
+
+**The result changes materially, and not in the model's favor.** New pooled
+dataset: n=761,159 (up from 754,450), AUC TEST=0.763 (essentially
+unchanged), accuracy TEST=68.6% (essentially unchanged) — but the betting-
+edge table looks different:
+
+| edge threshold | n | WR | ROI | 95% CI | Verdict |
+|---|---:|---:|---:|---|---|
+| >0.00 | 20,958 | 65.7% | −0.69% | [−1.69%, 0.31%] | FAIL |
+| >0.03 | 1,657 | 64.9% | **+0.01%** | [−3.63%, 3.65%] | **FAIL** |
+| >0.05 | 257 | 64.2% | +2.01% | [−7.62%, 11.64%] | fail |
+| >0.08 | 44 | 75.0% | +42.18% | [17.26%, 67.10%] | fail (n<500) |
+
+**The edge>0.03 PASS reported in Addendum 23 (n=1,432, ROI +4.98%) does not
+survive with the correct 9-market pool.** ROI at that same cut is now
+effectively zero (+0.01%), and the CI spans both sides of zero. Nothing at
+any threshold now clears both halves of the gate. `pitcher_outs` and
+`pitcher_strikeouts` themselves are actively bad in this cut (WR 38.9%/
+29.4%, both deeply negative ROI, both on very small samples), and — because
+this is one shared pooled model — even `h2h`'s slice shifted sharply (from
++8.98% ROI on 22 picks in Addendum 23 to **−63.44% ROI on 105 picks** here),
+simply from retraining the same model on a corrected input mix. That
+swing on a market whose own data didn't change is itself informative: it
+shows how sensitive this pooled model's edge-based cuts are to exactly which
+markets are pooled together, which is a real fragility, not just an
+accounting correction.
+
+**Honest, current status of Model B: no surviving PASS at any edge
+threshold, pooled or per-market.** This reverses the one positive finding
+credited to it in Addendum 23. Reported here the same way every other
+false positive in this project has been — found, disclosed, corrected —
+rather than left standing because it had already been written up once.
+Every downstream document that cited the Addendum 23 PASS (the verdict
+summary page, the ML model walkthrough) has been updated to match.
 
 ---
 
@@ -1770,8 +1841,8 @@ MLB Markets/
   reports/xgboost_pooled_A_output.txt   full Addendum 22 output (AUC 0.692, best in report)
   scripts/xgboost_pooled_B_multiyear.py   Model B: one pooled model, 8 markets, real 2023-2026 features
                                   (includes the per-market accuracy/ROI breakdown)
-  reports/xgboost_pooled_B_output.txt   full Addendum 23 output (corrected, after a caught false positive,
-                                  plus the per-market breakdown showing the PASS is pooled, not per-market)
+  reports/xgboost_pooled_B_output.txt   latest run (9 markets, Addendum 25) -- superseded Addendum 23/24
+                                  output (8-market PASS, since reversed) not separately kept; see Addendum 25
   scripts/check_favorite_accuracy_vs_roi.py   accuracy-vs-ROI check: betting the market's own favorite
   reports/favorite_accuracy_vs_roi_output.txt   full Addendum 24 output (80%+ accuracy exists, loses money)
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit

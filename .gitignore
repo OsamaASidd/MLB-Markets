@@ -7,6 +7,13 @@ __pycache__/
 # pushed, especially since this repo is intended for a public GitHub remote.
 betgenius/
 
+# Handoff pack contents (SHARPAI_USAMA_PORTA_PACK.zip, received 2026-09-14) --
+# real production TypeScript (mlb_phase1_policy.ts, mlb_cache_gate.ts, etc.)
+# and internal wiring docs, same NDA/proprietary status as betgenius/ above.
+code/
+00_START_HERE.md
+01_STATUS_AND_NEXT.md
+
 # Raw client data exports (112MB xlsx x2 copies, real production odds data) --
 # never commit these directly; see note in the report about the duckdb copy.
 harness_out/

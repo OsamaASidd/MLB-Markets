@@ -9,9 +9,12 @@ dataset used in Addendum 5), team L10 form, real ballpark factors, real
 bullpen fatigue (relief outs, last 2 days) -- all point-in-time correct.
 
 Markets included: batter_hits, batter_total_bases, batter_rbis,
-batter_home_runs, pitcher_strikeouts, h2h, spreads, totals -- the 8 with
-real odds-warehouse coverage. batter_runs_scored and pitcher_outs excluded
-(zero warehouse rows, a real provider gap, not a choice).
+batter_home_runs, pitcher_strikeouts, pitcher_outs, h2h, spreads, totals --
+the 9 with real odds-warehouse coverage. batter_runs_scored excluded (zero
+warehouse rows -- confirmed no such market_key exists at all -- a real
+provider gap, not a choice). pitcher_outs *was* wrongly excluded here in an
+earlier version of this script on a bad "zero rows" assumption -- it
+actually has 6,048 real rows and is included as of this revision.
 
 Split: 75/25 done chronologically WITHIN each calendar year separately,
 then all four years' 75% pooled into one TRAIN set and all four years'
@@ -181,10 +184,12 @@ def main():
     games = games.merge(park_by_gamepk, on="game_pk", how="left")
 
     box = con.execute("""
-        SELECT game_pk, player_name, hits, total_bases, rbi, home_runs, strikeouts, is_starter, position_type
+        SELECT game_pk, player_name, hits, total_bases, rbi, home_runs, strikeouts,
+               innings_pitched, is_starter, position_type
         FROM boxscore
     """).fetchdf()
     box["name_norm"] = box["player_name"].map(norm_name)
+    box["outs"] = box["innings_pitched"].map(ip_to_outs)
 
     def pick_main_line(df, group_cols, over_odds_col="best_over_odds"):
         """Many player-props here are offered as a full alt-line ladder (e.g.
@@ -304,13 +309,14 @@ def main():
             both["market"] = "totals"
             return both[["market", "game_pk", "odds", "win", "side"]]
 
-    print("loading real picks for all 8 markets with warehouse coverage...")
+    print("loading real picks for all 9 markets with warehouse coverage...")
     parts = [
         load_batter_market("batter_hits", "hits"),
         load_batter_market("batter_total_bases", "total_bases"),
         load_batter_market("batter_rbis", "rbi"),
         load_batter_market("batter_home_runs", "home_runs"),
         load_pitcher_market("pitcher_strikeouts", "strikeouts"),
+        load_pitcher_market("pitcher_outs", "outs"),
         load_game_market("h2h"),
         load_game_market("spreads"),
         load_game_market("totals"),
