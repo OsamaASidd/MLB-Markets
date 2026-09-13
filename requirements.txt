@@ -1,4 +1,9 @@
 duckdb>=0.10
 psycopg2-binary>=2.9
 pandas>=2.0
+numpy>=1.26
 python-dotenv>=1.0
+openpyxl>=3.1
+pyreadr>=0.5
+scikit-learn>=1.4
+xgboost>=2.0
