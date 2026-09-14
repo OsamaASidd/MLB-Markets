@@ -179,12 +179,12 @@
     </tr>
     <tr>
       <td class="market">Runs scored<span class="kind">batter prop</span></td>
-      <td><span class="pill fail">FAIL</span></td>
+      <td><span class="pill fail">FAIL</span> <span class="pill warn" style="margin-top:4px;display:inline-block;">retest in progress</span></td>
       <td class="num">n=1,903, ROI &minus;3.77%, CI[&minus;7.09,&minus;0.44]<br><span style="color:var(--ink-dim);font-family:inherit;">pick_history &middot; conf&ge;60 minus-money</span></td>
       <td class="num">FAIL</td>
-      <td class="reason">Negative ROI.</td>
-      <td class="lever">None identified</td>
-      <td class="decision"><span class="yn no">No</span></td>
+      <td class="reason">Negative ROI on production picks. Real historical odds backfill in progress (this market's actual blocker was never-collected warehouse data, now being filled from the live odds provider) &mdash; may revise once complete.</td>
+      <td class="lever">Real-odds backfill running now</td>
+      <td class="decision"><span class="yn no">Not yet &mdash; pending retest</span></td>
     </tr>
     <tr>
       <td class="market">Batter strikeouts<span class="kind">batter prop</span></td>
@@ -206,12 +206,12 @@
     </tr>
     <tr>
       <td class="market">Pitcher outs<span class="kind">pitcher prop</span></td>
-      <td><span class="pill fail">FAIL</span></td>
+      <td><span class="pill fail">FAIL</span> <span class="pill warn" style="margin-top:4px;display:inline-block;">retest in progress</span></td>
       <td class="num">n=176, ROI +4.40%, CI[&minus;8.25,+17.06]<br><span style="color:var(--ink-dim);font-family:inherit;">pick_history &middot; conf&ge;60 minus-money</span></td>
       <td class="num">FAIL (n&lt;500)</td>
-      <td class="reason">Positive point estimate, far too small a sample.</td>
-      <td class="lever">More volume</td>
-      <td class="decision"><span class="yn no">No</span></td>
+      <td class="reason">Positive point estimate, far too small a sample. Real historical odds backfill in progress from the live odds provider (confirmed this market's actual blocker was volume, not a real absence of data) &mdash; may revise once complete.</td>
+      <td class="lever">Real-odds backfill running now</td>
+      <td class="decision"><span class="yn no">Not yet &mdash; pending retest</span></td>
     </tr>
     <tr>
       <td class="market">Moneyline<span class="kind">game market (h2h)</span></td>
@@ -244,6 +244,7 @@
   </div>
 
   <div class="foot"><b>Not one of the 11:</b> <i>pitcher record a win</i> &mdash; odds are fetched and loaded, but the market is marked <code>skip_unsupported</code> in <code>process-games-mlb</code>. It is never scored and never produces a pick.</div>
+  <div class="foot"><b>In progress:</b> real historical odds backfill for <code>runs_scored</code> and <code>pitcher_outs</code> is running now (~32% complete as of this version) &mdash; both markets' real blocker was that the client's own warehouse never captured their odds historically, confirmed directly against the live odds provider, which does carry both. This page will be updated with the retested result once both finish.</div>
   <div class="foot"><b>Two client decisions on this page:</b> whether <code>run line</code> gets deployed/promoted now that it clears the official gate, and whether <code>batter strikeouts</code> is worth collecting real odds data for at all, given it's currently hidden and has generated only 30 picks total.</div>
 
   <footer>
