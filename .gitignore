@@ -19,8 +19,10 @@ code/
 # data -- kept local only, same treatment as the duckdb warehouse copy.
 data_raw/pitcher_outs_odds_cache.jsonl
 data_raw/runs_scored_odds_cache.jsonl
+data_raw/batter_strikeouts_odds_cache.jsonl
 reports/backfill_pitcher_outs_odds_log.txt
 reports/backfill_runs_scored_odds_log.txt
+reports/backfill_batter_strikeouts_odds_log.txt
 
 # Pooled-model research (Model A/B, XGBoost pooling, accuracy-vs-ROI check) --
 # out of scope per current client direction ("no new research/models for now").
