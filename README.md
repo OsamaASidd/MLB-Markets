@@ -3,13 +3,22 @@
 Milestone 1 deliverable: gate audit of every MLB market against the real
 production pick history, plus the local database and every script behind it.
 
+**Honest headline result, 31 addenda in: 3 of 11 testable markets pass the
+client's own official gate rule on real, adequately-sized data — `hits`,
+`rbis`, `spreads`. The other 8 (`total_bases`, `batter_home_runs`,
+`pitcher_strikeouts`, `h2h`, `totals`, `pitcher_outs`, `batter_runs_scored`,
+`batter_strikeouts`) are confirmed FAIL, not "pending" or "untested."**
+
 **Start here:**
 - [`reports/MILESTONE_1_GATE_REPORT.md`](reports/MILESTONE_1_GATE_REPORT.md) — full PASS/FAIL
-  results, root causes, improvement levers, and 24 addenda of follow-up research.
-- [`reports/pass_fail_verdicts.html`](reports/pass_fail_verdicts.html) — shareable verdict
-  summary across every market.
-- [`reports/ml_model_walkthrough.html`](reports/ml_model_walkthrough.html) — plain-language
-  walkthrough of the two pooled ML models (Addenda 22-24).
+  results, root causes, improvement levers, and 31 addenda of follow-up research.
+- [`reports/market_verdicts_onepager.html`](reports/market_verdicts_onepager.html) — the
+  lean, one-table client handoff view (status, latest number, official gate, lever, decision
+  needed, per market).
+- [`reports/pass_fail_verdicts.html`](reports/pass_fail_verdicts.html) — full shareable verdict
+  summary across every market, section-by-section.
+- [`deliverables/`](deliverables/) — the non-model M1 deliverables (E2E checklist, scheduler
+  monitor, All Picks design note) requested separately from the gate audit itself.
 
 ## Layout
 
@@ -19,8 +28,14 @@ production pick history, plus the local database and every script behind it.
   per finding. Full index in the [testing guide](#testing--reproduction-guide) below.
 - `reports/` — the report itself, both HTML deliverables, and the saved raw output of every
   script that produced a reported result (`*_output.txt` / `gate_results.csv`).
+- `deliverables/` — the M1 work-order items outside the gate audit itself: the end-to-end
+  pipeline checklist, and the "Log All Picks" gate-status design note.
 - `data_raw/` — the one external dataset small enough to commit: a free, public 2014-2019
-  MLB odds archive (six `.rda` files, ~35KB each), used in Addenda 4-6.
+  MLB odds archive (six `.rda` files, ~35KB each), used in Addenda 4-6. Real historical-odds
+  caches from The Odds API (Addenda 30-31) are gitignored — see the report for how to
+  regenerate them with a live API key, and Addendum 31 for why the 2020-2022 extension
+  specifically cannot be regenerated (the provider doesn't carry player-prop odds that far
+  back, confirmed empirically, not a missing-credential problem).
 
 ## Setup
 
@@ -139,6 +154,28 @@ The ML models — pooled, cross-market, properly holdout-validated:
 Run any Tier 3 script exactly as committed and its printed output should reproduce the
 corresponding `reports/*_output.txt` file (modulo trivial floating-point noise from
 XGBoost's own non-determinism, already visible run-to-run in Addendum 23's numbers).
+
+### Tier 4 — needs a live Odds API key (`ODDS_API_KEY` in `.env`), real paid credits
+
+Individual per-market models, the gate-rule correction, and the real backfills that
+resolved the three previously-untestable/underpowered markets:
+
+| Script | Output | Addendum |
+|---|---|---|
+| `xgboost_individual_markets.py` | (printed per-market table) | 27, 28 |
+| `backfill_pitcher_outs_odds.py` / `backfill_runs_scored_odds.py` / `backfill_batter_strikeouts_odds.py` | `data_raw/*_odds_cache.jsonl` (gitignored) | 30 |
+| `test_backfilled_markets.py` | `reports/backfilled_markets_test_output.txt` | 30 |
+| `backfill_2020_2022_boxscores.py` → `build_event_id_mapping_2020_2022.py` → `backfill_2020_2022_market_odds.py` | confirms 2020-2022 player-prop odds don't exist at this provider (not a code/credential issue) | 31 |
+
+### Outside the gate audit: `scripts/scheduler_monitor.py`
+
+Independent, read-only cron-health second opinion — reads `betgenius`'s real
+`cron_heartbeat` table with the same staleness rule as its production
+`detect_silent_crons()` view, for anyone with only `harness_readonly` access
+(no service-role key, no Twilio access). `python scripts/scheduler_monitor.py --test`
+runs a fixture-only self-test with no DB needed; without `--test` it needs
+`betgenius/harness/.env`'s `HARNESS_DATABASE_URL`. See `deliverables/E2E_CHECKLIST.md`
+for how this fits into the rest of the pipeline checks.
 
 ### Verifying without rerunning anything
 

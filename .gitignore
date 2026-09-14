@@ -24,6 +24,20 @@ reports/backfill_pitcher_outs_odds_log.txt
 reports/backfill_runs_scored_odds_log.txt
 reports/backfill_batter_strikeouts_odds_log.txt
 
+# Same, 2020-2022 extension attempt (Addendum 31) -- real MLB schedule/
+# box-score pulls, real Odds API event mapping, and the all-fail
+# player-prop-market probe. Data only, not code.
+data_raw/mlb_schedule_2020_2022.csv
+data_raw/event_id_mapping_2020_2022.csv
+data_raw/pitcher_outs_odds_cache_2020_2022.jsonl
+data_raw/runs_scored_odds_cache_2020_2022.jsonl
+data_raw/batter_strikeouts_odds_cache_2020_2022.jsonl
+reports/backfill_2020_2022_boxscores_log.txt
+reports/event_id_mapping_2020_2022_log.txt
+reports/backfill_pitcher_outs_2020_2022_log.txt
+reports/backfill_runs_scored_2020_2022_log.txt
+reports/backfill_batter_strikeouts_2020_2022_log.txt
+
 # Pooled-model research (Model A/B, XGBoost pooling, accuracy-vs-ROI check) --
 # out of scope per current client direction ("no new research/models for now").
 # Kept on disk for reference, untracked from git so it doesn't ship in the
@@ -54,3 +68,25 @@ db/mlb_markets.duckdb
 # not for public distribution.
 Phase1-MLB-Developer-Handoff.md
 START_HERE.md
+
+# Warehouse inventory workbook (received 2026-09-14) -- real production
+# row counts/sample odds rows, same NDA/proprietary status as the rest.
+MLB_PLAYER_PROPS.xlsx
+
+# Full client odds-warehouse export (112MB) + its inventory workbook --
+# real production cache_mlb_historical_odds data, 2023-05-03 to 2026-05-24.
+# Never commit real client market data at this volume.
+MLB_Odds_API_2023_2026.xlsx
+MLB_Odds_API_2023_2026_inventory.xlsx
+
+# "Next-signal notes" pack (SHARPAI_USAMA_NEXT_SIGNALS, received 2026-09-15) --
+# Saqib's reply on CLV/Statcast/lineup/umpire research options. Real internal
+# numbers, code-path descriptions and a branch-only experiment module, all
+# NDA/proprietary. Kept local for reference, never committed.
+01_CLV_SNAPSHOTS.md
+02_LINEUP.md
+03_BATTER_STRIKEOUTS.md
+MESSAGE_WHATSAPP.txt
+mlb_glm_lineup_experiment.ts
+scripts/audit_clv_snapshots.ts
+scripts/audit_snapshot_counts.ts

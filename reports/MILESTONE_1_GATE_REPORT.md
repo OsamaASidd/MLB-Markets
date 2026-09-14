@@ -2196,8 +2196,71 @@ MLB Markets/
   scripts/backfill_batter_strikeouts_odds.py  (same, batter_strikeouts -- untestable before this)
   scripts/test_backfilled_markets.py          honest per-market test on all three backfills
   reports/backfilled_markets_test_output.txt  full Addendum 30 output (all three: FAIL)
+  scripts/backfill_2020_2022_boxscores.py         real 2020-2022 box scores (MLB Stats API)
+  scripts/build_event_id_mapping_2020_2022.py     real game -> real Odds API event_id (2020-2022)
+  scripts/backfill_2020_2022_market_odds.py       Addendum 31: confirms no player-prop odds pre-2023-05-03
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```
 
 To rerun: `pip install -r requirements.txt`, then `python scripts/gate.py`.
+
+---
+
+## Addendum 31: extending pitcher_outs/runs_scored/batter_strikeouts back to 2020 — a hard provider limit, confirmed empirically
+
+Asked to extend the real backfill for the three player-prop markets in
+Addendum 30 back to 2020 (the historical archive's own start date, per
+The Odds API), instead of stopping at the current 2023-2026 coverage.
+
+Built the real infrastructure to do this and ran it against real data end
+to end:
+- `scripts/backfill_2020_2022_boxscores.py` — 5,760 real 2020-2022 MLB
+  regular-season games discovered via MLB's own public schedule API,
+  169,253 real box-score rows backfilled (`client_games` has no rows
+  before 2023-05-03, so this couldn't come from the client's own tables
+  the way the 2023+ backfill did).
+- `scripts/build_event_id_mapping_2020_2022.py` — since there's no
+  `client_games.event_id` to key off of pre-2023, queried The Odds API's
+  own historical events-list endpoint for all 429 unique game-dates
+  across the three seasons and matched real games to real Odds API
+  event IDs by team name: **4,274 of 5,760 real games (74.2%) resolved**
+  to a real event_id.
+- `scripts/backfill_2020_2022_market_odds.py` — used those 4,274 real,
+  correctly-mapped event IDs to request real historical odds for all
+  three markets (`pitcher_outs`, `batter_runs_scored`,
+  `batter_strikeouts`), same snapshot timing (commence_time − 30min) and
+  request shape as the working 2023-2026 backfill.
+
+**Result: 4,274/4,274 requests failed for all three markets, every
+single one with the same provider error —
+`HISTORICAL_MARKETS_UNAVAILABLE_AT_DATE`.** Not a mapping bug (the event
+IDs are real and correctly matched — the provider is actively telling us
+those specific events exist, just without this market on that date), not
+a credits/auth issue (confirmed by the API's own remaining-credits
+counter barely moving — a rejected request costs ~0 credits here, unlike
+a successful odds pull), and not a code bug (same request pattern that
+successfully returned real odds for 2023+ games). This is the provider
+telling us, directly and consistently across 12,822 real requests, that
+it does not carry historical **player-prop** odds before a certain date.
+
+Checked where that date actually falls: the earliest real, successful
+`batter_strikeouts` result anywhere in this project's 2023-2026 cache is
+**2023-05-03** — the exact same date `client_games` itself starts. That's
+not a coincidence; it's strong evidence the client's own backfill pipeline
+already ran into this same provider limit when it was built, and started
+its data collection right where the provider's own player-prop archive
+begins. The general historical archive going back to 2020-06-30 (confirmed
+earlier in this project) evidently applies to game-level markets
+(moneyline/spread/totals) but not to player props specifically.
+
+**Conclusion: the 2023-2026 real-data test in Addendum 30 already is the
+full extent of what's testable for these three markets from this
+provider.** There is no 2020-2022 data to add — not because the
+backfill wasn't attempted or wasn't run at real scale, but because it
+doesn't exist on the other end. Extending further back is not a matter of
+more engineering time or more API credits; the honest answer stays what
+Addendum 30 already reported: `pitcher_outs`, `runs_scored`, and
+`batter_strikeouts` all FAIL on the real, adequately-sized data that does
+exist (2023-2026), and no larger sample is obtainable from this data
+source to test whether that changes.
