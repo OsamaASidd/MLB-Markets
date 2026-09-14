@@ -1,0 +1,30 @@
+building real team game log, Elo, L10, bullpen fatigue from 2023-2026 client data...
+
+=== pitcher_outs (real backfilled odds) ===
+  parsed 10,787 real (event,player) rows from cache
+  5,451 rows matched to a real box-score outcome
+  TRAIN n=10,000 (2023-05-03->2024-07-19)  TEST n=3,334 (2024-07-19->2025-05-28)
+  AUC TEST=0.578  accuracy TEST=0.541
+  single pre-specified cut (edge>0.0): n=770 ROI=-1.21 CI=[-7.2,4.78]  FAIL
+  best-of-5 cut (multiple-comparisons exposed): edge>0.0 n=770 ROI=-1.21 CI=[-7.2,4.78]  FAIL
+
+=== batter_runs_scored (real backfilled odds) ===
+  parsed 122,938 real (event,player) rows from cache
+  79,131 rows matched to a real box-score outcome
+  TRAIN n=158,941 (2023-05-03->2024-07-06)  TEST n=52,981 (2024-07-06->2025-05-28)
+  AUC TEST=0.665  accuracy TEST=0.633
+  single pre-specified cut (edge>0.0): n=9871 ROI=-2.54 CI=[-4.05,-1.03]  FAIL
+  best-of-5 cut (multiple-comparisons exposed): edge>0.03 n=1749 ROI=0.36 CI=[-3.23,3.94]  PASS
+
+=== batter_strikeouts (real backfilled odds -- never testable before this) ===
+  parsed 68,899 real (event,player) rows from cache
+  60,862 rows matched to a real box-score outcome
+  TRAIN n=124,467 (2023-05-03->2024-05-22)  TEST n=41,489 (2024-05-22->2024-08-23)
+  AUC TEST=0.641  accuracy TEST=0.611
+  single pre-specified cut (edge>0.0): n=4682 ROI=-0.87 CI=[-3.1,1.35]  FAIL
+  best-of-5 cut (multiple-comparisons exposed): edge>0.02 n=1901 ROI=0.11 CI=[-3.25,3.48]  PASS
+
+=== SUMMARY ===
+  pitcher_outs         no-filter: FAIL    best-of-5: FAIL
+  runs_scored          no-filter: FAIL    best-of-5: PASS
+  batter_strikeouts    no-filter: FAIL    best-of-5: PASS

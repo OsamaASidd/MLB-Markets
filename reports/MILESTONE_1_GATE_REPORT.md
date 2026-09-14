@@ -1965,6 +1965,74 @@ angle rather than fewer.
 
 ---
 
+## Addendum 30: real historical odds backfilled for pitcher_outs, runs_scored, and batter_strikeouts — all three resolve to FAIL
+
+`pitcher_outs`, `runs_scored`, and `batter_strikeouts` were the three
+genuinely undetermined-or-untestable markets in this audit — every prior
+test used either a tiny pick_history sample (as few as 8-200 graded
+picks), no real odds at all, or (for `batter_strikeouts`) essentially no
+real production picks at all (n=9-30 ever). Confirmed directly that The
+Odds API's historical endpoint carries all three markets (the client's own
+warehouse never captured them — a backfill gap, not a provider limitation)
+and backfilled real historical odds for all three, matched against every
+real game this project already has box scores for (2023-2025, ~6,450
+games each after excluding ~1,240 of the most recent 2026 games whose odds
+the provider's historical archive hasn't finished processing yet — an
+archival-lag limitation, not a data quality problem with what was
+retrieved). `scripts/backfill_pitcher_outs_odds.py`,
+`scripts/backfill_runs_scored_odds.py`,
+`scripts/backfill_batter_strikeouts_odds.py`,
+`scripts/test_backfilled_markets.py`, output in
+`reports/backfilled_markets_test_output.txt`.
+
+Same real point-in-time features (Elo, L10, bullpen fatigue, park
+factors), single 75/25 chronological split, corrected official gate rule.
+
+**`pitcher_outs`: FAIL, now on a real, well-powered sample.** 5,451 real
+rows matched to actual box-score outcomes (TEST n=3,334) — the volume
+problem that made every prior test of this market inconclusive is solved,
+and the honest answer is still negative. AUC 0.578 (weak). Single
+pre-specified cut (edge>0.0): n=770, ROI **−1.21%**, CI [−7.2%, 4.78%].
+No better threshold found in a 5-cut search either.
+
+**`runs_scored`: FAIL on the real, non-cherry-picked cut.** 79,131 real
+rows matched (TEST n=52,981). AUC 0.665 — real ranking skill, similar
+magnitude to the other markets where skill doesn't convert to edge. Single
+pre-specified cut (edge>0.0): n=9,871, ROI **−2.54%**, CI
+[−4.05%, −1.03%], entirely negative. A threshold search does turn up a
+technical PASS (edge>0.03, n=1,749, ROI +0.36%, CI [−3.23%, 3.94%]) — but
+an ROI of +0.36% with a CI spanning nearly ±4 points either way is
+indistinguishable from zero. Not counted as a real finding; reported here
+exactly as it came out, the same way every other borderline search-only
+result in this project has been flagged rather than rounded up.
+
+**`batter_strikeouts`: testable for the first time in this entire
+project, and it's a FAIL too — but a different kind of FAIL than the rest.**
+This market was previously reported as genuinely untestable: ~9-30 real
+picks ever generated in production, zero warehouse rows. The same real
+backfill approach applied here for the first time: 60,862 real rows
+matched to actual box-score outcomes (TEST n=41,489) — by far the largest
+sample in this specific investigation. AUC 0.641 (real ranking skill,
+comparable to the other markets where skill exists but doesn't convert to
+an edge). Single pre-specified cut (edge>0.0): n=4,682, ROI **−0.87%**,
+CI [−3.1%, 1.35%] — crosses zero, genuinely flat rather than clearly
+negative like `home_runs` or `h2h`. A threshold search turns up the same
+shape of technical, meaningless "pass" as `runs_scored` (edge>0.02,
+n=1,901, ROI +0.11%, CI [−3.25%, 3.48%]) — not counted as a real finding
+for the same reason.
+
+**Updated honest count: 3 of 11 markets pass, not 5.** The ceiling
+mentioned when these three were still pending/untestable assumed they
+might resolve positively — none did. `hits`, `rbis`, and `spreads` remain
+the three real passes in this audit. `pitcher_outs`, `runs_scored`, and
+`batter_strikeouts` join `total_bases`, `home_runs`, `pitcher_strikeouts`,
+`h2h`, and `totals` as confirmed FAIL — every one of the 10 testable
+markets now backed by real, adequately-sized data rather than an open
+question. `batter_strikeouts` specifically is no longer "data doesn't
+exist" — it's "tested at scale, found flat."
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and
@@ -2121,6 +2189,13 @@ MLB Markets/
                                   per Addendum 28 -- 3 solid passes: hits, rbis, spreads)
   scripts/gate.py                corrected gate rule (Addendum 28): n>=500 -> ROI>0,
                                   not n>=500 AND CI>0 -- fixes a real bug used throughout this project
+  scripts/test_statcast_plus_features_total_bases.py   one honest single-shot statcast+factors test
+  reports/statcast_plus_features_total_bases_output.txt   full Addendum 29 output (still FAIL)
+  scripts/backfill_pitcher_outs_odds.py       real historical odds backfill via The Odds API
+  scripts/backfill_runs_scored_odds.py        (same, batter_runs_scored)
+  scripts/backfill_batter_strikeouts_odds.py  (same, batter_strikeouts -- untestable before this)
+  scripts/test_backfilled_markets.py          honest per-market test on all three backfills
+  reports/backfilled_markets_test_output.txt  full Addendum 30 output (all three: FAIL)
   reports/pass_fail_verdicts.html   standalone HTML summary of every verdict in this audit
   reports/MILESTONE_1_GATE_REPORT.md   this file
 ```

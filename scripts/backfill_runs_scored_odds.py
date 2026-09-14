@@ -16,11 +16,17 @@ import os
 import json
 import pathlib
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 
 import duckdb
 import requests
+
+CONCURRENCY = 10  # same rationale as backfill_pitcher_outs_odds.py -- the
+                   # sequential run was network-latency-bound, not rate-
+                   # limit-bound; same total credits spent either way.
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DB = str(ROOT / "db" / "mlb_markets.duckdb")
@@ -85,41 +91,53 @@ def main():
     cache = load_cache()
     print(f"[backfill] {len(cache):,} already cached from a prior run")
 
+    todo = []
+    for _, row in games.iterrows():
+        if row["event_id"] in cache:
+            continue
+        commence = datetime.fromisoformat(row["commence_time_utc"].replace(" ", "T"))
+        if commence.tzinfo is None:
+            commence = commence.replace(tzinfo=timezone.utc)
+        snapshot_iso = (commence - timedelta(minutes=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        todo.append((row["event_id"], row["game_pk"], row["game_date"], snapshot_iso))
+    print(f"[backfill] {len(todo):,} remaining to fetch, {CONCURRENCY} concurrent workers")
+
     CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
     fetched_this_run = 0
     errors = 0
     last_remaining = None
+    write_lock = threading.Lock()
+    out = open(CACHE_PATH, "a", encoding="utf-8")
 
-    with open(CACHE_PATH, "a", encoding="utf-8") as out:
-        for i, row in games.iterrows():
-            event_id = row["event_id"]
-            if event_id in cache:
-                continue
-            commence = datetime.fromisoformat(row["commence_time_utc"].replace(" ", "T"))
-            if commence.tzinfo is None:
-                commence = commence.replace(tzinfo=timezone.utc)
-            snapshot = commence - timedelta(minutes=30)
-            snapshot_iso = snapshot.strftime("%Y-%m-%dT%H:%M:%SZ")
+    def work(item):
+        event_id, game_pk, game_date, snapshot_iso = item
+        data, remaining = fetch_one(event_id, snapshot_iso)
+        return event_id, game_pk, game_date, snapshot_iso, data, remaining
 
-            data, remaining = fetch_one(event_id, snapshot_iso)
-            last_remaining = remaining
-            rec = {
-                "event_id": event_id,
-                "game_pk": row["game_pk"],
-                "game_date": row["game_date"],
-                "snapshot_iso": snapshot_iso,
-                "response": data,
-            }
-            out.write(json.dumps(rec) + "\n")
-            out.flush()
-            fetched_this_run += 1
-            if "error" in data:
-                errors += 1
-
-            if fetched_this_run % 200 == 0:
-                print(f"[backfill] ...{fetched_this_run} fetched this run "
-                      f"({errors} errors), credits remaining: {last_remaining}")
-            time.sleep(0.15)
+    try:
+        with ThreadPoolExecutor(max_workers=CONCURRENCY) as pool:
+            futures = [pool.submit(work, item) for item in todo]
+            for fut in as_completed(futures):
+                event_id, game_pk, game_date, snapshot_iso, data, remaining = fut.result()
+                last_remaining = remaining
+                rec = {
+                    "event_id": event_id,
+                    "game_pk": game_pk,
+                    "game_date": game_date,
+                    "snapshot_iso": snapshot_iso,
+                    "response": data,
+                }
+                with write_lock:
+                    out.write(json.dumps(rec) + "\n")
+                    out.flush()
+                    fetched_this_run += 1
+                    if "error" in data:
+                        errors += 1
+                    if fetched_this_run % 200 == 0:
+                        print(f"[backfill] ...{fetched_this_run}/{len(todo)} fetched this run "
+                              f"({errors} errors), credits remaining: {last_remaining}")
+    finally:
+        out.close()
 
     print(f"[backfill] done: {fetched_this_run} fetched this run, {errors} errors, "
           f"credits remaining: {last_remaining}")
