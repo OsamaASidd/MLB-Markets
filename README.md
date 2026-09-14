@@ -53,16 +53,19 @@ file is **not currently committed** and going forward is `.gitignore`'d: at vari
 it has held the client's real, proprietary production data (pick history, box scores, and
 a full 2.42M-row real odds warehouse).
 
-**⚠ Correction, confirmed directly: this file WAS previously committed and pushed to this
-repository's public GitHub remote.** Six commits grew it from 38MB to 42MB before a later
-commit removed it. Deleting a file in a later commit does **not** remove it from git
-history — every one of those earlier commits' blobs remains fetchable by anyone who clones
-this repository, regardless of the file's current absence or this repo's current
-visibility setting. An earlier version of this README claimed the data was "never pushed
-to a public remote" — that claim was false and has been corrected here. See
-`reports/MILESTONE_1_GATE_REPORT.md`, Addendum 28, for the full disclosure and required
-remediation (repo visibility, history rewrite, credential rotation) — none of which this
-project has the repository-admin access to perform itself.
+**⚠ Resolved 2026-09-15, previously a real exposure — history now clean.** This file
+was committed and pushed to this repo's public GitHub remote across 6 commits (38MB →
+42MB) before a later commit removed it from the working tree — which does **not** remove
+it from git history. That history has since been rewritten with `git filter-repo` to
+strip the file from every commit on both `master` and `milestone-1-mlb-gate-audit`, and
+both branches have been force-pushed. Verified after the rewrite: zero commits reference
+the file anymore (`git log --all -- db/mlb_markets.duckdb` returns nothing), repo size
+dropped from 80MB to 667KB, and the repo has 0 forks and 0 PRs, so there's no known
+external copy of the old history. One residual, low-likelihood caveat: GitHub can retain
+now-dangling old commits by direct SHA for a grace period before internal garbage
+collection — anyone who already had the exact old commit SHA before the rewrite could
+still fetch it during that window. Nobody outside this engagement is known to have had
+that. See `reports/MILESTONE_1_GATE_REPORT.md`, Addendum 28, for the original disclosure.
 
 This means **a fresh clone of this repo cannot run most of these scripts
 out of the box** — that's expected, not a bug. Three ways the db gets populated:
