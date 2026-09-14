@@ -1930,6 +1930,41 @@ before any of these three specific claims can be checked properly.
 
 ---
 
+## Addendum 29: one honest, single-shot test — real statcast quality features combined into total_bases, still negative
+
+Requested directly, with an explicit agreement attached: one genuinely
+untried angle for `total_bases`, tested once, no threshold search, reported
+honestly regardless of outcome — not "keep searching until it passes."
+`scripts/test_statcast_plus_features_total_bases.py`, output in
+`reports/statcast_plus_features_total_bases_output.txt`.
+
+**What was actually new here:** Addendum 19 tested statcast xBA-vs-actual
+regression as a *standalone* strategy (negative, corr −0.004). It was never
+combined with the production `score_*` factors in one model. This test
+does that — real exit velocity, barrel rate, and expected-vs-actual
+SLG/wOBA gap (`statcast_exit_velo`, `statcast_xstats`), joined point-in-time
+(most recent snapshot strictly before the pick's own game date, no
+leakage) onto the same factor set Model A used. Real warehouse odds for
+`total_bases` only run to 2026-05-24 — nowhere near enough overlap with
+statcast's 2026-05-20 start — so this uses `pick_history`'s own real entry
+odds instead, over the one window both data sources actually share
+(2026-05-17 → 2026-07-27, n=14,351 real picks, 13,509 with a real
+point-in-time statcast match).
+
+**Result: TEST AUC 0.623. One pre-specified cut (edge>0.0, no threshold
+search): n=858, ROI −6.87%, CI [−12.06%, −1.69%] — FAIL, entirely
+negative.** The statcast feature `ev95percent` (percent of batted balls
+95+ mph exit velocity) ranked 5th of 58 features by importance — a real,
+meaningfully-weighted signal, not noise — but the resulting edge is still
+clearly negative. Same conclusion as every other custom strategy in this
+audit: the signal is real, and the market already has it priced in.
+
+**Not pursued further, per the explicit agreement this test was made
+under.** `total_bases`'s FAIL stands, now on one more genuinely-tried
+angle rather than fewer.
+
+---
+
 ## Why the harness said PASS and production says FAIL
 
 This is the one finding that applies across markets, not just to hits and

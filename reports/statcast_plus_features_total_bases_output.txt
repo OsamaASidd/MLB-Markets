@@ -1,0 +1,21 @@
+pick_history batter_total_bases: n=14,351, 2026-05-17 00:00:00 -> 2026-07-27 00:00:00
+rows with a point-in-time statcast match: 13,509 / 14,351
+features used: 47 score_* factors + 11 statcast quality features
+TRAIN n=10,131 (2026-05-21->2026-07-11)  TEST n=3,378 (2026-07-11->2026-07-27)
+
+AUC TEST=0.623  accuracy TEST=0.614
+
+top 10 feature weights:
+  score_batter_launch_angle                0.1147
+  score_hitter_streak_fatigue              0.0504
+  score_travel_getaway                     0.0429
+  score_batter_exit_velo_trend             0.0346
+  ev95percent                              0.0340 [statcast]
+  score_batter_line_hit_rate               0.0333
+  score_batter_barrel_rate                 0.0294
+  score_batter_obp                         0.0270
+  score_batter_hard_hit                    0.0266
+  score_batter_xwoba                       0.0260
+
+-- single pre-specified cut: edge>0.0, minus-money only --
+n=858  WR=59.6  ROI=-6.87  CI=[-12.06,-1.69]  FAIL
