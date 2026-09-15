@@ -1,0 +1,59 @@
+building real team game log, Elo, L10, bullpen fatigue, park factors...
+
+=== 5 warehouse/game FAIL markets x 5 models, single pre-specified cut (edge>0.0) ===
+  batter_total_bases   xgboost              AUC=0.623 acc=0.586 n=7132   ROI=-0.17 CI=[-2.04,1.71]  FAIL
+  batter_total_bases   lightgbm             AUC=0.623 acc=0.585 n=6616   ROI=-0.52 CI=[-2.47,1.43]  FAIL
+  batter_total_bases   hist_gbm             AUC=0.621 acc=0.583 n=5909   ROI=-1.83 CI=[-3.88,0.21]  FAIL
+  batter_total_bases   random_forest        AUC=0.622 acc=0.584 n=4311   ROI=-0.61 CI=[-3.19,1.97]  FAIL
+  batter_total_bases   logistic_regression  AUC=0.622 acc=0.582 n=10885  ROI=-0.45 CI=[-2.05,1.15]  FAIL
+  batter_home_runs     xgboost              AUC=0.914 acc=0.889 n=2714   ROI=-0.45 CI=[-2.07,1.17]  FAIL
+  batter_home_runs     lightgbm             AUC=0.914 acc=0.889 n=2595   ROI=0.53 CI=[-1.12,2.18]  PASS
+  batter_home_runs     hist_gbm             AUC=0.913 acc=0.889 n=2348   ROI=-0.78 CI=[-2.58,1.01]  FAIL
+  batter_home_runs     random_forest        AUC=0.913 acc=0.889 n=2983   ROI=-0.39 CI=[-2.05,1.28]  FAIL
+  batter_home_runs     logistic_regression  AUC=0.913 acc=0.889 n=0      ROI=None CI=[None,None]  FAIL
+  pitcher_strikeouts   xgboost              AUC=0.523 acc=0.505 n=780    ROI=-14.72 CI=[-20.92,-8.51]  FAIL
+  pitcher_strikeouts   lightgbm             AUC=0.536 acc=0.519 n=780    ROI=-8.28 CI=[-14.48,-2.08]  FAIL
+  pitcher_strikeouts   hist_gbm             AUC=0.521 acc=0.503 n=665    ROI=-5.62 CI=[-12.32,1.09]  FAIL
+  pitcher_strikeouts   random_forest        AUC=0.530 acc=0.501 n=481    ROI=-9.46 CI=[-17.45,-1.48]  FAIL
+  pitcher_strikeouts   logistic_regression  AUC=0.533 acc=0.513 n=1220   ROI=-8.48 CI=[-13.47,-3.49]  FAIL
+  h2h                  xgboost              AUC=0.494 acc=0.471 n=526    ROI=-34.16 CI=[-41.37,-26.96]  FAIL
+  h2h                  lightgbm             AUC=0.425 acc=0.441 n=520    ROI=-38.28 CI=[-45.38,-31.19]  FAIL
+  h2h                  hist_gbm             AUC=0.475 acc=0.467 n=532    ROI=-38.15 CI=[-45.19,-31.11]  FAIL
+  h2h                  random_forest        AUC=0.439 acc=0.465 n=429    ROI=-51.08 CI=[-58.46,-43.71]  FAIL
+  h2h                  logistic_regression  AUC=0.525 acc=0.519 n=452    ROI=-53.59 CI=[-60.83,-46.34]  FAIL
+  totals               xgboost              AUC=0.620 acc=0.588 n=434    ROI=3.69 CI=[-5.27,12.64]  FAIL
+  totals               lightgbm             AUC=0.621 acc=0.572 n=399    ROI=3.24 CI=[-6.11,12.59]  FAIL
+  totals               hist_gbm             AUC=0.625 acc=0.568 n=407    ROI=0.73 CI=[-8.54,10.0]  FAIL
+  totals               random_forest        AUC=0.615 acc=0.567 n=182    ROI=-13.46 CI=[-27.55,0.62]  FAIL
+  totals               logistic_regression  AUC=0.558 acc=0.561 n=263    ROI=-3.17 CI=[-15.12,8.78]  FAIL
+
+=== 3 real-backfilled FAIL markets x 5 models, single pre-specified cut (edge>0.0) ===
+  parsed 10,787 real (event,player) rows from cache
+  5,451 rows matched to a real box-score outcome
+  pitcher_outs         xgboost              AUC=0.578 acc=0.541 n=770    ROI=-1.21 CI=[-7.2,4.78]  FAIL
+  pitcher_outs         lightgbm             AUC=0.571 acc=0.534 n=755    ROI=0.83 CI=[-5.22,6.88]  PASS
+  pitcher_outs         hist_gbm             AUC=0.579 acc=0.556 n=670    ROI=1.29 CI=[-5.06,7.64]  PASS
+  pitcher_outs         random_forest        AUC=0.590 acc=0.558 n=363    ROI=-4.26 CI=[-13.14,4.62]  FAIL
+  pitcher_outs         logistic_regression  AUC=0.591 acc=0.558 n=343    ROI=-1.93 CI=[-10.07,6.2]  FAIL
+  parsed 122,938 real (event,player) rows from cache
+  79,131 rows matched to a real box-score outcome
+  batter_runs_scored   xgboost              AUC=0.665 acc=0.633 n=9871   ROI=-2.54 CI=[-4.05,-1.03]  FAIL
+  batter_runs_scored   lightgbm             AUC=0.665 acc=0.633 n=9851   ROI=-1.82 CI=[-3.32,-0.31]  FAIL
+  batter_runs_scored   hist_gbm             AUC=0.665 acc=0.633 n=10299  ROI=-1.83 CI=[-3.3,-0.37]  FAIL
+  batter_runs_scored   random_forest        AUC=0.665 acc=0.633 n=8773   ROI=-3.27 CI=[-5.0,-1.54]  FAIL
+  batter_runs_scored   logistic_regression  AUC=0.668 acc=0.633 n=11445  ROI=-1.25 CI=[-2.67,0.18]  FAIL
+  parsed 68,899 real (event,player) rows from cache
+  60,862 rows matched to a real box-score outcome
+  batter_strikeouts    xgboost              AUC=0.641 acc=0.611 n=4682   ROI=-0.87 CI=[-3.1,1.35]  FAIL
+  batter_strikeouts    lightgbm             AUC=0.640 acc=0.610 n=4729   ROI=-1.17 CI=[-3.38,1.03]  FAIL
+  batter_strikeouts    hist_gbm             AUC=0.640 acc=0.609 n=4795   ROI=-1.16 CI=[-3.34,1.03]  FAIL
+  batter_strikeouts    random_forest        AUC=0.642 acc=0.612 n=912    ROI=1.68 CI=[-3.42,6.79]  PASS
+  batter_strikeouts    logistic_regression  AUC=0.644 acc=0.612 n=1923   ROI=1.44 CI=[-1.96,4.83]  PASS
+
+=== SUMMARY: any PASS across 8 markets x 5 models, single pre-specified cut ===
+  PASS: batter_home_runs / lightgbm  n=2595 ROI=0.53 CI=[-1.12,2.18]
+  PASS: pitcher_outs / lightgbm  n=755 ROI=0.83 CI=[-5.22,6.88]
+  PASS: pitcher_outs / hist_gbm  n=670 ROI=1.29 CI=[-5.06,7.64]
+  PASS: batter_strikeouts / random_forest  n=912 ROI=1.68 CI=[-3.42,6.79]
+  PASS: batter_strikeouts / logistic_regression  n=1923 ROI=1.44 CI=[-1.96,4.83]
+  5 of 40 market/model combinations passed. Reported as-is -- a single model passing among 5 tried, on one of 8 markets, is exactly the multiple-comparisons exposure flagged in HANDOFF.md's guardrails, not grounds to declare that market fixed without independent confirmation.

@@ -2264,3 +2264,48 @@ Addendum 30 already reported: `pitcher_outs`, `runs_scored`, and
 `batter_strikeouts` all FAIL on the real, adequately-sized data that does
 exist (2023-2026), and no larger sample is obtainable from this data
 source to test whether that changes.
+
+---
+
+## Addendum 32: pre-registered multi-model comparison on all 8 FAIL markets — a real demonstration of why multiple-comparisons flags matter
+
+Method locked in **before** running (see `HANDOFF.md`), specifically so
+the result couldn't be cherry-picked afterward: same real point-in-time
+features and same train/test split each of the 8 FAIL markets already
+used for its published XGBoost result, 5 models per market (XGBoost —
+the existing baseline — plus LightGBM, HistGradientBoostingClassifier,
+RandomForest, and logistic regression), one pre-specified cut (edge>0.0,
+odds<0), the official gate rule, no threshold search. `scripts/
+multi_model_comparison.py`, full output in `reports/
+multi_model_comparison_output.txt`.
+
+**Result: 5 of 40 market/model combinations technically PASS the official
+rule.** `batter_home_runs`/LightGBM (n=2,595, ROI +0.53%),
+`pitcher_outs`/LightGBM (n=755, ROI +0.83%), `pitcher_outs`/HistGBM
+(n=670, ROI +1.29%), `batter_strikeouts`/RandomForest (n=912, ROI +1.68%),
+`batter_strikeouts`/LogisticRegression (n=1,923, ROI +1.44%).
+
+**This is not 5 real passes, and here's the concrete reason why, not just
+the abstract one:** on every single one of these 5, the other 4 models
+run on the *identical* data and split show FAIL, usually clearly negative
+(e.g. `pitcher_outs`: XGBoost -1.21%, RandomForest -4.26%, LogReg -1.93%,
+only LightGBM and HistGBM cross zero). The passing model disagrees with
+its own peers on the same evidence — that's the signature of noise
+clearing a low bar, not a model finding a real signal the others missed.
+Every "passing" case also has a 95% CI that spans deep into negative
+territory (e.g. `pitcher_outs`/HistGBM: CI [-5.06%, 7.64%]) — they only
+count as PASS because each has n≥500, and the official rule only requires
+ROI>0 at that sample size, not CI>0. Trying 5 models per market across 8
+markets is 40 independent chances for a barely-positive result to appear
+by chance alone; getting 5 is close to what you'd expect from pure noise
+at this scale, not evidence of 5 real edges.
+
+**This confirms, with real numbers instead of a hypothesis, exactly the
+warning this project has repeated throughout**: searching across enough
+models or thresholds will eventually produce something that clears the
+bar, and reporting that as a finding — rather than checking whether the
+other models trained on the same data agree — is how a fake pass gets
+manufactured without anyone having to lie about a single number. None of
+these 5 are being added to the pass count. The honest result stands:
+`hits`, `rbis`, `spreads` pass; the other 8 do not, on every model tried,
+including the ones that technically cleared the rule once.

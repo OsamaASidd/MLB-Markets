@@ -64,6 +64,16 @@ to real box-score outcomes. Not fixture data, not synthetic.
   as multiple-comparisons noise, not a real finding, per Addendum 27/28).
 - **Real Statcast quality features** (exit velo, xStats) folded into
   `total_bases`: still FAIL, n=858, ROI -6.87% (Addendum 29).
+- **Pre-registered 5-model comparison on all 8 FAIL markets** (XGBoost,
+  LightGBM, HistGBM, RandomForest, LogisticRegression — same features/
+  split as each market's published result, one pre-specified cut, no
+  threshold search): 5 of 40 combinations technically passed, but every
+  one disagrees with the other 4 models on the same data and has a CI
+  spanning deep negative — a real, concrete demonstration of the
+  multiple-comparisons risk, not 5 new passes (Addendum 32,
+  `scripts/multi_model_comparison.py`). **Do not re-run this hoping for a
+  different combination to "win" — that's the exact behavior this
+  experiment was designed to catch.**
 - **Extending the three newly-backfilled markets back to 2020**: The Odds
   API does not carry historical player-prop odds before **2023-05-03** —
   confirmed empirically against 12,822 real requests, all rejected with
