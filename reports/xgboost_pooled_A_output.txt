@@ -1,0 +1,55 @@
+pooled dataset: n=74,383 across 10 markets, 2026-05-17 00:00:00 -> 2026-07-27 00:00:00
+market
+hits                  15005
+home_runs             14604
+total_bases           14351
+rbis                  11576
+runs_scored            6859
+totals                 4204
+spreads                3367
+pitcher_strikeouts     1949
+h2h                    1670
+pitcher_outs            798
+dtype: int64
+
+usable features: 60 (59 score_* factors + market_code)
+TRAIN n=55,787  TEST n=18,596  (75/25 chronological split)
+
+AUC  TRAIN=0.682  TEST=0.692
+ACCURACY (0.5 threshold)  TRAIN=0.630  TEST=0.663
+(for reference: ~90%+ raw accuracy on a real win/loss task like this would itself be a red flag for leakage, not a target -- not chased here, reported as-is)
+
+top 15 learned feature weights (pooled, cross-market):
+  score_batter_line_hit_rate               0.0773
+  score_hitter_streak_fatigue              0.0679
+  score_lineup_consistency                 0.0668
+  market_code                              0.0605
+  score_batter_launch_angle                0.0527
+  score_umpire_k_zone                      0.0505
+  score_batter_form                        0.0412
+  score_batter_power_rate                  0.0334
+  score_ballpark_factor                    0.0281
+  score_pitcher_hr_rate                    0.0253
+  score_pitcher_hr_per_9                   0.0216
+  score_batter_sweet_spot                  0.0206
+  score_batter_exit_velo_trend             0.0186
+  score_recent_run_form                    0.0179
+  score_recent_at_bats                     0.0168
+
+-- pooled model, betting on edge, minus-money only, TEST holdout -- overall and per-market --
+  ALL MARKETS edge>0.0   n=3550   WR=64.7  ROI=-0.05  CI=[-2.55,2.44]  fail
+  ALL MARKETS edge>0.03  n=1977   WR=62.1  ROI=-0.81  CI=[-4.29,2.67]  fail
+  ALL MARKETS edge>0.05  n=1281   WR=60.0  ROI=-2.1  CI=[-6.55,2.34]  fail
+  ALL MARKETS edge>0.08  n=521    WR=61.0  ROI=2.77  CI=[-4.37,9.91]  fail
+
+  per-market breakdown at edge>0.03:
+    hits                 n=442    ROI=1.31  CI=[-6.91,9.52]  fail
+    total_bases          n=823    ROI=-5.25  CI=[-10.61,0.1]  fail
+    rbis                 n=175    ROI=4.99  CI=[-5.1,15.07]  fail
+    home_runs            n=136    ROI=3.48  CI=[-4.66,11.63]  fail
+    runs_scored          n=336    ROI=1.38  CI=[-7.11,9.87]  fail
+    pitcher_strikeouts   n=0      ROI=None  CI=[None,None]  fail
+    pitcher_outs         n=0      ROI=None  CI=[None,None]  fail
+    h2h                  n=22     ROI=-14.58  CI=[-54.64,25.48]  fail
+    spreads              n=4      ROI=-8.33  CI=[-112.06,95.4]  fail
+    totals               n=39     ROI=17.71  CI=[-11.91,47.33]  fail

@@ -1,0 +1,13 @@
+== always bet the side the market itself favors (market_prob>0.5) -- zero modeling, per market ==
+                         n  accuracy   roi_pct
+market                                        
+batter_home_runs     93956  0.884020 -2.197473
+batter_rbis         104518  0.711016 -1.289123
+batter_hits         110468  0.586052 -6.880527
+batter_total_bases  109651  0.571513 -4.189491
+h2h                   1754  0.550741 -3.467426
+pitcher_strikeouts   10166  0.540822 -4.026869
+spreads               1807  0.535141 -5.369199
+totals                4846  0.487825 -7.084238
+
+overall (all markets pooled): accuracy=0.6738 n=437166 roi%=-3.78
