@@ -1,0 +1,46 @@
+C:\Sports\MLB Markets\scripts\addendum40_pitcher_k_lineup_strategy.py:150: FutureWarning: DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+  team_game = team_game.groupby("team_id", group_keys=False).apply(roll)
+building real team game log, Elo, L10, bullpen fatigue, park factors (existing pipeline)...
+extending with Addendum 37 historical features (unmodified import): point-in-time bullpen quality, both-starters + opposing-starter statcast quality, park dims...
+
+computing new Addendum 40 feature: opp_lineup_k_rate (rolling N=15-game team batting K-rate, point-in-time, no lookahead, computed directly from boxscore)...
+    [team_k_rate dedup] 52 duplicate (team_id, game_pk) rows found (pre-existing game_pk/game_date data issue, same class as Addendum 37's `games` dedup) -- kept earliest game_date per pair, 20204 rows remain
+  team_k_rate table: 20204 (team_id, game_pk) rows, 99.8% non-null overall
+
+=== Addendum 40: opp_lineup_k_rate added to pitcher_strikeouts, two isolated configurations, same tuning discipline as Addendum 34/37 ===
+
+--- Configuration (a): FEATURES_V2 + opp_lineup_k_rate ---
+  raw warehouse pool (pitcher_strikeouts, over+under rows): n=18779
+  after build_features_v2 (Addendum 37, unmodified): n=12679
+    [join-fan-out check (config a)] n0=12679 -> +box_ids(pitcher team_id)=12679 -> +game_ctx(home/away)=12679 -> +team_k_rate(opp_lineup_k_rate)=12679
+  (a) FEATURES_V2 + opp_lineup_k_rate
+    features (26): ['side_code', 'market_prob', 'elo_diff', 'l10_diff', 'fatigue_diff', 'runs_factor', 'hr_factor', 'k_factor', 'hits_factor', 'bullpen_era_diff', 'bullpen_k9_diff', 'starter_xera_diff', 'starter_era_diff', 'starter_xba_diff', 'opp_sp_xera', 'opp_sp_era', 'opp_sp_xba', 'lf_distance', 'cf_distance', 'rf_distance', 'lf_wall_height', 'cf_wall_height', 'rf_wall_height', 'cf_compass_degrees', 'is_dome', 'opp_lineup_k_rate']
+    n(train/test)=9508/3171
+    opp_lineup_k_rate coverage (% non-null, full pool): 100.0%
+    best CV AUC=0.540  params={'learning_rate': 0.02, 'max_depth': 3, 'min_child_weight': 10, 'n_estimators': 200}
+    edge>0.0 bets: n=362  ROI=-3.87  CI=[-12.95,5.21]  FAIL
+
+--- Configuration (b): baseline features + opp_lineup_k_rate only (isolated) ---
+  raw warehouse pool (pitcher_strikeouts, over+under rows): n=18779
+  after build_features (original baseline, unmodified): n=15693
+    [join-fan-out check (config b)] n0=15693 -> +box_ids(pitcher team_id)=15693 -> +game_ctx(home/away)=15693 -> +team_k_rate(opp_lineup_k_rate)=15693
+  (b) baseline FEATURES + opp_lineup_k_rate
+    features (10): ['side_code', 'market_prob', 'elo_diff', 'l10_diff', 'fatigue_diff', 'runs_factor', 'hr_factor', 'k_factor', 'hits_factor', 'opp_lineup_k_rate']
+    n(train/test)=11769/3924
+    opp_lineup_k_rate coverage (% non-null, full pool): 100.0%
+    best CV AUC=0.596  params={'learning_rate': 0.02, 'max_depth': 5, 'min_child_weight': 10, 'n_estimators': 200}
+    edge>0.0 bets: n=658  ROI=-9.76  CI=[-16.53,-2.99]  FAIL
+
+=== SUMMARY: pitcher_strikeouts, opp_lineup_k_rate feature, both configurations ===
+
+BEFORE [Addendum 37, Addendum 37 FEATURES_V2 (bullpen+starters+park), no opp_lineup_k_rate]: n=360 ROI=-3.81  FAIL
+
+(a) FEATURES_V2 + opp_lineup_k_rate
+  n(train/test)=9508/3171  CV_AUC=0.540  opp_lineup_k_rate coverage=100.0%
+  test: n=362  ROI=-3.87  CI=[-12.95,5.21]  FAIL
+
+(b) baseline FEATURES + opp_lineup_k_rate
+  n(train/test)=11769/3924  CV_AUC=0.596  opp_lineup_k_rate coverage=100.0%
+  test: n=658  ROI=-9.76  CI=[-16.53,-2.99]  FAIL
+
+0 of 2 configurations pass the official gate rule. Reported as-is, pass or fail, single pre-specified grid/cut/N -- same discipline as every prior addendum. A FAIL here is a valid, reportable result, not grounds to search further thresholds or feature cuts against this test set.

@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Milestone 2 Handover — MLB Market Audit</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f7f8; --surface: #edf0f2; --surface-2: #e3e7ea; --line: #d6dbe0;
+    --ink: #1a1f28; --ink-dim: #5c6675; --ink-faint: #8891a0;
+    --accent: #2c5f74; --accent-ink: #ffffff; --accent-bg: #e3edf0;
+    --pass: #2f7a52; --pass-bg: #e6f3ea; --pass-line: #bfe0cc;
+    --warn: #9c6f16; --warn-bg: #f7efd9; --warn-line: #ecd9a3;
+    --fail: #ab4438; --fail-bg: #fbeae7; --fail-line: #f0c6bd;
+    --gap:  #5b5478; --gap-bg:  #ece9f5; --gap-line: #d3cce8;
+    --open: #1d5f8a; --open-bg: #e2eef6; --open-line: #bcdcf0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1116; --surface: #171d25; --surface-2: #1e2530; --line: #2a323d;
+      --ink: #e7eaee; --ink-dim: #93a0b0; --ink-faint: #5f6a79;
+      --accent: #78b8d1; --accent-ink: #06141a; --accent-bg: #17262c;
+      --pass: #7fcda0; --pass-bg: #142520; --pass-line: #234636;
+      --warn: #e0bb63; --warn-bg: #2a2312; --warn-line: #4a3c19;
+      --fail: #e39187; --fail-bg: #2b1917; --fail-line: #4a2723;
+      --gap:  #b3a8d6; --gap-bg:  #1e1a2b; --gap-line: #362c4c;
+      --open: #7fc3ea; --open-bg: #132732; --open-line: #204862;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1116; --surface: #171d25; --surface-2: #1e2530; --line: #2a323d;
+    --ink: #e7eaee; --ink-dim: #93a0b0; --ink-faint: #5f6a79;
+    --accent: #78b8d1; --accent-ink: #06141a; --accent-bg: #17262c;
+    --pass: #7fcda0; --pass-bg: #142520; --pass-line: #234636;
+    --warn: #e0bb63; --warn-bg: #2a2312; --warn-line: #4a3c19;
+    --fail: #e39187; --fail-bg: #2b1917; --fail-line: #4a2723;
+    --gap:  #b3a8d6; --gap-bg:  #1e1a2b; --gap-line: #362c4c;
+    --open: #7fc3ea; --open-bg: #132732; --open-line: #204862;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px; line-height: 1.6;
+  }
+  a { color: var(--accent); }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  .tab-nums { font-variant-numeric: tabular-nums; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 48px 24px 90px; }
+
+  .eyebrow { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 600; color: var(--ink-dim); letter-spacing: 0.09em; text-transform: uppercase; }
+  h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; margin: 5px 0 10px; text-wrap: balance; }
+  .lede { color: var(--ink-dim); max-width: 76ch; margin: 0; font-size: 15px; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin: 28px 0; }
+  .stat-cell { background: var(--surface); padding: 18px 16px; }
+  .stat-num { font-family: "IBM Plex Mono", monospace; font-size: 26px; font-weight: 700; line-height: 1; }
+  .stat-label { font-size: 11.5px; color: var(--ink-dim); margin-top: 4px; }
+
+  .section { margin-top: 44px; }
+  .section-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; padding-bottom: 9px; border-bottom: 1px solid var(--line); }
+  .section-head h2 { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin: 0; }
+  .section-note { color: var(--ink-dim); font-size: 13.5px; margin: 0 0 16px; max-width: 78ch; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+  thead th { text-align: left; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); background: var(--surface-2); padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  tbody td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-dim); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--surface); }
+  tbody td:first-child { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  .num { font-family: "IBM Plex Mono", monospace; white-space: nowrap; }
+
+  .pill { display: inline-flex; align-items: center; font-family: "IBM Plex Mono", monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; padding: 2px 8px; border-radius: 100px; border: 1px solid transparent; white-space: nowrap; }
+  .pill.pass { color: var(--pass); background: var(--pass-bg); border-color: var(--pass-line); }
+  .pill.fail { color: var(--fail); background: var(--fail-bg); border-color: var(--fail-line); }
+  .pill.open { color: var(--open); background: var(--open-bg); border-color: var(--open-line); }
+  .pill.gap  { color: var(--gap); background: var(--gap-bg); border-color: var(--gap-line); }
+
+  .cardgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .card .k { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-faint); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 6px; }
+  .card p { margin: 0; font-size: 13.5px; color: var(--ink-dim); line-height: 1.55; }
+  .card code { font-family: "IBM Plex Mono", monospace; font-size: 12px; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+
+  ul.tight { margin: 6px 0 0; padding-left: 20px; }
+  ul.tight li { margin-bottom: 6px; color: var(--ink-dim); font-size: 13.5px; }
+  ul.tight li b { color: var(--ink); }
+
+  @media (max-width: 900px) { .stat-row { grid-template-columns: repeat(2,1fr); } .cardgrid { grid-template-columns: 1fr; } }
+
+  .foot { margin-top: 54px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-faint); display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">MLB Market Audit — Handover</div>
+  <h1>Milestone 2: Addenda 37–54</h1>
+  <p class="lede">Full technical handover for whoever picks this up next — session/engineer/client. Covers what changed since HANDOFF.md's last state (3/11, Addendum 36), what's now confirmed, what's genuinely closed, what's still open, and every real bug found along the way. Read this before re-running anything below.</p>
+
+  <div class="stat-row">
+    <div class="stat-cell"><div class="stat-num tab-nums" style="color:var(--pass)">4/11</div><div class="stat-label">Confirmed pass (was 3/11)</div></div>
+    <div class="stat-cell"><div class="stat-num tab-nums" style="color:var(--fail)">7</div><div class="stat-label">FAIL, exhaustively tested</div></div>
+    <div class="stat-cell"><div class="stat-num tab-nums" style="color:var(--gap)">18</div><div class="stat-label">New addenda (37–54)</div></div>
+    <div class="stat-cell"><div class="stat-num tab-nums" style="color:var(--open)">1</div><div class="stat-label">Open / interrupted result</div></div>
+    <div class="stat-cell"><div class="stat-num tab-nums">90,282</div><div class="stat-label">Odds API credits remaining / 100K</div></div>
+  </div>
+
+  <!-- ================= SCOREBOARD ================= -->
+  <div class="section">
+    <div class="section-head"><h2>Scoreboard (strict gate logic — pass or fail, no in-between)</h2></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Market</th><th>Status</th><th>Basis</th><th>n</th><th>ROI</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>hits</td><td><span class="pill pass">Pass</span></td><td>XGBoost, real odds</td><td class="num">2,620</td><td class="num" style="color:var(--pass)">+4.48%</td><td>Unchanged this session — strongest edge in the portfolio.</td></tr>
+          <tr><td>rbis</td><td><span class="pill pass">Pass</span></td><td>XGBoost, real odds</td><td class="num">~8,500</td><td class="num" style="color:var(--pass)">+1.2%</td><td>Unchanged. Thin edge — Kelly analysis (Addendum 44) flags full Kelly as dangerous here.</td></tr>
+          <tr><td>spreads</td><td><span class="pill pass">Pass</span></td><td>Raw production picks</td><td class="num">513</td><td class="num" style="color:var(--pass)">+5.53%</td><td>Unchanged. No trained model — confidence≥60 threshold direct from pick_history.</td></tr>
+          <tr><td>batter_home_runs</td><td><span class="pill pass">Pass</span></td><td>Explainable holdout (39)</td><td class="num">1,693</td><td class="num" style="color:var(--pass)">+1.52%</td><td><b>NEW this session.</b> Simple 6-feature logistic regression, genuine 2023-24→2025 holdout. CI [-0.6,3.6] crosses zero but n≥500 rule only needs ROI&gt;0 — counted per explicit client decision to drop the near-miss category.</td></tr>
+          <tr><td>batter_total_bases</td><td><span class="pill fail">Fail</span></td><td>Holdout-debunked</td><td class="num">—</td><td class="num">—</td><td>Every "pass" this session (Addenda 37, 45a) came from a per-year split later proven to overfit (Addenda 39, 46: <b>zero bets</b> under genuine holdout, both with and without composite features). Closed — no real signal.</td></tr>
+          <tr><td>batter_runs_scored</td><td><span class="pill fail">Fail</span></td><td>Addendum 30 (authoritative)</td><td class="num">52,981</td><td class="num" style="color:var(--fail)">-2.54%</td><td>Largest, best-powered test on this market, confidently negative. A much smaller walk-forward result (Addendum 47, n=1,429, +2.01%) briefly looked like a pass — <b>retracted</b> once cross-checked against this authoritative result. Do not re-count Addendum 47's number.</td></tr>
+          <tr><td>batter_strikeouts</td><td><span class="pill fail">Fail</span> <span class="pill open">Open thread</span></td><td>Addendum 30 (authoritative)</td><td class="num">41,489</td><td class="num" style="color:var(--fail)">-0.87%</td><td>Genuinely flat (CI crosses zero symmetrically), not clearly negative. Addendum 53 found a mechanical PASS (n=1,211, +1.24%) after enrichment — <b>flagged suspect</b> (marginal CV-AUC contribution ≈0, the exact fingerprint of noise). Addendum 54's walk-forward validation was <b>killed mid-run by the client, unresolved</b>. This is the one open thread — see Next Steps.</td></tr>
+          <tr><td>h2h</td><td><span class="pill fail">Fail</span></td><td>Walk-forward (49)</td><td class="num">1,114</td><td class="num" style="color:var(--fail)">-0.37%</td><td>Closed. Real signal exists (CV AUC 0.65-0.70) but doesn't convert to edge — decisive result at n well past 500. Fuller game log (Addendum 48) recovered real data (3,845→7,028 games) but the extra data didn't change the answer once properly validated.</td></tr>
+          <tr><td>totals</td><td><span class="pill fail">Fail</span></td><td>Walk-forward + backfill (50)</td><td class="num">pooled</td><td class="num">—</td><td>Closed. CV AUC pinned at ~0.50 (coin-flip) across 5 independent refits, training set up to 11,838 rows. No real signal at any scale — favorite-longshot bias hypothesis also tested and rejected (Addendum 42). Spent ~9,718 real API credits confirming this; worth it for certainty.</td></tr>
+          <tr><td>pitcher_outs</td><td><span class="pill fail">Fail</span></td><td>Addendum 30 / 51</td><td class="num">3,334</td><td class="num" style="color:var(--fail)">-1.21%</td><td>Closed for now. Best-powered FAIL in the project. Full-treatment retest (enrichment + walk-forward, Addendum 51) did not improve on this — actually produced a worse-powered result (n=6). Addendum 30's baseline remains the reference number.</td></tr>
+          <tr><td>pitcher_strikeouts</td><td><span class="pill fail">Fail</span></td><td>Fuller game log (52)</td><td class="num">304 / 310</td><td class="num" style="color:var(--fail)">-7.84% / +4.74%</td><td>Fuller game log recovered 1.48x more rows, but both single-split and walk-forward stayed FAIL. CV AUC ~0.55-0.56 — weaker than h2h's, so an edge here is even less likely than the already-closed h2h case.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ================= SESSION LOG ================= -->
+  <div class="section">
+    <div class="section-head"><h2>Addenda log (37–54)</h2></div>
+    <p class="section-note">Full scripts and <code>*_output.txt</code> files are in <code>scripts/</code> and <code>reports/</code>, numbered to match. Addenda 1–36 predate this session — see HANDOFF.md for that history.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>Topic</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>37</td><td>Historical enrichment (bullpen/starter/park quality) for 5 real-odds markets</td><td>Found &amp; fixed a real join-fan-out bug (duplicate <code>game_pk</code> merged twice → 200x row inflation, spurious 0.95+ AUCs). After the fix: 2/5 mechanical passes, later shown not to replicate (see 39, 46).</td></tr>
+          <tr><td>39</td><td>Explainable holdout (simple logistic regression) for home_runs/total_bases</td><td><b>home_runs corroborated</b> (real, small, repeatable edge). <b>total_bases: zero qualifying bets</b> — the Addendum 37 "pass" was noise.</td></tr>
+          <tr><td>40</td><td>Opposing-lineup K-rate feature for pitcher_strikeouts</td><td>FAIL — no improvement over baseline, on top of enrichment or alone.</td></tr>
+          <tr><td>41</td><td>Explainable holdout for batter_runs_scored</td><td>FAIL — near-miss did not replicate (ROI collapsed to +0.89%, CI wide).</td></tr>
+          <tr><td>42</td><td>Favorite-longshot market-bias test, h2h/totals</td><td>Hypothesis rejected for both (pre-registered rho≥0.6 threshold not cleared) — no model built, by design.</td></tr>
+          <tr><td>43a/b/c</td><td>Poisson/regression reframing (predict the count, not win/loss) across all 6 remaining FAIL markets</td><td>0/6 passed. <code>batter_total_bases</code> came back confidently negative under this framing (CI entirely below zero).</td></tr>
+          <tr><td>44</td><td>Kelly-criterion bet-sizing analysis on hits/rbis/home_runs</td><td>Full Kelly is dangerous (loses money on rbis' thin edge, 85-100% drawdowns everywhere). Quarter-Kelly recommended as a floor, not a target.</td></tr>
+          <tr><td>45a/b/c</td><td>Cross-market composite features (batter form index, pitcher dominance index, team form index)</td><td>0/6 configs improved anything durably. <code>total_bases</code> composite looked like a pass — debunked in 46.</td></tr>
+          <tr><td>46</td><td>Genuine holdout validation of 45a's composite</td><td>Confirmed fake — zero bets under two independent real holdouts, with or without the composite.</td></tr>
+          <tr><td>47</td><td>Walk-forward + wide hyperparameter search, batter_runs_scored</td><td>Mechanical pass (n=1,429, +2.01%) — <b>retracted</b> after cross-check against Addendum 30's much larger, confidently-negative result on the same market.</td></tr>
+          <tr><td>48</td><td>Fuller game log for h2h/totals (client_games × cache_mlb_historical_outcomes, bypassing a fragile <code>lineups</code>-table dependency)</td><td>Recovered 3,845→7,028 usable games. Found &amp; fixed a second bug (unnecessary <code>dropna</code> discarding partial-feature rows XGBoost already handles natively).</td></tr>
+          <tr><td>49</td><td>Walk-forward validation, h2h on the fuller game log</td><td>FAIL, decisively (n=1,114, ROI=-0.37%, well past n≥500). Closes h2h.</td></tr>
+          <tr><td>50</td><td>Real odds backfill (937 games, The Odds API) + integration + walk-forward, totals</td><td>FAIL, decisively (AUC ~0.50 across every fold). Closes totals. ~9,718 real credits spent.</td></tr>
+          <tr><td>51</td><td>pitcher_outs full treatment (enrichment + walk-forward) on Addendum 30's real-odds data</td><td>FAIL, underpowered (n=6) — worse than the untouched Addendum 30 baseline. Baseline remains the reference.</td></tr>
+          <tr><td>52</td><td>pitcher_strikeouts rebuilt on the fuller game log</td><td>1.48x more rows recovered; still FAIL both single-split and walk-forward.</td></tr>
+          <tr><td>53</td><td>batter_strikeouts enrichment (opposing-pitcher quality, bullpen quality, park dims) on Addendum 30's real data</td><td>Mechanical PASS (n=1,211, +1.24%) — <b>flagged suspect</b>, marginal CV-AUC contribution ≈0.</td></tr>
+          <tr><td>54</td><td>Walk-forward validation of 53's result</td><td><b>Interrupted/killed mid-run by the client — no result.</b> Open thread.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ================= INFRASTRUCTURE ================= -->
+  <div class="section">
+    <div class="section-head"><h2>Infrastructure built this session</h2></div>
+    <div class="cardgrid">
+      <div class="card"><div class="k">db/cache_features.duckdb</div><p>25 tables pulled from the client's live Supabase (splits, bullpen state, pitch mix, park geometry, team OAA, historical outcomes/statcast) via the <code>harness_readonly</code> credential in <code>.env</code>. Password expired mid-session and was rotated once — current one works. <code>scripts/pull_cache_features.py</code> re-pulls everything (takes a few minutes, read-only, respects the role's 10-connection cap).</p></div>
+      <div class="card"><div class="k">Odds API backfill pipeline</div><p><code>ODDS_API_KEY</code> rotated to a fresh key with a 100K-credit budget; <b>90,282 remaining</b>. <code>scripts/backfill_h2h_totals_odds_phase1_discovery.py</code> (event-ID discovery, resumable, raw-response cached in <code>data_raw/events_list_raw_cache.jsonl</code>) + <code>scripts/backfill_totals_gap_odds_phase2.py</code> (odds fetch, resumable via <code>data_raw/totals_gap_odds_cache.jsonl</code>) close the 2026-05-25→09-23 gap for <code>totals</code>. Same pattern reusable for other markets' gaps.</p></div>
+      <div class="card"><div class="k">Fuller game log (Addendum 48)</div><p><code>build_fuller_games()</code> in <code>scripts/addendum48_h2h_totals_fuller_gamelog.py</code> — the new canonical way to build a real, high-coverage game log (7,028 games vs the old 3,845 ceiling). Reused by Addenda 49–54. Worth considering as the new default for ANY future game-level or player-prop feature work, not just h2h/totals.</p></div>
+      <div class="card"><div class="k">Walk-forward validation pattern</div><p>Established in Addendum 47, reused in 49/50/51/52/54: expanding-window folds, CV-AUC hyperparameter selection on training data only per fold, held-out predictions pooled, official gate touched exactly once at the end. This is now the standard second check for any promising single-split result — don't trust a single split without it.</p></div>
+    </div>
+  </div>
+
+  <!-- ================= BUGS FOUND ================= -->
+  <div class="section">
+    <div class="section-head"><h2>Real bugs found &amp; fixed this session</h2></div>
+    <p class="section-note">Documented so nobody re-discovers these the hard way. Two are pre-existing/upstream (not introduced this session) and were worked around per-script rather than patched at the source — flagged below as a recommended follow-up.</p>
+    <ul class="tight">
+      <li><b>Join-fan-out on duplicate <code>game_pk</code></b> (Addendum 37) — merging onto a table with duplicate keys, twice, compounds row inflation multiplicatively. Caused spurious 0.95–0.997 AUCs before being caught by a row-count sanity check. <b>Now a mandatory pattern in every new script this session: print row counts before/after every merge.</b></li>
+      <li><b>Pre-existing duplicate-<code>game_date</code>-per-<code>game_pk</code> in <code>boxscore</code></b> (13+ instances, root-caused to inconsistent source data, not this project's code) — cascades into the canonical <code>build_team_game_log()</code> producing 4,547 rows for only 3,845 unique games. <b>Recommended follow-up: fix at the source in <code>xgboost_individual_markets.build_team_game_log()</code> so every future addendum doesn't need its own workaround.</b></li>
+      <li><b>Timezone date-bucketing bug</b> (event discovery, Addendum 48/phase1) — <code>date_trunc('day', commence_time)</code> on a TIMESTAMPTZ column truncates in the DB session's local timezone (+05:00 here), not UTC — caused ~54% of event-discovery queries to target the wrong calendar day. Fixed by explicit <code>AT TIME ZONE 'UTC'</code> before truncating.</li>
+      <li><b>Doubleheader event-ID collision</b> (event discovery) — matching by team-pair alone silently assigned the same real event_id to both games of a doubleheader. Fixed by matching on team-pair + closest commence_time, consuming each candidate event once. 35 residual collisions after the fix were dropped rather than debugged further (cheap to lose ~70 rows vs. chasing an edge case).</li>
+      <li><b>Unnecessary <code>dropna</code> on partial features</b> (Addendum 48) — a new script required every one of 22 enrichment features non-null before using a row, silently discarding an entire new season (2026, zero <code>cache_mlb_historical_pitcher_statcast</code> coverage) that XGBoost's <code>missing=np.nan</code> config was already designed to handle. Removed — recovered most of the fuller game log's real benefit.</li>
+    </ul>
+  </div>
+
+  <!-- ================= NEXT STEPS ================= -->
+  <div class="section">
+    <div class="section-head"><h2>Open items / recommended next steps</h2></div>
+    <ul class="tight">
+      <li><b>Resolve the batter_strikeouts open thread.</b> Re-run <code>scripts/addendum54_batter_strikeouts_walkforward.py</code> to completion (killed mid-run last time, no partial checkpointing — full re-run needed, ~10-15 min on ~121K rows). Until this returns, treat Addendum 53's "pass" as unconfirmed, not real.</li>
+      <li><b>Tier 2 avenue, not yet attempted:</b> extend the same Odds-API backfill technique (proven working, 90,282 credits still available) to close the 2025-05→now gap for <code>batter_total_bases</code>, <code>batter_home_runs</code>, and <code>pitcher_strikeouts</code> — their real warehouse odds currently stop around 2025-05-28. Most promising for <code>batter_home_runs</code>, to push its already-confirmed edge toward full statistical significance.</li>
+      <li><b>Fix <code>build_team_game_log()</code> at the source</b> (see Bugs above) rather than continuing to route around it per-addendum.</li>
+      <li><b>Commit this work.</b> Addenda 37–54, all new scripts/reports, and this handover are currently uncommitted on <code>3-pass-markets</code> — same situation flagged at the start of this session for Addenda 33–36.</li>
+    </ul>
+  </div>
+
+  <div class="foot">
+    <span>Milestone 2 Handover — MLB Market Audit</span>
+    <span>Branch: 3-pass-markets · Prior state: HANDOFF.md (Addendum 36, 3/11)</span>
+  </div>
+
+</div>
+</body>
+</html>

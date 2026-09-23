@@ -1,0 +1,84 @@
+==============================================================================
+Addendum 38: pick_history-only enrichment, pitcher_outs / runs_scored
+New cache tables joined point-in-time (ASOF <= game_date, never future),
+combined with existing score_* columns. CV-AUC-only selection, single
+pre-registered PARAM_GRID reused from tuned_xgboost_4_markets.py,
+official gate rule scored once on the untouched chronological test split.
+==============================================================================
+  pitcher_outs join coverage (n_base=798):
+    ck_last3_era                        545/798  ( 68.3%)
+    ck_last3_ip                         545/798  ( 68.3%)
+    ck_last3_starts                     545/798  ( 68.3%)
+    ck_inn1_era                         531/798  ( 66.5%)
+    ck_inn1_ip                          531/798  ( 66.5%)
+    ck_inn1_bf                          531/798  ( 66.5%)
+    ck_inn1_walks                       531/798  ( 66.5%)
+    ck_inn1_hits                        531/798  ( 66.5%)
+    ck_inn1_pitches                     531/798  ( 66.5%)
+    ck_bullpen_era                      798/798  (100.0%)
+    ck_bullpen_whip                     798/798  (100.0%)
+    ck_bullpen_ip                       798/798  (100.0%)
+    ck_bullpen_k_per_9                  798/798  (100.0%)
+    ck_bullpen_bb_per_9                 798/798  (100.0%)
+    ck_bullpen_baa                      798/798  (100.0%)
+    ck_pen_ip_48h                       603/798  ( 75.6%)
+    ck_games_in_48h                     603/798  ( 75.6%)
+    ck_hl_arm_count                     603/798  ( 75.6%)
+    ck_hl_avg_era                       582/798  ( 72.9%)
+    ck_mh_starter_gs                    798/798  (100.0%)
+    ck_mh_starter_ip                    798/798  (100.0%)
+    ck_mh_pitches_per_inning            798/798  (100.0%)
+    ck_mh_avg_pitches_per_start         798/798  (100.0%)
+    ck_mh_avg_ip_per_start              798/798  (100.0%)
+    ck_mh_hook_index                    798/798  (100.0%)
+
+  === pitcher_outs ===
+  n=798  score_* kept: 14/95  new cache features kept: 25/25
+  n(train/test)=598/200  best CV AUC=0.517  test AUC=0.525  test acc=0.515
+  best params: {'learning_rate': 0.05, 'max_depth': 3, 'min_child_weight': 30, 'n_estimators': 500}
+    edge>0.0 (no threshold search, OFFICIAL VERDICT): n=45 ROI=-18.09 CI=[-45.21,9.03]  FAIL
+    best of 5 thresholds tried on this same test set: edge>0.0 n=45 ROI=-18.09 CI=[-45.21,9.03]  FAIL  (multiple-comparisons exposed)
+  runs_scored join coverage (n_base=6859):
+    ck_vs_lhp_pa                       6513/6859  ( 95.0%)
+    ck_vs_lhp_avg                      6513/6859  ( 95.0%)
+    ck_vs_lhp_obp                      6513/6859  ( 95.0%)
+    ck_vs_lhp_slg                      6513/6859  ( 95.0%)
+    ck_vs_lhp_ops                      6513/6859  ( 95.0%)
+    ck_vs_rhp_pa                       6526/6859  ( 95.1%)
+    ck_vs_rhp_avg                      6526/6859  ( 95.1%)
+    ck_vs_rhp_obp                      6526/6859  ( 95.1%)
+    ck_vs_rhp_slg                      6526/6859  ( 95.1%)
+    ck_vs_rhp_ops                      6526/6859  ( 95.1%)
+    ck_tb_k_rate                       6859/6859  (100.0%)
+    ck_tb_vs_lhp_k_rate                5233/6859  ( 76.3%)
+    ck_tb_vs_rhp_k_rate                5233/6859  ( 76.3%)
+    ck_tb_runs_per_game                6859/6859  (100.0%)
+    ck_tb_ops_season                   6859/6859  (100.0%)
+    ck_tb_obp_season                   5233/6859  ( 76.3%)
+    ck_tb_slg_season                   5233/6859  ( 76.3%)
+    ck_tb_iso_season                   5233/6859  ( 76.3%)
+    ck_tb_bb_rate                      5233/6859  ( 76.3%)
+    ck_tb_avg_season                   5233/6859  ( 76.3%)
+    ck_oaa                             5476/6859  ( 79.8%)
+    ck_oaa_infront                     5476/6859  ( 79.8%)
+    ck_oaa_lateral_to_3b               5476/6859  ( 79.8%)
+    ck_oaa_lateral_to_1b               5476/6859  ( 79.8%)
+    ck_oaa_behind                      5476/6859  ( 79.8%)
+    ck_oaa_actual_success_rate         5476/6859  ( 79.8%)
+    ck_oaa_expected_success_rate       5476/6859  ( 79.8%)
+    ck_oaa_diff_success_rate           5476/6859  ( 79.8%)
+
+  === runs_scored ===
+  n=6859  score_* kept: 45/95  new cache features kept: 28/28
+  n(train/test)=5,144/1,715  best CV AUC=0.623  test AUC=0.622  test acc=0.608
+  best params: {'learning_rate': 0.02, 'max_depth': 4, 'min_child_weight': 20, 'n_estimators': 200}
+    edge>0.0 (no threshold search, OFFICIAL VERDICT): n=434 ROI=3.59 CI=[-3.66,10.83]  FAIL
+    best of 5 thresholds tried on this same test set: edge>0.08 n=55 ROI=22.11 CI=[1.91,42.32]  PASS  (multiple-comparisons exposed)
+
+==============================================================================
+SUMMARY vs known baseline (score_* only, plain XGBoost, Addendum 27):
+  runs_scored (pick_history):  baseline test n=1,715 AUC=0.612  edge>0.0 n=514 ROI=-3.35% CI=[-10.11%,3.42%]  FAIL
+  pitcher_outs (pick_history): baseline test n=200   AUC=0.570  edge>0.0 n=8   ROI=-4.71% CI=[-75.38%,65.96%]  FAIL
+
+  pitcher_outs    n(train/test)=598/200  CV AUC=0.517  test AUC=0.525  edge>0.0: n=45 ROI=-18.09 CI=[-45.21,9.03]  FAIL  (official verdict)
+  runs_scored     n(train/test)=5,144/1,715  CV AUC=0.623  test AUC=0.622  edge>0.0: n=434 ROI=3.59 CI=[-3.66,10.83]  FAIL  (official verdict)

@@ -1,0 +1,80 @@
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+C:\Users\Abdual\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\sklearn\impute\_base.py:637: UserWarning: Skipping features without any observed values: ['opp_sp_xera' 'opp_sp_era' 'opp_sp_xba']. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(

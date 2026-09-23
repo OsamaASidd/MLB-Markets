@@ -1,0 +1,60 @@
+Addendum 44: Kelly-criterion bet-sizing backtest, hits/rbis (confirmed) + batter_home_runs (near-miss, addendum39 model). spreads EXCLUDED -- no calibrated per-bet model probability exists for it (raw confidence-threshold picks only, scripts/gate.py). No model/feature/split re-tuning anywhere below; same published pipelines, one addition: capture the per-bet frame.
+Starting bankroll (nominal): 100.0 units. Stake cap on every Kelly variant: 5% of current bankroll/bet (flat staking is not bankroll-proportional, so no cap applies to it).
+
+=== hits (CONFIRMED PASS) ===
+  bets extracted: n=2620  WR=66.1%  ROI=4.48%  CI=[1.52,7.43]  gate verdict=PASS
+  published baseline (reports/xgboost_individual_markets_output.txt): n=2620 ROI=4.48% CI=[1.52,7.43]
+  RECONSTRUCTION MATCHES COMMITTED-REPORT NUMBER EXACTLY: True
+  date range: 2023-08-27 00:00:00 -> 2025-05-28 00:00:00
+  strategy                n_bets    final_bankroll_x    max_drawdown_%
+  Flat (1 unit/bet)         2620               2.174             27.29
+  Full Kelly                2620              37.439             93.14
+  Half Kelly                2620              23.171             84.12
+  Quarter Kelly             2620                6.94             65.21
+
+=== rbis (CONFIRMED PASS) ===
+  bets extracted: n=8587  WR=72.4%  ROI=1.2%  CI=[-0.14,2.55]  gate verdict=PASS
+  published baseline (reports/xgboost_individual_markets_output.txt): n=8587 ROI=1.2% CI=[-0.14,2.55]
+  RECONSTRUCTION MATCHES COMMITTED-REPORT NUMBER EXACTLY: True
+  date range: 2023-08-28 00:00:00 -> 2025-05-28 00:00:00
+  strategy                n_bets    final_bankroll_x    max_drawdown_%
+  Flat (1 unit/bet)         8587               2.033             42.61
+  Full Kelly                8587               0.359             96.82
+  Half Kelly                8587               0.763             88.78
+  Quarter Kelly             8587               1.595             63.51
+
+NOTE on batter_home_runs: this is the near-miss flagged in HANDOFF.md, NOT a confirmed pass -- reported here for completeness on the bet-sizing question, clearly separated from the two confirmed markets above and below.
+
+=== batter_home_runs (NEAR-MISS, not confirmed) ===
+  bets extracted: n=3625  WR=83.6%  ROI=0.26%  CI=[-1.19,1.72]  gate verdict=PASS
+  date range: 2024-06-26 00:00:00 -> 2025-05-28 00:00:00
+  strategy                n_bets    final_bankroll_x    max_drawdown_%
+  Flat (1 unit/bet)         3625               1.096             33.56
+  Full Kelly                3625               0.628             88.54
+  Half Kelly                3625               1.004             81.81
+  Quarter Kelly             3625               1.115             55.69
+
+
+=== POOLED: hits + rbis only (CONFIRMED-ONLY picture) ===
+No artificial per-market confidence weight is applied -- each bet's own model_prob already determines its Kelly stake via that bet's edge; a confirmed market's typically larger, more consistent edge shows up naturally in its bets' sizing and share of the combined bankroll curve, without inventing a separate multiplier.
+  bets: n=11207  date range: 2023-08-27 00:00:00 -> 2025-05-28 00:00:00
+  strategy                n_bets    final_bankroll_x    max_drawdown_%
+  Flat (1 unit/bet)        11207               3.207              39.3
+  Full Kelly               11207              13.439             99.11
+  Half Kelly               11207               17.69             96.46
+  Quarter Kelly            11207              11.067             81.37
+
+=== POOLED: hits + rbis + batter_home_runs (CONFIRMED + NEAR-MISS picture) ===
+Included per the task's explicit request to show this view too -- batter_home_runs is NOT a confirmed pass (HANDOFF.md), so this pooled number should be read as illustrative of 'what if the near-miss also holds up', not as a validated result.
+  bets: n=14832  date range: 2023-08-27 00:00:00 -> 2025-05-28 00:00:00
+  strategy                n_bets    final_bankroll_x    max_drawdown_%
+  Flat (1 unit/bet)        14832               3.303              39.3
+  Full Kelly               14832               8.444             99.78
+  Half Kelly               14832              17.755              98.9
+  Quarter Kelly            14832               12.34             89.37
+
+
+=== Interpretation notes ===
+- Every bet already only enters this simulation because it cleared each market's own single pre-specified edge>0.0 cut -- f* is expected to be >0 for nearly all of them; the max(f*,0) clip exists as a safeguard, not because it binds often.
+- Full Kelly is included because it is the textbook-optimal fraction UNDER THE ASSUMPTION that the model's probabilities are exactly correct. Every model here has a modest, hard-won edge -- if its probabilities are even slightly miscalibrated (over-confident), full Kelly will over-bet and can produce large drawdowns or bankroll swings. That is the expected, important reason quarter/half Kelly exist as the standard conservative defaults, not evidence of a bug in this simulation.
+- The 5% per-bet stake cap is a standard risk-management guardrail, applied identically and never tuned to flatter any one strategy's numbers.

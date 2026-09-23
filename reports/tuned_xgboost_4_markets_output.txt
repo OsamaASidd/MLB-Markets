@@ -1,0 +1,21 @@
+building real team game log, Elo, L10, bullpen fatigue, park factors...
+
+=== Addendum 34: tuned XGBoost, single pre-specified grid, CV-AUC selection only ===
+  batter_home_runs
+    best CV AUC=0.915  params={'learning_rate': 0.03, 'max_depth': 5, 'min_child_weight': 10, 'n_estimators': 200}
+    test: n=2386  ROI=0.68  CI=[-1.07,2.42]  PASS
+  pitcher_strikeouts
+    best CV AUC=0.594  params={'learning_rate': 0.02, 'max_depth': 5, 'min_child_weight': 10, 'n_estimators': 200}
+    test: n=672  ROI=-12.15  CI=[-18.86,-5.45]  FAIL
+  parsed 10,787 real (event,player) rows from cache
+  5,451 rows matched to a real box-score outcome
+  pitcher_outs
+    best CV AUC=0.608  params={'learning_rate': 0.03, 'max_depth': 5, 'min_child_weight': 10, 'n_estimators': 200}
+    test: n=777  ROI=-3.75  CI=[-9.76,2.27]  FAIL
+  parsed 68,899 real (event,player) rows from cache
+  60,862 rows matched to a real box-score outcome
+  batter_strikeouts
+    best CV AUC=0.680  params={'learning_rate': 0.05, 'max_depth': 5, 'min_child_weight': 10, 'n_estimators': 500}
+    test: n=6223  ROI=-3.05  CI=[-4.98,-1.12]  FAIL
+
+[exited with code 0]

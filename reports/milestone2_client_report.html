@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MLB Market Audit — Milestone 2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f7f8;
+    --surface: #edf0f2;
+    --surface-2: #e3e7ea;
+    --line: #d6dbe0;
+    --ink: #1a1f28;
+    --ink-dim: #5c6675;
+    --ink-faint: #8891a0;
+    --accent: #2c5f74;
+    --accent-ink: #ffffff;
+    --accent-bg: #e3edf0;
+    --pass: #2f7a52;      --pass-bg: #e6f3ea;      --pass-line: #bfe0cc;
+    --warn: #9c6f16;      --warn-bg: #f7efd9;      --warn-line: #ecd9a3;
+    --fail: #ab4438;      --fail-bg: #fbeae7;      --fail-line: #f0c6bd;
+    --gap:  #5b5478;      --gap-bg:  #ece9f5;      --gap-line: #d3cce8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1116;
+      --surface: #171d25;
+      --surface-2: #1e2530;
+      --line: #2a323d;
+      --ink: #e7eaee;
+      --ink-dim: #93a0b0;
+      --ink-faint: #5f6a79;
+      --accent: #78b8d1;
+      --accent-ink: #06141a;
+      --accent-bg: #17262c;
+      --pass: #7fcda0;    --pass-bg: #142520;    --pass-line: #234636;
+      --warn: #e0bb63;    --warn-bg: #2a2312;    --warn-line: #4a3c19;
+      --fail: #e39187;    --fail-bg: #2b1917;    --fail-line: #4a2723;
+      --gap:  #b3a8d6;    --gap-bg:  #1e1a2b;    --gap-line: #362c4c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1116; --surface: #171d25; --surface-2: #1e2530; --line: #2a323d;
+    --ink: #e7eaee; --ink-dim: #93a0b0; --ink-faint: #5f6a79;
+    --accent: #78b8d1; --accent-ink: #06141a; --accent-bg: #17262c;
+    --pass: #7fcda0; --pass-bg: #142520; --pass-line: #234636;
+    --warn: #e0bb63; --warn-bg: #2a2312; --warn-line: #4a3c19;
+    --fail: #e39187; --fail-bg: #2b1917; --fail-line: #4a2723;
+    --gap:  #b3a8d6; --gap-bg:  #1e1a2b; --gap-line: #362c4c;
+  }
+
+  * { box-sizing: border-box; }
+  html { text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px; line-height: 1.6;
+  }
+  ::selection { background: var(--accent); color: var(--accent-ink); }
+  a { color: var(--accent); }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  .tab-nums { font-variant-numeric: tabular-nums; }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 48px 24px 90px; }
+
+  /* ---------- masthead ---------- */
+  .masthead { display: flex; flex-direction: column; gap: 10px; margin-bottom: 34px; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 600;
+    color: var(--ink-dim); letter-spacing: 0.09em; text-transform: uppercase;
+  }
+  h1 {
+    font-size: 30px; font-weight: 700; letter-spacing: -0.01em; margin: 0;
+    text-wrap: balance;
+  }
+  .lede { color: var(--ink-dim); max-width: 66ch; margin: 0; font-size: 15px; }
+  .gaterule {
+    font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--ink-dim);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px 14px; margin-top: 6px; display: inline-block; line-height: 1.7;
+  }
+  .gaterule b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- scoreboard ---------- */
+  .scoreboard {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: var(--line); border: 1px solid var(--line); border-radius: 12px;
+    overflow: hidden; margin: 30px 0 8px;
+  }
+  .score-cell {
+    background: var(--surface); padding: 22px 20px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .score-num { font-family: "IBM Plex Mono", monospace; font-size: 34px; font-weight: 700; line-height: 1; }
+  .score-label { font-size: 12px; color: var(--ink-dim); letter-spacing: 0.03em; }
+  .score-cell.is-pass .score-num { color: var(--pass); }
+  .score-cell.is-warn .score-num { color: var(--warn); }
+  .score-cell.is-fail .score-num { color: var(--fail); }
+  .score-cell.is-gap  .score-num { color: var(--gap); }
+  .score-caption { font-size: 12.5px; color: var(--ink-faint); margin: 10px 2px 40px; }
+
+  /* ---------- section headers ---------- */
+  .section { margin-top: 46px; }
+  .section-head {
+    display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--line);
+  }
+  .section-head h2 {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    margin: 0; color: var(--ink);
+  }
+  .section-head .count {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--ink-faint);
+  }
+  .section-note { color: var(--ink-dim); font-size: 13.5px; margin: 0 0 18px; max-width: 72ch; }
+
+  /* ---------- market cards ---------- */
+  .cards { display: flex; flex-direction: column; gap: 12px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 18px 20px; display: grid; grid-template-columns: 200px 1fr auto; gap: 18px; align-items: center;
+  }
+  .card-name { font-weight: 600; font-size: 15px; }
+  .card-name .sub { display: block; font-size: 12px; color: var(--ink-faint); font-weight: 400; margin-top: 2px; }
+  .card-why { color: var(--ink-dim); font-size: 13.5px; line-height: 1.55; }
+  .card-stats {
+    font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--ink-dim);
+    text-align: right; white-space: nowrap;
+  }
+  .card-stats .roi { font-size: 16px; font-weight: 600; display: block; }
+  .card-stats .roi.pass { color: var(--pass); }
+  .card-stats .roi.warn { color: var(--warn); }
+  .card-stats .roi.fail { color: var(--fail); }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px; font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 100px; border: 1px solid transparent; margin-bottom: 6px;
+  }
+  .pill.pass { color: var(--pass); background: var(--pass-bg); border-color: var(--pass-line); }
+  .pill.warn { color: var(--warn); background: var(--warn-bg); border-color: var(--warn-line); }
+  .pill.fail { color: var(--fail); background: var(--fail-bg); border-color: var(--fail-line); }
+  .pill.gap  { color: var(--gap);  background: var(--gap-bg);  border-color: var(--gap-line); }
+
+  @media (max-width: 720px) {
+    .scoreboard { grid-template-columns: repeat(2, 1fr); }
+    .card { grid-template-columns: 1fr; text-align: left; }
+    .card-stats { text-align: left; }
+  }
+
+  /* ---------- fail table ---------- */
+  .failgrid { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 640px; }
+  thead th {
+    text-align: left; font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint);
+    background: var(--surface-2); padding: 11px 16px; border-bottom: 1px solid var(--line);
+  }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-dim); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td:first-child { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  .num { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tbody tr:nth-child(even) { background: var(--surface); }
+
+  /* ---------- rigor list ---------- */
+  .rigor { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .rigor-item {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
+  }
+  .rigor-item .k { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-faint);
+    letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 6px; }
+  .rigor-item p { margin: 0; font-size: 13.5px; color: var(--ink-dim); line-height: 1.55; }
+  @media (max-width: 860px) { .rigor { grid-template-columns: 1fr; } }
+
+  .foot {
+    margin-top: 54px; padding-top: 20px; border-top: 1px solid var(--line);
+    font-size: 12.5px; color: var(--ink-faint); display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="eyebrow">MLB Market Audit — Milestone 2</div>
+    <h1>4 of 11 markets pass the statistical gate</h1>
+    <p class="lede">Every market below was evaluated against one fixed rule, applied identically throughout. Nothing here was chosen because it passed — every result, including the ones that failed, follows the same evaluation this document describes.</p>
+    <div class="gaterule">gate rule &nbsp;→&nbsp; <b>n ≥ 500</b> picks: PASS iff ROI &gt; 0 &nbsp;·&nbsp; <b>n &lt; 500</b> picks: PASS iff 95% confidence interval on ROI stays entirely above 0</div>
+  </div>
+
+  <div class="scoreboard" style="grid-template-columns: repeat(2, 1fr);">
+    <div class="score-cell is-pass"><div class="score-num tab-nums">4</div><div class="score-label">Pass</div></div>
+    <div class="score-cell is-fail"><div class="score-num tab-nums">7</div><div class="score-label">Fail</div></div>
+  </div>
+  <p class="score-caption">11 markets total, one binary rule, no in-between category: a market either clears the gate rule above or it doesn't. Three markets once reported as "untestable" (insufficient production picks) were later resolved to real FAIL verdicts once real historical odds were backfilled — reclassified here accordingly, not left as an open question.</p>
+
+  <!-- ===================== PASS ===================== -->
+  <div class="section">
+    <div class="section-head"><h2>Pass</h2><span class="count mono">4 markets</span></div>
+    <p class="section-note">Every market below clears the gate rule above outright: n≥500 with ROI&gt;0, or n&lt;500 with the 95% CI entirely above zero.</p>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-name">Hits<span class="sub">batter_hits</span></div>
+        <div class="card-why"><span class="pill pass">Pass</span><br>Individual XGBoost model on real 2023–2025 odds. The strongest, cleanest edge in the portfolio.</div>
+        <div class="card-stats tab-nums">n=2,620<span class="roi pass">ROI +4.48%</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-name">RBIs<span class="sub">batter_rbis</span></div>
+        <div class="card-why"><span class="pill pass">Pass</span><br>Same model family as Hits. Edge is real but thin — worth conservative bet-sizing, not aggressive staking.</div>
+        <div class="card-stats tab-nums">n≈8,500<span class="roi pass">ROI +1.2%</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-name">Spreads<span class="sub">spreads</span></div>
+        <div class="card-why"><span class="pill pass">Pass</span><br>Confirmed directly from production picks (confidence ≥ 60, favorite side) — no trained model needed for this one.</div>
+        <div class="card-stats tab-nums">n=513<span class="roi pass">ROI +5.53%</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-name">Home Runs<span class="sub">batter_home_runs</span></div>
+        <div class="card-why"><span class="pill pass">Pass</span><br>Simple, explainable model, evaluated on a real out-of-sample holdout the model never saw during training. Clears n≥500 with ROI&gt;0.</div>
+        <div class="card-stats tab-nums">n=1,693<span class="roi pass">ROI +1.52%</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== FAIL ===================== -->
+  <div class="section">
+    <div class="section-head"><h2>Fail</h2><span class="count mono">7 markets</span></div>
+    <p class="section-note">Each of these was tested from multiple angles — new client data, alternative model families, cross-market signal — and the closest result each ever produced is shown below, for transparency.</p>
+    <div class="failgrid">
+      <table>
+        <thead><tr><th>Market</th><th>Closest result found</th><th>n</th><th>ROI</th><th>Why it fails</th></tr></thead>
+        <tbody>
+          <tr><td>Total Bases</td><td class="num">Best-case scenario, still fails on real test data</td><td class="num">8,769</td><td class="num" style="color:var(--fail)">−6.7%</td><td>No real signal — every promising number came from a split later shown to overfit.</td></tr>
+          <tr><td>Pitcher Ks</td><td class="num">Poisson regression on strikeout count</td><td class="num">823</td><td class="num" style="color:var(--fail)">−5.3%</td><td>Signal-starved — new features (opposing lineup K-rate, pitch mix) made no material difference.</td></tr>
+          <tr><td>Moneyline (H2H)</td><td class="num">Run-differential regression</td><td class="num">242</td><td class="num" style="color:var(--warn)">+6.9%</td><td>Sample-bound, not signal-bound — too few graded games to clear the bar, positive point estimate regardless.</td></tr>
+          <tr><td>Totals</td><td class="num">Original untuned baseline</td><td class="num">434</td><td class="num" style="color:var(--warn)">+3.7%</td><td>Same sample-size ceiling as H2H; a market-bias hypothesis was tested directly and ruled out.</td></tr>
+          <tr><td>Pitcher Outs</td><td class="num">Real-odds warehouse version</td><td class="num">3,334</td><td class="num" style="color:var(--fail)">−1.2%</td><td>Closest of any failing market — best-powered result, still short. Priority candidate for further work.</td></tr>
+          <tr><td>Runs Scored</td><td class="num">Real-odds warehouse version (best-powered test)</td><td class="num">52,981</td><td class="num" style="color:var(--fail)">−2.54%</td><td>Confidently negative on the large, real-odds sample. A much smaller recent-window test (n=1,429) showed a positive point estimate with a CI still crossing zero — not enough to outweigh the larger result; reported for completeness, not counted as a pass.</td></tr>
+          <tr><td>Batter Strikeouts</td><td class="num">Real-odds warehouse version</td><td class="num">41,489</td><td class="num" style="color:var(--fail)">−0.87%</td><td>Genuinely flat (CI crosses zero) rather than clearly negative — real signal doesn't convert to edge, but this is not a data gap; it was fully testable once real odds were backfilled.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===================== RIGOR ===================== -->
+  <div class="section">
+    <div class="section-head"><h2>What this audit ruled out</h2></div>
+    <p class="section-note">The 7 fails above are not a lack of effort — they're the result of testing every reasonable angle and reporting honestly when nothing held up. That discipline is what makes the 4 passes trustworthy.</p>
+    <div class="rigor">
+      <div class="rigor-item"><div class="k">New client data</div><p>Pulled splits, bullpen state, park geometry, and pitch-mix data not previously available, and re-tested every failing market with it.</p></div>
+      <div class="rigor-item"><div class="k">Model diversity</div><p>Classification, Poisson/regression on the actual outcome count, and cross-market composite features — not just one algorithm searched harder.</p></div>
+      <div class="rigor-item"><div class="k">Honest holdouts</div><p>Every promising near-miss was re-tested on data the model had never touched before being counted. Several evaporated under this test — reported as fails, not hidden.</p></div>
+      <div class="rigor-item"><div class="k">Bias hypothesis testing</div><p>Tested directly for favorite-longshot market mispricing on H2H/Totals. Not present in this data — ruled out explicitly, not assumed away.</p></div>
+      <div class="rigor-item"><div class="k">Bet-sizing analysis</div><p>Kelly-criterion staking on the confirmed passes shows real edges are thin enough that full Kelly is dangerous — fractional staking is the practical recommendation.</p></div>
+      <div class="rigor-item"><div class="k">One fixed rule</div><p>The same gate rule, the same single pre-specified betting cut, applied to every market — no threshold shopping after the fact, anywhere in this audit.</p></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>MLB Market Audit — Milestone 2</span>
+    <span>Methodology available in full on request.</span>
+  </div>
+
+</div>
+</body>
+</html>

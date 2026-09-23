@@ -28,6 +28,23 @@ reports/backfill_batter_strikeouts_odds_log.txt
 # box-score pulls, real Odds API event mapping, and the all-fail
 # player-prop-market probe. Data only, not code.
 data_raw/mlb_schedule_2020_2022.csv
+
+# API-Sports.io MLB odds collector output (Addendum 35) -- grows every run,
+# real captured data, same treatment as the other raw caches above.
+db/api_sports_odds.duckdb
+
+# Milestone 2 (Addenda 48/50) h2h/totals real-odds gap backfill -- same
+# treatment as the other raw Odds API caches above: real market data and
+# in-progress run artifacts, kept local only.
+data_raw/event_id_mapping_h2h_totals_gap.csv
+data_raw/event_id_mapping_h2h_totals_gap.*.bak
+data_raw/events_list_raw_cache.jsonl
+data_raw/totals_gap_odds_cache.jsonl
+
+# db/cache_features.duckdb (Milestone 2) -- 25 tables pulled from the
+# client's live Supabase via harness_readonly; real production data,
+# regenerate locally with scripts/pull_cache_features.py.
+db/cache_features.duckdb
 data_raw/event_id_mapping_2020_2022.csv
 data_raw/pitcher_outs_odds_cache_2020_2022.jsonl
 data_raw/runs_scored_odds_cache_2020_2022.jsonl

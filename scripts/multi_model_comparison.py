@@ -9,11 +9,12 @@ can't be cherry-picked after the fact:
     XGBoost result (per-year 75/25 for the 5 warehouse/game markets,
     single chronological 75/25 for the 3 backfilled markets) -- reused
     exactly, not re-cut to find a friendlier split.
-  - 5 models per market: XGBoost (already the published baseline),
-    LightGBM, HistGradientBoostingClassifier, RandomForest, and a plain
-    logistic regression baseline. Not real Azure AutoML -- this project
-    has no Azure subscription/credentials, so this is the disclosed
-    substitute: a small, standard multi-algorithm comparison instead.
+  - 6 models per market: XGBoost (already the published baseline),
+    LightGBM, HistGradientBoostingClassifier, RandomForest, a plain
+    logistic regression baseline, and flaml AutoML (Addendum 33). Not
+    real Azure AutoML -- this project has no Azure subscription/
+    credentials, so flaml is the disclosed local substitute: it searches
+    its own model family/hyperparameters the way Azure AutoML would.
   - ONE pre-specified cut (edge>0.0, odds<0), the official gate rule,
     applied once per model per market. No threshold search folded into
     this pass -- if that's wanted later it's a separate, separately-
@@ -32,12 +33,22 @@ import duckdb
 import numpy as np
 import pandas as pd
 import xgboost as xgb
+from flaml import AutoML
 from lightgbm import LGBMClassifier
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.preprocessing import StandardScaler
+
+# Addendum 33: added flaml (Microsoft's open-source AutoML library) as a 6th
+# model, slotted into this SAME pre-registered pipeline -- same features,
+# same per-market split, same single edge>0.0 cut, same gate rule. This
+# project has no Azure subscription/credentials, so this is the disclosed
+# local substitute for "Azure AutoML" requested for this run. Every market's
+# result is reported below, pass or fail, same as the other 5 models -- no
+# threshold search, no reporting only if a target pass count is hit.
+FLAML_TIME_BUDGET_S = 60
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -186,6 +197,7 @@ def make_models():
             n_estimators=300, max_depth=6, min_samples_leaf=20, random_state=0, n_jobs=1,
         ),
         "logistic_regression": LogisticRegression(max_iter=1000),
+        "flaml_automl": AutoML(),
     }
 
 
@@ -219,6 +231,16 @@ def evaluate_market(pool, games, market_name, split_mode):
         elif name == "random_forest":
             model.fit(X_train_imp, y_train)
             test_pred = model.predict_proba(X_test_imp)[:, 1]
+        elif name == "flaml_automl":
+            # FLAML searches its own model family/hyperparameters within the
+            # time budget -- local substitute for Azure AutoML (no Azure
+            # credentials in this project). Imputed/scaled input, same as
+            # random_forest/logreg, since FLAML's search space includes
+            # models that can't take NaN natively.
+            model.fit(X_train_imp, y_train, task="classification",
+                      time_budget=FLAML_TIME_BUDGET_S, metric="log_loss",
+                      seed=0, verbose=0)
+            test_pred = model.predict_proba(X_test_imp)[:, 1]
         else:
             model.fit(X_train_raw, y_train)
             test_pred = model.predict_proba(X_test_raw)[:, 1]
@@ -244,7 +266,7 @@ def main():
     games, box = build_games_and_box(con)
 
     all_results = []
-    print("\n=== 5 warehouse/game FAIL markets x 5 models, single pre-specified cut (edge>0.0) ===")
+    print("\n=== 5 warehouse/game FAIL markets x 6 models, single pre-specified cut (edge>0.0) ===")
     for market_key, stat_col, kind in [
         ("batter_total_bases", "total_bases", "batter"),
         ("batter_home_runs", "home_runs", "batter"),
@@ -256,7 +278,7 @@ def main():
         pool = build_game_pool(con, games, market_key)
         all_results += evaluate_market(pool, games, market_key, "per_year")
 
-    print("\n=== 3 real-backfilled FAIL markets x 5 models, single pre-specified cut (edge>0.0) ===")
+    print("\n=== 3 real-backfilled FAIL markets x 6 models, single pre-specified cut (edge>0.0) ===")
     backfill_specs = [
         ("pitcher_outs", ROOT / "data_raw" / "pitcher_outs_odds_cache.jsonl", "pitcher_outs_stat",
          ["Pitcher"], True, "outs AS pitcher_outs_stat"),
@@ -278,7 +300,7 @@ def main():
 
     con.close()
 
-    print("\n=== SUMMARY: any PASS across 8 markets x 5 models, single pre-specified cut ===")
+    print("\n=== SUMMARY: any PASS across 8 markets x 6 models, single pre-specified cut ===")
     passes = [r for r in all_results if r["verdict"] == "PASS"]
     if not passes:
         print(f"  None. {len(all_results)} market/model combinations tested, zero passes on the "

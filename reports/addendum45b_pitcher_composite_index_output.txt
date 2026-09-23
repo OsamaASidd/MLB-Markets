@@ -1,0 +1,73 @@
+C:\Sports\MLB Markets\scripts\addendum45b_pitcher_composite_index.py:181: FutureWarning: DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+  bx = bx.groupby("player_id", group_keys=False).apply(roll)
+==============================================================================
+Addendum 45b: pitcher dominance index (rolling K-per-9 + rolling outs-per-start, N=5 trailing starts, z-scored composite) -- new feature tried on both pitcher_strikeouts and pitcher_outs, each market's own model/gate/verdict.
+==============================================================================
+
+building pitcher_dominance_index from real boxscore starts (2020-2026 coverage, point-in-time by construction)...
+  [pitcher_dominance_index dedup] 52 duplicate (player_id, game_pk) rows found (pre-existing game_pk/game_date data issue, same class as Addendum 37/40's own dedups) -- kept earliest game_date per pair, 25542 -> 25516 rows
+  pitcher_dominance_index table: 25516 (player_id, game_pk) starter-rows, N=5-start trailing window, 95.8% non-null overall (NaN = pitcher's first tracked start(s), correctly no trailing history yet)
+
+==============================================================================
+pitcher_strikeouts (real warehouse odds, Addendum 37 pipeline)
+==============================================================================
+building real team game log, Elo, L10, bullpen fatigue, park factors (existing pipeline, unmodified import)...
+extending with Addendum 37 historical features (unmodified import): point-in-time bullpen quality, both-starters + opposing-starter statcast quality, park dims...
+  [row-count check] raw warehouse pool: n=18779  ->  after build_features_v2 (Addendum 37, unmodified): n=12679 (-32.5%)
+    (this drop is build_features_v2's own established, unmodified INNER join onto games_v2 -- reproduces Addendum 40's own identical n=18779 -> 12679 for this exact pool, not a new bug introduced here; the strict no-fan-out checks below apply to the NEW merges this script adds on top: player_id attach and pitcher_dominance_index attach)
+  [row-count check] after attaching player_id via box_ids: n=12679
+  [row-count check] after attaching pitcher_dominance_index (exact merge on [player_id, game_pk], composite table deduplicated by construction): n=12679
+  pitcher_dominance_index coverage in this pool: 98.3%
+
+--- Configuration (a): FEATURES_V2 alone (baseline, reproduces Addendum 37) ---
+  (a) FEATURES_V2 (no composite)
+    features (25): ['side_code', 'market_prob', 'elo_diff', 'l10_diff', 'fatigue_diff', 'runs_factor', 'hr_factor', 'k_factor', 'hits_factor', 'bullpen_era_diff', 'bullpen_k9_diff', 'starter_xera_diff', 'starter_era_diff', 'starter_xba_diff', 'opp_sp_xera', 'opp_sp_era', 'opp_sp_xba', 'lf_distance', 'cf_distance', 'rf_distance', 'lf_wall_height', 'cf_wall_height', 'rf_wall_height', 'cf_compass_degrees', 'is_dome']
+    n(train/test)=9508/3171
+    best CV AUC=0.541  params={'learning_rate': 0.02, 'max_depth': 3, 'min_child_weight': 20, 'n_estimators': 200}
+    edge>0.0 bets: n=360  ROI=-3.81  CI=[-12.92,5.3]  FAIL
+
+--- Configuration (b): FEATURES_V2 + pitcher_dominance_index ---
+  (b) FEATURES_V2 + pitcher_dominance_index
+    features (26): ['side_code', 'market_prob', 'elo_diff', 'l10_diff', 'fatigue_diff', 'runs_factor', 'hr_factor', 'k_factor', 'hits_factor', 'bullpen_era_diff', 'bullpen_k9_diff', 'starter_xera_diff', 'starter_era_diff', 'starter_xba_diff', 'opp_sp_xera', 'opp_sp_era', 'opp_sp_xba', 'lf_distance', 'cf_distance', 'rf_distance', 'lf_wall_height', 'cf_wall_height', 'rf_wall_height', 'cf_compass_degrees', 'is_dome', 'pitcher_dominance_index']
+    n(train/test)=9508/3171
+    best CV AUC=0.538  params={'learning_rate': 0.02, 'max_depth': 3, 'min_child_weight': 10, 'n_estimators': 200}
+    edge>0.0 bets: n=353  ROI=-6.78  CI=[-15.96,2.4]  FAIL
+
+==============================================================================
+pitcher_outs (pick_history-only, 2026 window, Addendum 38 pipeline)
+==============================================================================
+  [row-count check] pick_history pool + Addendum 38 ASOF cache joins (unmodified import): n=798
+    (37 rows had no player_id -- pitcher_dominance_index left NaN for those, same missing=np.nan handling as every other feature in this project)
+  [row-count check] after attaching pitcher_dominance_index (merge_asof by player_id, direction='backward'): n=798
+  pitcher_dominance_index coverage in this pool: 94.9%
+  baseline features kept (coverage >= 200 rows): 14/95 score_* + 25/25 cache = 39 total
+
+--- Configuration (a): score_*+cache features alone (baseline, 70/30 split) ---
+  (a) score_*+cache (no composite)
+    features (39): ['score_trend', 'score_low_min_risk', 'score_blowout_risk', 'score_line_movement', 'score_pitcher_k_rate', 'score_pitcher_form', 'score_opposing_lineup_k', 'score_handedness_matchup', 'score_pitch_count_trend', 'score_rest_pitcher', 'score_ballpark_factor', 'score_weather_wind', 'score_weather_temp', 'score_umpire_k_zone', 'ck_last3_era', 'ck_last3_ip', 'ck_last3_starts', 'ck_inn1_era', 'ck_inn1_ip', 'ck_inn1_bf', 'ck_inn1_walks', 'ck_inn1_hits', 'ck_inn1_pitches', 'ck_bullpen_era', 'ck_bullpen_whip', 'ck_bullpen_ip', 'ck_bullpen_k_per_9', 'ck_bullpen_bb_per_9', 'ck_bullpen_baa', 'ck_pen_ip_48h', 'ck_games_in_48h', 'ck_hl_arm_count', 'ck_hl_avg_era', 'ck_mh_starter_gs', 'ck_mh_starter_ip', 'ck_mh_pitches_per_inning', 'ck_mh_avg_pitches_per_start', 'ck_mh_avg_ip_per_start', 'ck_mh_hook_index']
+    n(train/test)=558/240
+    best CV AUC=0.498  params={'learning_rate': 0.05, 'max_depth': 3, 'min_child_weight': 30, 'n_estimators': 300}
+    edge>0.0 bets: n=62  ROI=-2.55  CI=[-25.54,20.43]  FAIL
+
+--- Configuration (b): score_*+cache + pitcher_dominance_index ---
+  (b) score_*+cache + pitcher_dominance_index
+    features (40): ['score_trend', 'score_low_min_risk', 'score_blowout_risk', 'score_line_movement', 'score_pitcher_k_rate', 'score_pitcher_form', 'score_opposing_lineup_k', 'score_handedness_matchup', 'score_pitch_count_trend', 'score_rest_pitcher', 'score_ballpark_factor', 'score_weather_wind', 'score_weather_temp', 'score_umpire_k_zone', 'ck_last3_era', 'ck_last3_ip', 'ck_last3_starts', 'ck_inn1_era', 'ck_inn1_ip', 'ck_inn1_bf', 'ck_inn1_walks', 'ck_inn1_hits', 'ck_inn1_pitches', 'ck_bullpen_era', 'ck_bullpen_whip', 'ck_bullpen_ip', 'ck_bullpen_k_per_9', 'ck_bullpen_bb_per_9', 'ck_bullpen_baa', 'ck_pen_ip_48h', 'ck_games_in_48h', 'ck_hl_arm_count', 'ck_hl_avg_era', 'ck_mh_starter_gs', 'ck_mh_starter_ip', 'ck_mh_pitches_per_inning', 'ck_mh_avg_pitches_per_start', 'ck_mh_avg_ip_per_start', 'ck_mh_hook_index', 'pitcher_dominance_index']
+    n(train/test)=558/240
+    best CV AUC=0.507  params={'learning_rate': 0.03, 'max_depth': 3, 'min_child_weight': 30, 'n_estimators': 300}
+    edge>0.0 bets: n=51  ROI=-13.13  CI=[-38.72,12.46]  FAIL
+
+==============================================================================
+SUMMARY: Addendum 45b, pitcher_dominance_index, both markets, isolated marginal effect
+==============================================================================
+
+pitcher_strikeouts
+  BEFORE [Addendum 37 FEATURES_V2 (bullpen+starters+park), no pitcher_dominance_index]: CV_AUC=0.541  n=360  ROI=-3.81  FAIL
+  (a) FEATURES_V2 (no composite): n(train/test)=9508/3171  CV_AUC=0.541  test n=360 ROI=-3.81 CI=[-12.92,5.3]  FAIL
+  (b) FEATURES_V2 + pitcher_dominance_index: n(train/test)=9508/3171  CV_AUC=0.538  test n=353 ROI=-6.78 CI=[-15.96,2.4]  FAIL
+
+pitcher_outs
+  BEFORE [Addendum 38 score_*+cache features, 75/25 split (this script uses 70/30 per task spec)]: n(train/test)=598/200  CV_AUC=0.517  n=45  ROI=-18.09  CI=[-45.21,9.03]  FAIL
+  (a) score_*+cache (no composite): n(train/test)=558/240  CV_AUC=0.498  test n=62 ROI=-2.55 CI=[-25.54,20.43]  FAIL
+  (b) score_*+cache + pitcher_dominance_index: n(train/test)=558/240  CV_AUC=0.507  test n=51 ROI=-13.13 CI=[-38.72,12.46]  FAIL
+
+0 of 4 configurations pass the official gate rule. Reported as-is, pass or fail, single pre-specified N/grid/cut -- same discipline as every prior addendum. A FAIL here is a valid, reportable result, not grounds to search further windows, combination methods, or thresholds against this test set.

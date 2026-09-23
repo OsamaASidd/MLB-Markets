@@ -2309,3 +2309,78 @@ manufactured without anyone having to lie about a single number. None of
 these 5 are being added to the pass count. The honest result stands:
 `hits`, `rbis`, `spreads` pass; the other 8 do not, on every model tried,
 including the ones that technically cleared the rule once.
+
+---
+
+## Addendum 33: flaml AutoML added as a 6th model — same pre-registered pipeline, same conclusion
+
+This project has no Azure subscription or credentials, so `flaml` (Microsoft's
+open-source AutoML library — it searches its own model family/hyperparameters
+within a time budget, the same idea Azure AutoML applies in the cloud) was
+added as the disclosed local substitute, slotted into the *exact* Addendum 32
+pipeline: same features, same per-market split, same single `edge>0.0` cut,
+same official gate rule. `scripts/multi_model_comparison.py` (updated in
+place, diff preserves the original 5-model output unchanged), full output in
+`reports/multi_model_comparison_output.txt`.
+
+**Result: 6 of 48 market/model combinations pass, across 4 of the 8
+markets** — one more combination than Addendum 32 found, not a materially
+different picture. `flaml_automl` itself passed exactly 1 of 8 markets
+(`pitcher_strikeouts`, n=991, ROI +2.84%, CI [-2.73%, 8.41%]) — and on the
+3 markets where a *different* model had already passed in Addendum 32
+(`batter_home_runs`, `pitcher_outs`, `batter_strikeouts`), flaml itself
+FAILED. Adding a 6th independent model did not converge the models toward
+agreement; it added one more independent chance for a barely-positive
+result to appear, and that is exactly what happened. Same conclusion as
+Addendum 32: `hits`, `rbis`, `spreads` pass; the other 8 do not, now
+checked against 6 models instead of 5.
+
+---
+
+## Addendum 34: disciplined hyperparameter tuning on the 4 markets that showed any pass in Addendum 33 — 3 of 4 reverse to FAIL
+
+Pre-registered before running, specifically to keep this from becoming a
+second, hidden threshold search: **one** model family (XGBoost — the
+project's already-established baseline, chosen once and not per-market, so
+as not to cherry-pick "whichever model already passed" per market), **one**
+pre-specified hyperparameter grid (max_depth × learning_rate × n_estimators
+× min_child_weight, 81 combinations), selected by **CV-averaged ROC AUC on
+the training split only** (5-fold `StratifiedKFold`) — ROI and the gate rule
+were never computed on training data and never used to choose
+hyperparameters. The tuned model was then refit once on the full training
+split and scored once, a single time, on the untouched held-out test split,
+at the same `edge>0.0` cut used throughout this project.
+`scripts/tuned_xgboost_4_markets.py`.
+
+| Market | Best CV AUC | Test n | ROI | 95% CI | Verdict |
+|---|---:|---:|---:|---|---|
+| `batter_home_runs` | 0.915 | 2,386 | +0.68% | [-1.07%, 2.42%] | PASS |
+| `pitcher_strikeouts` | 0.594 | 672 | **-12.15%** | [-18.86%, -5.45%] | FAIL |
+| `pitcher_outs` | 0.608 | 777 | -3.75% | [-9.76%, 2.27%] | FAIL |
+| `batter_strikeouts` | 0.680 | 6,223 | -3.05% | [-4.98%, -1.12%] | FAIL |
+
+**3 of the 4 markets that had shown a pass under some model in Addendum 33
+reverse to FAIL under honest, non-cherry-picked tuning — two of them
+decisively so.** `pitcher_strikeouts` and `batter_strikeouts` don't just
+fail, their CIs now exclude zero entirely on the losing side, confirming
+their earlier "passes" (FLAML, RandomForest, LogisticRegression
+respectively) were bet-selection noise from that specific model's
+calibration, not something a properly tuned model recovers. `pitcher_outs`
+also reverses to FAIL, though its CI still crosses zero.
+
+**`batter_home_runs` passes again** (ROI +0.68%, same shape as its
+Addendum-32 LightGBM pass) — but still only via the gate's permissive
+"n≥500 and positive point estimate" arm, not the CI>0 arm; the CI still
+extends to -1.07%. Consistent with how this report has treated every
+other search-derived, non-independently-replicated result throughout
+(Addenda 1, 2, 8, 23, 25, 26, 32): **it is not promoted to a confirmed
+pass.** It is a real, disclosed, mechanically-gate-clearing data point —
+and it is the same kind of fragile result this project has repeatedly
+found does not survive a genuinely independent check (a different
+holdout period, decided once and not re-cut).
+
+**The official, confirmed scoreboard is unchanged by Addenda 33-34: 3 of
+11 markets — `hits`, `rbis`, `spreads` — pass on real, adequately-sized
+data with a CI that clears zero. `batter_home_runs` is flagged as an
+unresolved, search-derived near-miss worth an independent follow-up test,
+not counted as a 4th pass.**

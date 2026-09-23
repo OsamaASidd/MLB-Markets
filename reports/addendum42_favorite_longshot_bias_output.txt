@@ -1,0 +1,50 @@
+building real team game log (existing pipeline)...
+  raw games: n=4547, unique game_pk=3845
+applying Addendum 37's corrected/deduplicated game log (build_games_v2) -- fixes the real duplicate-game_pk fan-out bug that inflates h2h/totals pools when merged without dedup...
+  deduplicated games_v2: n=3845, unique game_pk=3845
+
+=== Addendum 42: favorite-longshot bias -- h2h and totals ===
+=== STEP 1: does the market's implied probability systematically miscalibrate vs. actual outcomes (descriptive, full pool, no test-set peeking)? ===
+  [h2h] row-count sanity check: build_game_pool -> n=4440 (unique game_pk=3841); after build_features merge -> n=4440 (OK, no fan-out)
+
+  [h2h] calibration by implied-probability decile (full pool, n=4440):
+    bin n      avg_implied%  actual_wr%  diff (actual-implied)
+    0   451    31.26         27.27       -3.99     
+    1   448    37.44         37.05       -0.39     
+    2   458    41.08         45.63       4.55      
+    3   433    43.88         46.88       3.0       
+    4   432    46.17         44.68       -1.49     
+    5   509    48.8          45.78       -3.02     
+    6   391    51.45         53.96       2.51      
+    7   432    54.11         51.62       -2.49     
+    8   456    58.05         52.85       -5.2      
+    9   430    64.72         60.7        -4.02     
+    Spearman rho(bin order, diff) = -0.491 (p=0.15); pre-specified threshold for 'detected' = 0.6
+    confirmatory diagnostic: logistic regression win ~ logit(market_prob): slope=0.876 intercept=-0.058 (slope>1 ~ favorite-longshot-bias-shaped; slope~1,intercept~0 ~ well-calibrated)
+    VERDICT: NOT DETECTED -- stopping, no model built for this market
+  [totals] row-count sanity check: build_game_pool -> n=7682 (unique game_pk=3841); after build_features merge -> n=7682 (OK, no fan-out)
+
+  [totals] calibration by implied-probability decile (full pool, n=7682):
+    bin n      avg_implied%  actual_wr%  diff (actual-implied)
+    0   839    48.75         49.46       0.71      
+    1   2049   49.91         45.1        -4.81     
+    2   409    50.45         47.43       -3.02     
+    3   1194   51.09         46.31       -4.78     
+    4   273    51.62         51.28       -0.34     
+    5   968    52.27         48.35       -3.92     
+    6   981    53.31         51.58       -1.73     
+    7   283    54.02         50.88       -3.14     
+    8   686    54.76         50.73       -4.03     
+    Spearman rho(bin order, diff) = -0.133 (p=0.732); pre-specified threshold for 'detected' = 0.6
+    confirmatory diagnostic: logistic regression win ~ logit(market_prob): slope=0.790 intercept=-0.121 (slope>1 ~ favorite-longshot-bias-shaped; slope~1,intercept~0 ~ well-calibrated)
+    VERDICT: NOT DETECTED -- stopping, no model built for this market
+
+=== STEP 2: recalibration model (isotonic regression on TRAIN only), evaluated ONCE on the untouched TEST split -- only for markets where STEP 1 detected a real pattern ===
+
+  [h2h] STEP 1 did not detect a real favorite-longshot-bias pattern in this data (Spearman rho=-0.491 < 0.6) -- per protocol, no recalibration model is built or tested for this market. This is a valid, honest stopping point, not a gap in the analysis.
+
+  [totals] STEP 1 did not detect a real favorite-longshot-bias pattern in this data (Spearman rho=-0.133 < 0.6) -- per protocol, no recalibration model is built or tested for this market. This is a valid, honest stopping point, not a gap in the analysis.
+
+=== SUMMARY ===
+  {'market': 'h2h', 'verdict': 'no bias detected -- not modeled'}
+  {'market': 'totals', 'verdict': 'no bias detected -- not modeled'}

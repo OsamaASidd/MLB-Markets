@@ -11,7 +11,18 @@ questions.
 real, adequately-sized data: `hits`, `rbis`, `spreads`. The other 8 are
 confirmed FAIL — not "pending," not "untested," actually tested at real
 scale and negative.** This is on branch `3-pass-markets`
-(`reports/MILESTONE_1_GATE_REPORT.md` has the full 31-addendum trail).
+(`reports/MILESTONE_1_GATE_REPORT.md` has the full 34-addendum trail).
+
+Addenda 33-34 added a 6th model (flaml AutoML, the local substitute for
+Azure AutoML — this project has no Azure subscription) to the Addendum 32
+multi-model sweep, then ran a disciplined, pre-registered hyperparameter
+tuning pass on the 4 markets that showed any pass in that sweep. 3 of the
+4 reversed to FAIL under honest tuning (two decisively). One,
+`batter_home_runs`, keeps clearing the gate's permissive n≥500+ROI>0 arm
+(currently +0.68%, CI [-1.07%, 2.42%]) — flagged as an unresolved,
+search-derived near-miss worth an independent holdout check, **not**
+counted as a confirmed 4th pass, same treatment this project gives every
+other result that hasn't survived a genuinely independent replication.
 
 Branch `8-pooled-ml` holds a separate, deprioritized research line
 (pooled cross-market XGBoost models) — it is **not** a competing result
@@ -38,7 +49,7 @@ against the actual `metrics.ts` file, don't take it on faith.
 | `rbis` | **PASS** | large | positive, CI>0 | 27/28 |
 | `spreads` | **PASS** | large | positive, CI>0 (flipped by the gate-rule fix) | 28 |
 | `total_bases` | FAIL | large | negative | 27-29 (statcast features tried, still negative) |
-| `batter_home_runs` | FAIL | large | -2.20% (88.4% accuracy — accuracy ≠ ROI) | 24 |
+| `batter_home_runs` | FAIL | large | -2.20% (88.4% accuracy — accuracy ≠ ROI); a tuned XGBoost re-check clears the gate's n≥500+ROI>0 arm at +0.68% (CI still crosses -1.07%) — flagged, not confirmed | 24, 33/34 |
 | `pitcher_strikeouts` | FAIL | large | negative | 9, 17 |
 | `h2h` | FAIL | large | negative | 9, 17 |
 | `totals` | FAIL | large | negative | 9, 17 |

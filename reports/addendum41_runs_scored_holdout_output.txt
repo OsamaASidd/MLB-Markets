@@ -1,0 +1,41 @@
+==============================================================================
+Addendum 41: explainable logistic-regression model, genuine chronological
+70/30 holdout for batter_runs_scored (2026-05-17 to 2026-07-27 window,
+the only window this pick_history-only market has real logged factors).
+==============================================================================
+
+Row-count sanity check: base pick_history pool (pre-join) n=6859, post-join pool n=6859
+  OK: post-join row count matches base row count exactly -- no fan-out.
+
+prop_type=runs_scored  n=6859
+date range: 2026-06-13 00:00:00 -> 2026-07-27 00:00:00
+
+pre-registered features (7): ['market_prob', 'score_recent_run_form', 'score_batter_obp', 'score_lineup_spot', 'score_opposing_pitcher_quality', 'ck_tb_runs_per_game', 'ck_vs_rhp_ops']
+    market_prob                        6859/6859  (100.0%)
+    score_recent_run_form              6859/6859  (100.0%)
+    score_batter_obp                   6859/6859  (100.0%)
+    score_lineup_spot                  6859/6859  (100.0%)
+    score_opposing_pitcher_quality     6859/6859  (100.0%)
+    ck_tb_runs_per_game                6859/6859  (100.0%)
+    ck_vs_rhp_ops                      6526/6859  ( 95.1%)
+
+after dropping rows missing any pre-registered feature: n=6526 (dropped 333)
+
+full range: 2026-06-13 00:00:00 -> 2026-07-27 00:00:00
+train (chronological first 70%, through 2026-07-18 00:00:00): n=4568
+test  (chronological last 30%, from 2026-07-18 00:00:00): n=1958
+
+logistic regression coefficients (standardized features): {'market_prob': np.float64(0.4833118478421681), 'score_recent_run_form': np.float64(0.005590979252635581), 'score_batter_obp': np.float64(-0.05185501975687448), 'score_lineup_spot': np.float64(-0.02029925487873906), 'score_opposing_pitcher_quality': np.float64(0.08868369627900079), 'ck_tb_runs_per_game': np.float64(0.027529188656254512), 'ck_vs_rhp_ops': np.float64(-0.03629154987205652)}
+
+test holdout, edge>0.0 (single pre-registered cut, official gate rule):
+  n=462  WR=63.9%  ROI=0.89%  CI=[-6.13,7.91]  FAIL
+
+==============================================================================
+COMPARISON vs Addendum 38 baseline near-miss (tuned XGBoost, 45+28 features,
+75/25 split, GridSearchCV-tuned):
+  runs_scored: test n=434  ROI=+3.59%  CI=[-3.66%,10.83%]  FAIL (crosses zero)
+
+Addendum 41 (this run -- explainable logistic regression, 7 hand-picked
+features, zero tuning, chronological 70/30 split):
+  batter_runs_scored: test n=462  ROI=0.89%  CI=[-6.13,7.91]  FAIL
+==============================================================================
