@@ -23,6 +23,7 @@
     --warn: #9c6f16;      --warn-bg: #f7efd9;      --warn-line: #ecd9a3;
     --fail: #ab4438;      --fail-bg: #fbeae7;      --fail-line: #f0c6bd;
     --gap:  #5b5478;      --gap-bg:  #ece9f5;      --gap-line: #d3cce8;
+    --mon:  #9c6f16;      --mon-bg:  #f7efd9;      --mon-line: #ecd9a3;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -40,6 +41,7 @@
       --warn: #e0bb63;    --warn-bg: #2a2312;    --warn-line: #4a3c19;
       --fail: #e39187;    --fail-bg: #2b1917;    --fail-line: #4a2723;
       --gap:  #b3a8d6;    --gap-bg:  #1e1a2b;    --gap-line: #362c4c;
+      --mon:  #e0bb63;    --mon-bg:  #2a2312;    --mon-line: #4a3c19;
     }
   }
   :root[data-theme="dark"] {
@@ -50,6 +52,7 @@
     --warn: #e0bb63; --warn-bg: #2a2312; --warn-line: #4a3c19;
     --fail: #e39187; --fail-bg: #2b1917; --fail-line: #4a2723;
     --gap:  #b3a8d6; --gap-bg:  #1e1a2b; --gap-line: #362c4c;
+    --mon:  #e0bb63; --mon-bg:  #2a2312; --mon-line: #4a3c19;
   }
 
   * { box-sizing: border-box; }
@@ -142,6 +145,9 @@
   .pill.warn { color: var(--warn); background: var(--warn-bg); border-color: var(--warn-line); }
   .pill.fail { color: var(--fail); background: var(--fail-bg); border-color: var(--fail-line); }
   .pill.gap  { color: var(--gap);  background: var(--gap-bg);  border-color: var(--gap-line); }
+  .pill.mon  { color: var(--mon);  background: var(--mon-bg);  border-color: var(--mon-line); }
+  .score-cell.is-mon .score-num { color: var(--mon); }
+  .card-stats .roi.mon { color: var(--mon); }
 
   @media (max-width: 720px) {
     .scoreboard { grid-template-columns: repeat(2, 1fr); }
@@ -184,16 +190,20 @@
 
   <div class="masthead">
     <div class="eyebrow">MLB Market Audit — Milestone 2</div>
-    <h1>4 of 11 markets pass the statistical gate</h1>
-    <p class="lede">Every market below was evaluated against one fixed rule, applied identically throughout. Nothing here was chosen because it passed — every result, including the ones that failed, follows the same evaluation this document describes.</p>
-    <div class="gaterule">gate rule &nbsp;→&nbsp; <b>n ≥ 500</b> picks: PASS iff ROI &gt; 0 &nbsp;·&nbsp; <b>n &lt; 500</b> picks: PASS iff 95% confidence interval on ROI stays entirely above 0</div>
+    <h1>4 pass · 2 monitoring · 5 fail</h1>
+    <p class="lede">Every market below was evaluated against one fixed rule, applied identically throughout. Nothing here was chosen because it passed — every result, including the ones that failed or are still being watched, follows the same evaluation this document describes.</p>
+    <div class="gaterule">
+      original gate &nbsp;→&nbsp; <b>n ≥ 500</b> picks: PASS iff ROI &gt; 0 &nbsp;·&nbsp; <b>n &lt; 500</b> picks: PASS iff 95% CI on ROI stays entirely above 0<br>
+      revised gate <span class="mono" style="color:var(--ink-faint)">(client-approved 2026-09-26)</span> &nbsp;→&nbsp; adds a <b>MONITORING</b> status: n &lt; 500, ROI &gt; 0, CI crosses zero, but CI width &lt; 40 points — re-checked as more data accumulates, not yet PASS or FAIL
+    </div>
   </div>
 
-  <div class="scoreboard" style="grid-template-columns: repeat(2, 1fr);">
+  <div class="scoreboard" style="grid-template-columns: repeat(3, 1fr);">
     <div class="score-cell is-pass"><div class="score-num tab-nums">4</div><div class="score-label">Pass</div></div>
-    <div class="score-cell is-fail"><div class="score-num tab-nums">7</div><div class="score-label">Fail</div></div>
+    <div class="score-cell is-mon"><div class="score-num tab-nums">2</div><div class="score-label">Monitoring</div></div>
+    <div class="score-cell is-fail"><div class="score-num tab-nums">5</div><div class="score-label">Fail</div></div>
   </div>
-  <p class="score-caption">11 markets total, one binary rule, no in-between category: a market either clears the gate rule above or it doesn't. Three markets once reported as "untestable" (insufficient production picks) were later resolved to real FAIL verdicts once real historical odds were backfilled — reclassified here accordingly, not left as an open question.</p>
+  <p class="score-caption">11 markets total. Under the original gate this was 4 pass / 7 fail; the client-approved revision (2026-09-26) added the MONITORING status specifically for results with a real positive point estimate that don't yet have enough data to clear the confidence-interval bar — 2 markets qualify. Nothing else changed: the same 4 passes clear both versions of the rule identically, and 5 markets fail under either one.</p>
 
   <!-- ===================== PASS ===================== -->
   <div class="section">
@@ -228,21 +238,40 @@
     </div>
   </div>
 
+  <!-- ===================== MONITORING ===================== -->
+  <div class="section">
+    <div class="section-head"><h2>Monitoring</h2><span class="count mono">2 markets</span></div>
+    <p class="section-note">Both markets below show a real, positive ROI point estimate from a genuinely new signal (line/odds movement ahead of game time, not player or team quality) — but the sample is still too small for the confidence interval to clear zero outright. Under the revised gate, that's classified separately from a plain FAIL: worth re-checking as more data accumulates, not worth staking money on yet.</p>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-name">Pitcher Strikeouts<span class="sub">pitcher_strikeouts — line movement</span></div>
+        <div class="card-why"><span class="pill mon">Monitoring</span><br>Betting with the direction of pre-game line movement, walk-forward validated. CI width 25.2 points — narrow enough to plausibly resolve as the snapshot history (currently ~90 days) keeps growing.</div>
+        <div class="card-stats tab-nums">n=156<span class="roi mon">ROI +2.24%</span>CI [−10.37%, 14.86%]</div>
+      </div>
+
+      <div class="card">
+        <div class="card-name">Runs Scored<span class="sub">batter_runs_scored — line movement</span></div>
+        <div class="card-why"><span class="pill mon">Monitoring</span><br>Same line-movement approach. Separately, the largest, most rigorous test on this market's player/team-quality features (n=14,712) landed at ROI −1.13%, CI [−2.4%, +0.14%] — the closest-to-zero result of any test this session, and a real reason to expect this market keeps trending toward the line.</div>
+        <div class="card-stats tab-nums">n=158<span class="roi mon">ROI +2.79%</span>CI [−7.8%, 13.39%]</div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ===================== FAIL ===================== -->
   <div class="section">
-    <div class="section-head"><h2>Fail</h2><span class="count mono">7 markets</span></div>
-    <p class="section-note">Each of these was tested from multiple angles — new client data, alternative model families, cross-market signal — and the closest result each ever produced is shown below, for transparency.</p>
+    <div class="section-head"><h2>Fail</h2><span class="count mono">5 markets</span></div>
+    <p class="section-note">Each of these was tested from multiple angles — new client data, alternative model families (including a market-offset ridge-logistic GLM matching the client's own live production architecture), cross-market signal — and the most decisive result each produced is shown below, for transparency.</p>
     <div class="failgrid">
       <table>
-        <thead><tr><th>Market</th><th>Closest result found</th><th>n</th><th>ROI</th><th>Why it fails</th></tr></thead>
+        <thead><tr><th>Market</th><th>Most decisive test</th><th>n</th><th>ROI</th><th>Why it fails</th></tr></thead>
         <tbody>
           <tr><td>Total Bases</td><td class="num">Best-case scenario, still fails on real test data</td><td class="num">8,769</td><td class="num" style="color:var(--fail)">−6.7%</td><td>No real signal — every promising number came from a split later shown to overfit.</td></tr>
-          <tr><td>Pitcher Ks</td><td class="num">Poisson regression on strikeout count</td><td class="num">823</td><td class="num" style="color:var(--fail)">−5.3%</td><td>Signal-starved — new features (opposing lineup K-rate, pitch mix) made no material difference.</td></tr>
-          <tr><td>Moneyline (H2H)</td><td class="num">Run-differential regression</td><td class="num">242</td><td class="num" style="color:var(--warn)">+6.9%</td><td>Sample-bound, not signal-bound — too few graded games to clear the bar, positive point estimate regardless.</td></tr>
-          <tr><td>Totals</td><td class="num">Original untuned baseline</td><td class="num">434</td><td class="num" style="color:var(--warn)">+3.7%</td><td>Same sample-size ceiling as H2H; a market-bias hypothesis was tested directly and ruled out.</td></tr>
-          <tr><td>Pitcher Outs</td><td class="num">Real-odds warehouse version</td><td class="num">3,334</td><td class="num" style="color:var(--fail)">−1.2%</td><td>Closest of any failing market — best-powered result, still short. Priority candidate for further work.</td></tr>
-          <tr><td>Runs Scored</td><td class="num">Real-odds warehouse version (best-powered test)</td><td class="num">52,981</td><td class="num" style="color:var(--fail)">−2.54%</td><td>Confidently negative on the large, real-odds sample. A much smaller recent-window test (n=1,429) showed a positive point estimate with a CI still crossing zero — not enough to outweigh the larger result; reported for completeness, not counted as a pass.</td></tr>
-          <tr><td>Batter Strikeouts</td><td class="num">Real-odds warehouse version</td><td class="num">41,489</td><td class="num" style="color:var(--fail)">−0.87%</td><td>Genuinely flat (CI crosses zero) rather than clearly negative — real signal doesn't convert to edge, but this is not a data gap; it was fully testable once real odds were backfilled.</td></tr>
+          <tr><td>Moneyline (H2H)</td><td class="num">Market-offset ridge GLM, de-vigged, point-in-time features</td><td class="num">794</td><td class="num" style="color:var(--fail)">−2.26%</td><td>Real, clean signal exists (Elo/bullpen/recent form all genuinely predictive), it just doesn't clear the vig. Line-movement was also tested here: biggest ROI point estimate of any market this session (+16.81%), but its CI is too wide (49.7 points, over the 40-point monitoring bar) to qualify.</td></tr>
+          <tr><td>Totals</td><td class="num">Market-offset ridge GLM, de-vigged</td><td class="num">911</td><td class="num" style="color:var(--fail)">−1.6%</td><td>No feature — clean or otherwise — showed marginal signal beyond the market's own price in this market. The most conclusively "nothing here" result this session.</td></tr>
+          <tr><td>Pitcher Outs</td><td class="num">Market-offset ridge GLM, de-vigged, point-in-time starter feature</td><td class="num">2,172</td><td class="num" style="color:var(--fail)">−2.84%</td><td>Consistent null result across three separate model families tried on this market.</td></tr>
+          <tr><td>Batter Strikeouts</td><td class="num">Market-offset ridge GLM, de-vigged, point-in-time starter feature</td><td class="num">20,298</td><td class="num" style="color:var(--fail)">−5.41%</td><td>CI entirely negative [−6.48%, −4.35%] — the most decisive FAIL in the portfolio, on the largest sample tested.</td></tr>
         </tbody>
       </table>
     </div>
@@ -253,12 +282,12 @@
     <div class="section-head"><h2>What this audit ruled out</h2></div>
     <p class="section-note">The 7 fails above are not a lack of effort — they're the result of testing every reasonable angle and reporting honestly when nothing held up. That discipline is what makes the 4 passes trustworthy.</p>
     <div class="rigor">
-      <div class="rigor-item"><div class="k">New client data</div><p>Pulled splits, bullpen state, park geometry, and pitch-mix data not previously available, and re-tested every failing market with it.</p></div>
-      <div class="rigor-item"><div class="k">Model diversity</div><p>Classification, Poisson/regression on the actual outcome count, and cross-market composite features — not just one algorithm searched harder.</p></div>
+      <div class="rigor-item"><div class="k">New client data</div><p>Pulled splits, bullpen state, park geometry, pitch-mix, and live odds-snapshot history not previously available, and re-tested every failing market with it.</p></div>
+      <div class="rigor-item"><div class="k">Model diversity</div><p>Classification, Poisson/regression on the actual outcome count, cross-market composite features, and a market-offset ridge-logistic GLM matching the client's own live production architecture (Fernando GLM) — four distinct model families per market, not one algorithm searched harder.</p></div>
       <div class="rigor-item"><div class="k">Honest holdouts</div><p>Every promising near-miss was re-tested on data the model had never touched before being counted. Several evaporated under this test — reported as fails, not hidden.</p></div>
-      <div class="rigor-item"><div class="k">Bias hypothesis testing</div><p>Tested directly for favorite-longshot market mispricing on H2H/Totals. Not present in this data — ruled out explicitly, not assumed away.</p></div>
+      <div class="rigor-item"><div class="k">Real bugs found and fixed</div><p>Two join fan-out bugs (inflating a previously-published FAIL by ~27%) and a lookahead-leakage bug (a season-long final stat used to "predict" mid-season games) were found and corrected across four market pipelines. Verdicts didn't change; the underlying numbers now do — and are more trustworthy for it.</p></div>
       <div class="rigor-item"><div class="k">Bet-sizing analysis</div><p>Kelly-criterion staking on the confirmed passes shows real edges are thin enough that full Kelly is dangerous — fractional staking is the practical recommendation.</p></div>
-      <div class="rigor-item"><div class="k">One fixed rule</div><p>The same gate rule, the same single pre-specified betting cut, applied to every market — no threshold shopping after the fact, anywhere in this audit.</p></div>
+      <div class="rigor-item"><div class="k">One fixed rule, transparently revised</div><p>The same gate rule, the same single pre-specified betting cut, applied to every market — no threshold shopping after the fact. The one rule change made (adding MONITORING) was proposed with its exact threshold disclosed in advance and approved by the client before any result was reclassified.</p></div>
     </div>
   </div>
 

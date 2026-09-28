@@ -96,6 +96,14 @@ MLB_PLAYER_PROPS.xlsx
 MLB_Odds_API_2023_2026.xlsx
 MLB_Odds_API_2023_2026_inventory.xlsx
 
+# pitcher_strikeouts gap backfill (Addendum 57) -- same treatment as the
+# other raw Odds API caches/mapping files above: real market data, kept
+# local only.
+data_raw/event_id_mapping_pitcher_k_gap.csv
+data_raw/event_id_mapping_pitcher_k_gap.*.bak
+data_raw/pitcher_k_gap_odds_cache.jsonl
+reports/addendum55b_novig_pitcher_markets_stderr.txt
+
 # "Next-signal notes" pack (SHARPAI_USAMA_NEXT_SIGNALS, received 2026-09-15) --
 # Saqib's reply on CLV/Statcast/lineup/umpire research options. Real internal
 # numbers, code-path descriptions and a branch-only experiment module, all
