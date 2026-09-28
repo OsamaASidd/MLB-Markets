@@ -1,0 +1,64 @@
+building fuller game log + features (Addendum 48/49, unmodified imports)...
+  games_v3 build: 8324 raw event x outcome rows -> 7028 after excluding exhibitions, applying name alias, dropping null game_pk/date, and deduping game_pk
+  team name -> id lookup built from 30 names (expect ~30 real MLB teams)
+  games_v3 final: n=7028  unique game_pk=7028  date range 2023-05-03 00:00:00 -> 2026-06-25 00:00:00
+pool built once: n=7088, reused for all 8 seeded runs
+
+=== Addendum 72: 8 seeds x 5 folds = 40 tasks, running concurrently (thread pool, serial grid search per task) ===
+  [1/40] task done (1793s elapsed)
+  [2/40] task done (1800s elapsed)
+  [3/40] task done (2106s elapsed)
+  [4/40] task done (2115s elapsed)
+  [5/40] task done (2357s elapsed)
+  [6/40] task done (2375s elapsed)
+  [7/40] task done (2578s elapsed)
+  [8/40] task done (2597s elapsed)
+  [9/40] task done (2781s elapsed)
+  [10/40] task done (2799s elapsed)
+  [11/40] task done (3540s elapsed)
+  [12/40] task done (3913s elapsed)
+  [13/40] task done (4201s elapsed)
+  [14/40] task done (4543s elapsed)
+  [15/40] task done (4732s elapsed)
+  [16/40] task done (4789s elapsed)
+  [17/40] task done (5055s elapsed)
+  [18/40] task done (5250s elapsed)
+  [19/40] task done (5398s elapsed)
+  [20/40] task done (5480s elapsed)
+  [21/40] task done (5713s elapsed)
+  [22/40] task done (6099s elapsed)
+  [23/40] task done (6635s elapsed)
+  [24/40] task done (6677s elapsed)
+  [25/40] task done (7225s elapsed)
+  [26/40] task done (7235s elapsed)
+  [27/40] task done (7536s elapsed)
+  [28/40] task done (7601s elapsed)
+  [29/40] task done (7690s elapsed)
+  [30/40] task done (8034s elapsed)
+  [31/40] task done (8209s elapsed)
+  [32/40] task done (8313s elapsed)
+  [33/40] task done (8807s elapsed)
+  [34/40] task done (8874s elapsed)
+  [35/40] task done (9093s elapsed)
+  [36/40] task done (9259s elapsed)
+  [37/40] task done (9556s elapsed)
+  [38/40] task done (9679s elapsed)
+  [39/40] task done (9802s elapsed)
+  [40/40] task done (10170s elapsed)
+
+=== per-seed pooled results (official gate touched EXACTLY ONCE per seed) ===
+  seed=0  n=1136  WR=56.7%  ROI=0.18%  CI=[-4.96,5.31]  PASS
+  seed=1  n=1106  WR=57.9%  ROI=2.25%  CI=[-2.94,7.44]  PASS
+  seed=2  n=1092  WR=56.8%  ROI=0.39%  CI=[-4.85,5.63]  PASS
+  seed=3  n=1117  WR=56.3%  ROI=-0.46%  CI=[-5.64,4.73]  FAIL
+  seed=4  n=1134  WR=55.4%  ROI=-2.38%  CI=[-7.53,2.76]  FAIL
+  seed=5  n=1115  WR=56.7%  ROI=0.31%  CI=[-4.88,5.5]  PASS
+  seed=6  n=1113  WR=56.2%  ROI=-0.39%  CI=[-5.6,4.81]  FAIL
+  seed=7  n=1132  WR=56.4%  ROI=-0.15%  CI=[-5.31,5.01]  FAIL
+
+=== SUMMARY ===
+  4/8 PASS, 4/8 FAIL
+  ROI range across runs: -2.38% to 2.25%  (mean -0.03%)
+  VERDICT: UNSTABLE -- verdict flips with the random seed alone. Not a real, repeatable edge. Do not report either a PASS or FAIL from any single run of Addendum 49 as h2h's verdict.
+
+total wall time: 10170s
